@@ -1,0 +1,83 @@
+﻿@model BioMedDocManager.Models.Supplier1stAssess
+<div class="row align-items-center mb-3">
+    <div class="col-md-2 col-form-label text-md-end text-start">
+        <strong>@Html.DisplayNameFor(m => m.AssessPeople)：</strong>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-control-plaintext">@Html.DisplayFor(m => m.AssessPeopleUser.FullName)</div>
+    </div>
+
+    <div class="col-md-2 col-form-label text-md-end text-start">
+        <strong>@Html.DisplayNameFor(m => m.AssessDate)：</strong>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-control-plaintext">@Html.DisplayFor(m => m.AssessDate)</div>
+    </div>
+</div>
+
+
+<div class="row align-items-center mb-3">
+    <div class="col-md-2 col-form-label text-md-end text-start">
+        <strong> @Html.DisplayNameFor(m => m.Visit)：</strong>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-control-plaintext">
+            @Html.DisplayFor(m => m.SelectedVisit)
+            @if (Model.SelectedVisit == "其他")
+            {
+                <span>(@Html.DisplayFor(m => m.VisitOther))</span>
+            }
+        </div>
+    </div>
+
+    <div class="col-md-2 col-form-label text-md-end text-start">
+        <strong>@Html.DisplayNameFor(m => m.AssessResult)：</strong>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-control-plaintext">@Html.DisplayFor(m => m.AssessResult)</div>
+    </div>
+</div>
+
+<div class="row align-items-center mb-3">
+    <div class="col-md-2 col-form-label text-md-end text-start">
+        <strong> @Html.DisplayNameFor(m => m.Reason)：</strong>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-control-plaintext text-pre-wrap">@Html.DisplayFor(m => m.Reason)</div>
+    </div>
+
+    <div class="col-md-2 col-form-label text-md-end text-start">
+        <strong> @Html.DisplayNameFor(m => m.Improvement)：</strong>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-control-plaintext">@Html.DisplayFor(m => m.Improvement)</div>
+    </div>
+</div>
+
+<div class="row align-items-center mb-3">
+    <div class="col-md-2 col-form-label text-md-end text-start">
+        <strong> @Html.DisplayNameFor(m => m.RiskLevel)：</strong>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-control-plaintext">@Html.DisplayFor(m => m.RiskLevel)</div>
+    </div>
+    <div class="col-md-2 col-form-label text-md-end text-start">
+        <strong> @Html.DisplayNameFor(m => m.Remarks1)：</strong>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-control-plaintext text-pre-wrap">@Html.DisplayFor(m => m.Remarks1)</div>
+    </div>
+</div>
+
+<div class="row align-items-center mb-3">
+    <div class="col-md-2 col-form-label text-md-end text-start">
+        <strong> @Html.DisplayNameFor(m => m.Supplier1stAssessNo)：</strong>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-control-plaintext">@Html.DisplayFor(m => m.Supplier1stAssessNo)</div>
+    </div>
+    <div class="col-md-2 col-form-label text-md-end text-start">
+    </div>
+    <div class="col-sm-4">
+    </div>
+</div>

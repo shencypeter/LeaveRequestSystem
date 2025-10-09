@@ -1,0 +1,23 @@
+﻿@model string? // 傳入目前選擇的供應商名稱
+@{
+    var PurchaseSupplierName = ViewData["PurchaseSupplierName"] as List<QualifiedSupplier> ?? new List<QualifiedSupplier>();
+    var groupedSupplier = PurchaseSupplierName.GroupBy(pc => pc.SupplierClass);
+
+    var isRequired = ViewData["PurchaseSupplierNameIsRequired"] as bool? ?? false;
+}
+
+<select class="form-select" id="SupplierName" name="SupplierName" @(isRequired ? "required" : "")>
+    <option value="">請選擇</option>
+    @foreach (var group in groupedSupplier)
+    {
+        <optgroup label="@group.Key">
+            @foreach (var supp in group)
+            {
+                var isSelected = Model?.Trim() == supp.SupplierName;
+                <option value="@supp.SupplierName" data-product-class="@supp.ProductClass" selected="@(isSelected ? "selected" : null)">
+                    @supp.SupplierName
+                </option>
+            }
+        </optgroup>
+    }
+</select>

@@ -1,0 +1,18 @@
+﻿@{
+    Layout = "_AssetLayout";
+
+    var system = ViewData["Title"] as string;
+}
+
+<div class="div-left"></div>
+<div class="div-right">
+    <font class="banner-text">@system</font>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+          $(function () {
+            $('.tree').hide();
+        });
+    </script>
+}

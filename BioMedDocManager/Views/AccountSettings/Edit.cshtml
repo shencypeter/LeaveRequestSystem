@@ -1,0 +1,146 @@
+﻿@model BioMedDocManager.Models.AccountModel
+@{
+    ViewData["Title"] = "帳號設定-編輯";
+    Layout = "_NoNavLayout";
+
+    // 角色
+    var allRoles = ViewData["AllRoles"] as List<Role>;
+    int total = allRoles.Count;// 所有角色總數
+    var half = (int)Math.Ceiling(allRoles.Count / 2.0);
+    var leftRoles = allRoles.Take(half).ToList();
+    var rightRoles = allRoles.Skip(half).ToList();
+    int roleIndex = 0;
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2"><i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]</h4>
+    <form id="myFormDetail" method="post" action="@Url.Action("Edit", "AccountSettings", new { UserName = Model.UserName })" target="_top">
+        @Html.AntiForgeryToken()
+        <div class="pop">
+            <!-- 帳號(工號) -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserName)：</strong></div>
+                <div class="col-md-10">
+                    @Html.DisplayFor(m => m.UserName)
+                </div>
+            </div>
+
+            <!-- 姓名 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.FullName)：</strong></div>
+                <div class="col-md-10">
+                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", @required = "required" })
+                </div>
+            </div>
+
+            <!-- 使用者是否啟用 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.IsActive)：</strong></div>
+                <div class="col-md-10">
+                    @Html.DropDownListFor(model => model.IsActive, new List<SelectListItem>
+                    {
+                        new SelectListItem { Text = "啟用", Value = "true" },
+                        new SelectListItem { Text = "停用", Value = "false" }
+                    }, new { @class = "form-select" })
+                </div>
+            </div>
+
+            <!-- 管理角色 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.RoleName)：</strong></div>
+                <div class="col-md-10">
+                    <div class="row">
+                        <div class="col-md-6">
+                            @foreach (var role in leftRoles)
+                            {
+                                string checkboxId = $"role{roleIndex++}";
+                                bool isChecked = Model.RoleName != null && Model.RoleName.Contains(role.RoleName);
+                                bool isSystemRole = role.RoleGroup == "系統" && role.RoleName == "系統管理者";
+                                var loginUser = User?.Identity?.Name;
+
+                                var isAdmin = loginUser?.Equals(Model.UserName, StringComparison.OrdinalIgnoreCase) == true; 
+
+                                <div class="form-check text-start">
+                                    @if (isSystemRole && isChecked && isAdmin)
+                                    {     
+                                        @*如果是管理員本人, 不可取消自己的管理者, 但以 hidden form 保持原始狀態*@
+                                        <input type="hidden" name="RoleName" value="@role.RoleName" />
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               id="@checkboxId"
+                                               value="@role.RoleName"
+                                               checked
+                                               disabled />
+                                    }
+                                    else
+                                    {
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               name="RoleName"
+                                               value="@role.RoleName"
+                                               id="@checkboxId"
+                                               @(isChecked ? "checked" : "") />
+                                    }
+                                    <label class="form-check-label" for="@checkboxId">【@role.RoleGroup】@role.RoleName  @(isAdmin && isSystemRole ? "(無法取消自己的權限)" : "")</label>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="col-md-6">
+                            @foreach (var role in rightRoles)
+                            {
+                                string checkboxId = $"role{roleIndex++}";
+                                bool isChecked = Model.RoleName != null && Model.RoleName.Contains(role.RoleName);
+                                bool isSystemRole = role.RoleGroup == "系統" && role.RoleName == "系統管理者";
+                                var loginUser = User?.Identity?.Name;
+
+                                var isAdmin = loginUser?.Equals(Model.UserName, StringComparison.OrdinalIgnoreCase) == true;
+
+                                <div class="form-check text-start">
+                                    @if (isSystemRole && isChecked && isAdmin)
+                                    {   
+                                        @*如果是管理員本人, 不可取消自己的管理者, 但以 hidden form 保持原始狀態*@
+                                        <input type="hidden" name="RoleName" value="@role.RoleName" />
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               id="@checkboxId"
+                                               value="@role.RoleName"
+                                               checked
+                                               disabled />
+                                    }
+                                    else
+                                    {
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               name="RoleName"
+                                               value="@role.RoleName"
+                                               id="@checkboxId"
+                                               @(isChecked ? "checked" : "") />
+                                    }
+                                    <label class="form-check-label" for="@checkboxId">【@role.RoleGroup】@role.RoleName</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 建立日期 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.CreatedAt)：</strong></div>
+                <div class="col-md-10">
+                    @Html.DisplayFor(m => m.CreatedAt)
+                </div>
+            </div>
+
+            <!-- 按鈕列 -->
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap justify-content-center">
+                    <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-check-circle"></i>&ensp;儲存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

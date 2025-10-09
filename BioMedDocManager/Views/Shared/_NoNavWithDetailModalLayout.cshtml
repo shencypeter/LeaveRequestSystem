@@ -1,0 +1,26 @@
+﻿@using System
+@{
+    Layout = "_NoNavLayout";
+}
+@section PageStyles {
+    @RenderSection("PageStyles", required: false)
+}
+@section PageHeadExtra {
+    @RenderSection("PageHeadExtra", required: false)
+}
+
+<div class="flex-container" id="Main">
+    @RenderBody()
+</div>
+
+@* 在 NoNavLayout 的結尾基礎上，額外加 DetailModals *@
+@await Html.PartialAsync("_DetailModals")
+
+
+@section PageScripts {
+    @RenderSection("PageScripts", required: false)
+}
+
+@section PageBodyEnd {
+    @RenderSection("PageBodyEnd", required: false)
+}

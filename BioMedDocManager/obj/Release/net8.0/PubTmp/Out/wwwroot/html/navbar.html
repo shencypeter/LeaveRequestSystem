@@ -1,0 +1,34 @@
+<div class="container-fluid">
+    <form class="justify-content-start" >
+        &ensp;
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand fw-bolder align-middle" href="/welcome">&ensp;文管與電子採購系統</a>
+    </form>
+    <form class="justify-content-end user-nav" >
+        <i class="fa-solid fa-user"></i>
+        <font class="ps-1" id="memberNo">使用者</font>
+        <font>，您好！&ensp;&ensp;</font>
+        <a class="btn btn-link px-1 me-3 py-1 logout" href="/logout">登出</a>
+    </form>
+    <div class="offcanvas offcanvas-start navbar-dark text-light" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="width:auto;">
+        <div class="offcanvas-header justify-content-center mt-4">
+            <font class="offcanvas-title fw-bolder align-middle fs-5" id="offcanvasNavbarLabel">功能列</font>
+        </div>
+        <hr class="my-0" size="3px" Width="100%" color="white"></hr>
+        <div class="offcanvas-body">
+                <ul class="navbar-nav justify-content-start flex-grow-1 fw-bold fs-5">
+                    <li class="nav-item py-1 px-5">
+                        <a class="nav-link active text-decoration" aria-current="page" href="/control">文管系統</a>
+                    </li>
+                    <li class="nav-item py-1 px-5">
+                        <a class="nav-link active text-decoration" aria-current="page" href="/purchase">電子採購</a>
+                    </li>
+                    <li class="nav-item py-1 px-5">
+                        <a class="nav-link active text-decoration" aria-current="page" href="">帳號設定</a>
+                    </li>
+                </ul>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,315 @@
+﻿@using System
+@using System.Linq
+@{
+    Layout = null;
+    
+   // 直接讀 BaseController 塞的資料
+    var userName = ViewData["UserName"]?.ToString() ?? "訪客";
+    var hasAdmin = ViewData["HasAdmin"] as bool? ?? false;
+    var hasDoc = ViewData["hasDoc"] as bool? ?? false;
+    var hasPur = ViewData["hasPur"] as bool? ?? false;
+
+    var effectiveController = ViewData["EffectiveController"]?.ToString() ?? "";
+    var controllerLabel = ViewData["ControllerLabel"]?.ToString() ?? "";
+
+    var navPages = ViewData["NavPages"] as PageLink[] ?? Array.Empty<PageLink>();
+    var pageMode = ViewData["PageMode"]?.ToString() ?? "";
+
+    var fullTitle = ViewData["FullTitle"]?.ToString() ?? "文管與電子採購系統";
+    var greeting = ViewData["Greeting"]?.ToString() ?? "";
+}
+<!DOCTYPE html>
+<html lang="zh-hant">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>@fullTitle</title>
+
+    <link href="~/js/sys_element/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/js/sys_element/bootstrap-table.min.css" rel="stylesheet">
+    <link href="~/css/main.css" rel="stylesheet" />
+    <link href="~/css/all.min.css" rel="stylesheet" referrerpolicy="no-referrer" />
+    <link href="~/css/style.css" rel="stylesheet" />
+    <link href="~/css/PR.css" rel="stylesheet" />
+    <link href="~/css/bootstrap-icons.css" rel="stylesheet" />
+    <link href="~/jstree/dist/themes/default/style.min.css" rel="stylesheet" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <div class="Main flex-container" id="Main">
+        <div id="nav">
+            @* 側邊/手機板選單 *@
+            <nav class="navbar sticky-top navbar-dark text-light">
+                <div class="container-fluid">
+                    <div class="justify-content-start">
+                        &ensp;
+                        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <a class="navbar-brand fw-bolder align-middle" href="~/Welcome">&ensp;文管與電子採購系統</a>
+                    </div>
+
+                    <div class="justify-content-end user-nav">
+                        <i class="fa-solid fa-user"></i>
+                        <span class="ps-1" id="memberNo">@userName</span>
+                        <span>，@ViewBag.greeting！&ensp;&ensp;</span>
+                        @if (userName == "訪客")
+                        {
+                            <a class="btn btn-link px-1 me-3 py-1 logout" href="~/Login">登入</a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-link px-1 me-3 py-1 logout change_password_btn" href="~/ChangePassword" target="_blank">更改密碼</a>
+                            <a class="btn btn-link px-1 me-3 py-1 logout" href="~/Logout">登出</a>
+                        }
+                    </div>
+
+                    <div class="offcanvas offcanvas-start navbar-dark text-light" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                        <div class="offcanvas-header justify-content-center mt-4">
+                            <span class="offcanvas-title fw-bolder align-middle fs-5" id="offcanvasNavbarLabel">
+                                <i class="fa-solid fa-user"></i>
+                                <span class="ps-1" id="memberNo">@userName</span>
+                                <span>，@ViewBag.greeting！&ensp;&ensp;</span>
+                            </span>
+                        </div>
+                        <hr class="my-0 bg-white w-100">
+                        <div class="offcanvas-body">
+                            <ul class="navbar-nav justify-content-start flex-grow-1 fw-bold fs-5">
+                                @if (hasDoc)
+                                {
+                                    <li class="nav-item py-1 px-5">
+                                        <a class="nav-link active text-decoration" href="~/Control">文管系統</a>
+                                    </li>
+                                }
+                                @if (hasPur)
+                                {
+                                    <li class="nav-item py-1 px-5">
+                                        <a class="nav-link active text-decoration" href="~/Purchase">電子採購</a>
+                                    </li>
+                                }
+                                @if (hasAdmin)
+                                {
+                                    <li class="nav-item py-1 px-5">
+                                        <a class="nav-link active text-decoration" href="@Url.Action("Index", "AccountSettings")">帳號設定</a>
+                                    </li>
+                                }
+                                @if (userName == "訪客")
+                                {
+                                    <li class="nav-item py-1 px-5">
+                                        <a class="nav-link active text-decoration" href="~/Login">登入</a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="nav-item py-1 px-5">
+                                        <a class="nav-link active text-decoration change_password_btn" href="~/ChangePassword">更改密碼</a>
+                                    </li>
+                                    <li class="nav-item py-1 px-5">
+                                        <a class="nav-link active text-decoration" href="~/Logout">登出</a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            @* 滑動功能列表 *@
+            <div class="scroll-container">
+                <button class="scroll-btn left"><i class="fa fa-chevron-left"></i></button>
+                <div class="banner-menu" id="scrollableMenu">
+                    @if (!string.IsNullOrEmpty(pageMode) && hasDoc && hasPur)
+                    {
+                        var otherSystemLink = pageMode == "Document" ? "/Purchase" : "/Control";
+                        var otherSystemLabel = pageMode == "Document" ? "往採購系統" : "往文管系統";
+                        <a href="@otherSystemLink" id="linkSystemSelect" class="btn btn1 btn-info btn-start">
+                            <i class="fas fa-arrow-left me-1"></i> @otherSystemLabel
+                        </a>
+                    }
+
+                    @if (navPages.Length == 0)
+                    {
+                        var isLoggedIn = User.Identity?.IsAuthenticated == true;
+                        var linkUrl = isLoggedIn ? Url.Content("~/Logout") : Url.Content("~/Login");
+                        var message = isLoggedIn
+                        ? "您的帳號尚未開通使用權限 — 若有疑問請聯絡系統管理員"
+                        : "您尚未登入，請點此登入";
+
+                        <a href="@linkUrl" id="linkSystemSelect" class="btn btn1 btn-info">
+                            <i class="fas fa-sign-out-alt me-1"></i> @message
+                        </a>
+                    }
+
+                    @for (int i = 0; i < navPages.Length; i++)
+                    {
+                        var item = navPages[i];
+                        var isActive = controllerLabel == item.Label ? "active" : "";
+                        var btnCls = $"btn btn1 btn-info {isActive}";
+                        var url = $"/{item.Controller}/{item.Action}";
+                        <a href="@url" class="@btnCls" role="button">@item.Label</a>
+                    }
+                </div>
+                <button class="scroll-btn right"><i class="fa fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        @* 麵包屑 + 內容 *@
+        <div class="banner">
+            <div class="tree">
+                <a href="/Welcome" id="banner_tree_first"><i class="fa fa-home"></i>&ensp;首頁</a>
+                <span>&ensp;&gt;&ensp;</span>
+                @{
+                    // 依 controller 首字母推斷層級（p* = 採購、c* = 文管）
+                    if (effectiveController.StartsWith("p"))
+                    {
+                        @:<a href="@Url.Action("Index", "Purchase")">電子採購</a><span>&ensp;&gt;&ensp;</span>
+                    }
+                    else if (effectiveController.StartsWith("c"))
+                    {
+                        @:<a href="@Url.Action("Index", "Control")">文件管理</a><span>&ensp;&gt;&ensp;</span>
+                    }
+                }
+                <span class="tree_page">@controllerLabel</span>
+            </div>
+
+            @RenderBody()
+        </div>
+
+        <div class="banner-footer">
+            @await Html.PartialAsync("_Footer")
+        </div>
+
+        @* 共用 Modal *@
+        <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel">
+            <div class="modal-dialog">
+                <div class="modal-content h-100">
+                    <div class="modal-header">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-0 flex-grow-1 d-flex">
+                        <iframe id="modalIframe" src="" class="flex-fill border-0"></iframe>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-dark" data-bs-dismiss="modal"><i class="fas fa-times"></i> 關閉視窗</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- bootstrap alert/confirm 視窗 -->
+        <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="messageModalLabel">Notice</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body m-3" id="messageModalBody">Message here</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="messageModalCancel" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="messageModalOk">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/js/sys_element/jquery.js" referrerpolicy="no-referrer"></script>
+    <script src="~/js/sys_element/bootstrap.bundle.min.js"></script>
+    <script src="~/js/sys_element/bootstrap-table.min.js"></script>
+    <script src="~/js/PR.js" referrerpolicy="no-referrer"></script>
+    <script src="~/jstree/dist/jstree.min.js"></script>
+    <script src="~/js/site.js?v=@DateTime.Now.Ticks"></script>
+
+    @RenderSection("Scripts", required: false)
+
+    <script nonce="@ViewBag.CspNonce">
+        $(document).ready(function () {
+            const $menuButtons = $('#scrollableMenu a.btn');
+            $menuButtons.first().addClass('btn-start');
+            $menuButtons.last().addClass('btn-end');
+
+
+            tableSortListener("myForm");// 表格排序事件監聽
+            detailModalListener();// 表格的明細按鈕事件監聽
+            createModalListener();// 新增按鈕事件監聽
+            docTreeModalListener();// 表單樹按鈕事件監聽
+            changePasswordModalListener();// 變更密碼按鈕事件監聽
+            handlePasteListener();// 表單樹貼上事件監聽
+            searchBtnListener("myForm");// 送出查詢事件監聽
+            formClearInputListener();// 清除按鈕事件監聽
+
+            const path = window.location.pathname.replace(/\/+$/, ''); // removes trailing slash
+
+            if (!path || path === "/Welcome") {
+               // $('#linkSystemSelect').hide();
+                $('#scrollableMenu .btn:visible').eq(0).addClass('btn-start');
+            }
+
+            // 更新標題
+            const title = '@controllerLabel.Replace("查詢", "")';
+            updateAccordionLabelFromTitle(title ,'#pageTitle', '.accordion-button');
+
+            // 設定表格樣式
+             setTableStyle();
+
+             // tooltip事件監聽
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+              return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+
+            // Modal停用焦點陷阱 + 把焦點移出 modal
+            installModalA11yFix(document);
+
+            // 分頁事件監聽
+            $(document).on("change","#SelectPageSize",function(){
+                updatePageSize();
+            });
+
+            $(document).on("click",".page-link",function(){
+                let x=$(this).data("x");
+                navigatePage(x);
+            });
+
+            // 左右捲動按鈕事件監聽
+            $(document).on("click", ".scroll-btn.left", function () {
+                scrollMenu(-500);
+            });
+
+            $(document).on("click", ".scroll-btn.right", function () {
+                scrollMenu(500);
+            });
+
+            $(document).on("click", ".disabled-link", function () {
+                return false;
+            });
+
+        });
+    </script>
+
+    @{
+        var jsAlerts = new Dictionary<string, string>
+        {
+            ["_JSShowAlert"] = "alert",
+            ["_JSShowSuccess"] = "alert",
+            ["_JSShowConfirm"] = "Confirm",
+            ["_JSShowModalAlert"] = "showModalAlert",
+            ["_JSShowModalSuccess"] = "showModalSuccess",
+            ["_JSShowModalConfirm"] = "showModalConfirm"
+        };
+    }
+
+    @foreach (var kvp in jsAlerts)
+    {
+        var temp = TempData[kvp.Key];
+        if (temp != null)
+        {
+            <script nonce="@ViewBag.CspNonce">
+                @Html.Raw(kvp.Value + "(\"" + Html.Raw(temp.ToString()) + "\");")
+            </script>
+        }
+    }
+</body>
+</html>

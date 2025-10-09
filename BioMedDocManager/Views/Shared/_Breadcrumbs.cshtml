@@ -1,0 +1,28 @@
+﻿@{
+    var effectiveController = (ViewData["EffectiveController"]?.ToString() ?? "").ToLowerInvariant();
+    var controllerLabel = ViewData["ControllerLabel"]?.ToString() ?? "";
+}
+
+<div class="tree">
+    <a href="/Welcome" id="banner_tree_first">
+        <i class="fa fa-home"></i>&ensp;首頁
+    </a>
+    <span>&ensp;&gt;&ensp;</span>
+
+    @* 依 controller 首字母推斷層級（p* = 採購、c* = 文管）；其餘不顯示中介階層 *@
+    @if (!string.IsNullOrWhiteSpace(effectiveController))
+    {
+        if (effectiveController.StartsWith("p"))
+        {
+            <a href="@Url.Action("Index", "Purchase")">電子採購</a>
+            <span>&ensp;&gt;&ensp;</span>
+        }
+        else if (effectiveController.StartsWith("c"))
+        {
+            <a href="@Url.Action("Index", "Control")">文件管理</a>
+            <span>&ensp;&gt;&ensp;</span>
+        }
+    }
+
+    <span class="tree_page">@controllerLabel</span>
+</div>

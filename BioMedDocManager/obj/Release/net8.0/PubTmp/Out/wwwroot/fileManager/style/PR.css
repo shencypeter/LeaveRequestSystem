@@ -1,0 +1,258 @@
+.div-left {
+    background-image: url("../images/sys-bk.png");
+    background-size: 100% 100%;
+    width: 40%;
+    height: 100%;
+    float: left;
+}
+
+.div-right {
+    background-image: url("../images/sub-div.png");
+    width: 60%;
+    height: 100%;
+    float: left;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.banner-text {
+    font-size: 55px;
+    letter-spacing: 20px;
+}
+
+.banner {
+    display: inline-block;
+    position: absolute;
+    top: 110px;
+    left: 0px;
+    width: 100%;
+    height: calc(100% - 120px - 20px);
+}
+
+.banner-menu {
+    display: flex;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 40px;
+    background-color: rgba(63, 63, 63, 0.3);
+    align-items: center;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 10px;
+    padding: 10px;
+    scroll-behavior: smooth;
+}
+
+.banner-menu::-webkit-scrollbar {
+    display: none;
+}
+
+.scroll-container {
+    position: relative;
+    max-width: 100%;
+    overflow: hidden;
+    top: 60px;
+    height: 45px;
+}
+
+
+.scroll-btn {
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+    background-color: #1755e679;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 1px 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    font-weight: 700;
+}
+
+.scroll-btn.left {
+    left: 0px;
+}
+
+.scroll-btn.right {
+    right: 5px;
+}
+
+
+.btn1 {
+    padding: 2px 20px 2px 20px;
+    margin-left: 2px;
+    margin-right: 2px;
+    background-color: rgb(236, 236, 236);
+    border-radius: 7px;
+    border: none;
+    display: inline-block;
+    font-weight: 600;
+    line-height: 1.5;
+    color: #212529;
+    font-size: 15px;
+}
+
+.btn-start {
+    margin-left: 50px;
+}
+
+.btn-end {
+    margin-right: 50px;
+}
+
+.form-df
+{
+    display: flex; 
+    align-items: center;
+}
+
+
+.btn2 {
+    padding: 6px 25px 6px 25px;
+    width: auto;
+    margin-left: 0px;
+    margin-right: 25px;
+    border-radius: 5px;
+    display: inline-block;
+    font-weight: 1000;
+    line-height: 1.5;
+    font-size: 14px;
+    border: none;
+}
+
+.btn3 {
+    padding: 4px 10px 4px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    font-weight: 600;
+    line-height: 1.5;
+    font-size: 12px;
+    border: none;
+
+}
+
+
+.btn-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+}
+
+.accordion {
+    margin-left: 50px;
+    margin-right: 50px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-weight: 1000;
+}
+
+.accordion-button {
+    background-color: #aaaaaa;
+    height: 30px;
+    color: rgb(0, 0, 0);
+    font-size: 12px;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #aaaaaa;
+    color: rgb(0, 0, 0);
+    font-size: 12px;
+}
+
+.accordion-body {
+    font-size: 12px;
+}
+
+.form-control,
+.form-select {
+    font-size: 12px;
+}
+
+.width-3 {
+    width: calc(100% / 3);
+}
+
+.width-23 {
+    width: calc(100% / 3 * 2);
+}
+
+
+.search-div {
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pad-left-px-23
+{
+    padding-left: 23px;
+}
+
+.table {
+    padding-top: 5px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 12px;
+    font-weight: 1000;
+    table-layout: fixed;
+    width: 100%;
+}
+
+th,
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.accordion-item:last-of-type .accordion-collapse {
+
+    background-color: #e6e6e6;
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.popup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    width: 80vw;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+}
+
+.close-btn {
+    float: right;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.text-12 {
+    font-size: 12px;
+}
+
+.pop {
+
+    width: 100%;
+}

@@ -1,0 +1,26 @@
+﻿@model ErrorViewModel
+@{
+    Layout = "_NoNavLayout";//套用無Nav的Layout
+    ViewData["Title"] = Model.Title;
+}
+
+@section PageStyles {
+    <link href="~/css/error.css" rel="stylesheet" />
+}
+
+<div>
+    <i class="@Model.IconClass icon"></i>
+    <h1>@Model.StatusCode</h1>
+    <p>@Model.Message</p>
+    <a href="@Model.RedirectUrl" class="back-home" target="_top">
+        <div id="countdown">將在 <span id="seconds">@Model.Seconds</span> 秒後自動返回首頁...</div>
+    </a>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        $(function () {
+            startRedirectCountdown(@Model.Seconds, "@Model.RedirectUrl");
+        });
+    </script>
+}

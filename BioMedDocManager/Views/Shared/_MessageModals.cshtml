@@ -1,0 +1,33 @@
+﻿@* 共用 Modal *@
+<div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content h-100">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 flex-grow-1 d-flex">
+                <iframe id="modalIframe" src="" class="flex-fill border-0"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal"><i class="fas fa-times"></i> 關閉視窗</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- bootstrap alert/confirm 視窗 -->
+<div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="messageModalLabel">Notice</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body m-3" id="messageModalBody">Message here</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="messageModalCancel" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="messageModalOk">OK</button>
+            </div>
+        </div>
+    </div>
+</div>

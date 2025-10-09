@@ -1,0 +1,85 @@
+﻿@{
+    var userName = ViewData["UserName"]?.ToString() ?? "訪客";
+    var greeting = ViewData["Greeting"]?.ToString() ?? "";
+    var hasAdmin = ViewData["HasAdmin"] as bool? ?? false;
+    var hasDoc = ViewData["hasDoc"] as bool? ?? false;
+    var hasPur = ViewData["hasPur"] as bool? ?? false;
+}
+
+<nav class="navbar sticky-top navbar-dark text-light">
+    <div class="container-fluid">
+        <div class="justify-content-start">
+            &ensp;
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand fw-bolder align-middle" href="~/Welcome">&ensp;文管與電子採購系統</a>
+        </div>
+
+        <div class="justify-content-end user-nav">
+            <i class="fa-solid fa-user"></i>
+            <span class="ps-1" id="memberNo">@userName</span>
+            <span>，@greeting！&ensp;&ensp;</span>
+            @if (userName == "訪客")
+            {
+                <a class="btn btn-link px-1 me-3 py-1 logout" href="~/Login">登入</a>
+            }
+            else
+            {
+                <a class="btn btn-link px-1 me-3 py-1 logout change_password_btn" href="~/ChangePassword" target="_blank">更改密碼</a>
+                <a class="btn btn-link px-1 me-3 py-1 logout" href="~/Logout">登出</a>
+            }
+        </div>
+
+        <div class="offcanvas offcanvas-start navbar-dark text-light" tabindex="-1"
+             id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+            <div class="offcanvas-header justify-content-center mt-4">
+                <span class="offcanvas-title fw-bolder align-middle fs-5" id="offcanvasNavbarLabel">
+                    <i class="fa-solid fa-user"></i>
+                    <span class="ps-1" id="memberNo">@userName</span>
+                    <span>，@greeting！&ensp;&ensp;</span>
+                </span>
+            </div>
+            <hr class="my-0 bg-white w-100" />
+            <div class="offcanvas-body">
+                <ul class="navbar-nav justify-content-start flex-grow-1 fw-bold fs-5">
+                    @if (hasDoc)
+                    {
+                        <li class="nav-item py-1 px-5">
+                            <a class="nav-link active text-decoration" href="~/Control">文管系統</a>
+                        </li>
+                    }
+                    @if (hasPur)
+                    {
+                        <li class="nav-item py-1 px-5">
+                            <a class="nav-link active text-decoration" href="~/Purchase">電子採購</a>
+                        </li>
+                    }
+                    @if (hasAdmin)
+                    {
+                        <li class="nav-item py-1 px-5">
+                            <a class="nav-link active text-decoration" href="@Url.Action("Index", "AccountSettings")">帳號設定</a>
+                        </li>
+                    }
+
+                    @if (userName == "訪客")
+                    {
+                        <li class="nav-item py-1 px-5">
+                            <a class="nav-link active text-decoration" href="~/Login">登入</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item py-1 px-5">
+                            <a class="nav-link active text-decoration change_password_btn" href="~/ChangePassword">更改密碼</a>
+                        </li>
+                        <li class="nav-item py-1 px-5">
+                            <a class="nav-link active text-decoration" href="~/Logout">登出</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>

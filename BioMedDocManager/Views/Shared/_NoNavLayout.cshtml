@@ -1,0 +1,76 @@
+﻿@using System
+@using System.Linq
+@using System.Collections.Generic
+@{
+    Layout = "_RootLayout";
+
+    // 從 BaseController 的 ViewData 讀必要資訊（供部分初始化腳本用）
+    var controllerLabel = ViewData["ControllerLabel"]?.ToString() ?? "";
+    ViewData["HtmlClass"] = "no-nav-html";
+}
+
+@section Styles {
+    @RenderSection("PageStyles", required: false)
+}
+
+@section HeadExtra {
+    @RenderSection("PageHeadExtra", required: false)
+}
+
+<div class="flex-container" id="Main">
+    @RenderBody()
+</div>
+
+@section Scripts {
+
+    @{
+        var safeLabel = (controllerLabel ?? "").Replace("查詢", "");
+    }
+
+    <script nonce="@ViewBag.CspNonce">
+        $(document).ready(function () {
+            // 設定表格樣式
+            setTableStyle();
+
+            // tooltip事件監聽
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // 分頁事件監聽 - 每頁筆數
+            $(document).on("change","#SelectPageSize",function(){
+                updatePageSize();
+            });
+
+            // 分頁事件監聽 - 首頁、前一頁等按鈕
+            $(document).on("click",".page-link",function(){
+                let x=$(this).data("x");
+                navigatePage(x);
+            });
+
+            $(document).on("click", ".disabled-link", function () {
+                return false;
+            });
+
+            // 若同源且 modal 在父頁，也一起安裝（跨網域會被 try/catch 吃掉）
+            try {
+              if (parent && parent !== window) {
+                  installModalA11yFix(parent.document);
+              }
+            } catch (_) {
+
+            }
+
+        });
+    </script>
+
+    @* 你已獨立的 TempData 注入 *@
+    @await Html.PartialAsync("_TempDataToJs")
+
+    @RenderSection("PageScripts", required: false)
+}
+
+@section BodyEnd {
+    @RenderSection("PageBodyEnd", required: false)
+}

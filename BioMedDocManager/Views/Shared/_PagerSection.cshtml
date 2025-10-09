@@ -1,0 +1,101 @@
+﻿@model Pagination
+@using Microsoft.AspNetCore.WebUtilities
+@*
+    Pagination Component
+    Fixes:
+    - Prevent prev/next from exceeding bounds
+    - Correct page range calculation
+    - Dynamically disable prev/next buttons
+    - Improved page size dropdown selection
+*@
+@{
+
+
+    // Set max number of pages to display
+    int maxPagesToShow = 10;
+
+
+    int pageSize = Model.PageSize > 0 ? Model.PageSize : 10;
+    //int totalItems = Model.TotalItems < 0 ? 0 : Model.TotalItems;
+
+    //int totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+
+
+
+    //int currentPage = Math.Max(1, Convert.ToInt32(Context.Request.Query["pageNumber"].FirstOrDefault() ?? "1"));
+
+    // Get total items and page size
+    int totalItems = Convert.ToInt32(ViewData["totalCount"] ?? "0");
+    //var pageSizeQuery = Context.Request.Query["pageSize"].FirstOrDefault();
+    //int pageSize = !string.IsNullOrEmpty(pageSizeQuery) && int.TryParse(pageSizeQuery, out int parsedSize) ? parsedSize : 10;
+
+    // Calculate total pages
+    int totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+
+    int currentPage = Model.PageNumber <= 0 ? 1 :
+                     (Model.PageNumber > totalPages ? totalPages : Model.PageNumber);
+
+
+    // Ensure page range is within valid bounds
+    int startPage = Math.Max(1, currentPage - maxPagesToShow / 2);
+    int endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+    startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+}
+<nav aria-label="Page navigation">
+    <div class="d-flex justify-content-center align-items-center">
+        <ul class="pagination mb-0" id="paginationLinks">
+            <!-- First Page -->
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="#" data-x="1">首頁</a>
+            </li>
+
+            <!-- Previous Page -->
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="#" data-x="@Math.Max(1, currentPage - 1)">&laquo; 前一頁</a>
+            </li>
+
+            <!-- Page Numbers -->
+            @for (int x = startPage; x <= endPage; x++)
+            {
+                <li class="page-item @(x == currentPage ? "active" : "")">
+                    <a class="page-link" href="#" data-x="@x">@x</a>
+                </li>
+            }
+
+            <!-- Next Page -->
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" href="#" data-x="@Math.Min(totalPages, currentPage + 1)">下一頁 &raquo;</a>
+            </li>
+
+            <!-- Last Page -->
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" href="#" data-x="@totalPages">末頁</a>
+            </li>
+        </ul>
+    </div>
+    <!-- Page Size Dropdown -->
+    <div class="d-flex align-items-center ml-3 py-2 justify-content-center align-items-center">
+        <!--<select class="form-select" style="width:250px;" disabled>
+            <option>共 @($"{totalItems:N0}") 項, 每頁顯示: </option>
+        </select> -->
+        <font>總共 @($"{totalItems:N0}") 筆， </font>
+        <font>每頁顯示&nbsp;&nbsp;</font>
+        <select id="Select@(nameof(Model.PageSize))" class="form-select" aria-label="Page size select">
+            @{
+                var availableSizes = new[] { 10, 20, 30, 50, 80, 100 };
+                var selectedPageSize = pageSize;
+                var nextPageSize = availableSizes.FirstOrDefault(size => size >= totalItems);
+
+                foreach (var size in availableSizes)
+                {
+                    bool allowThisSize = size <= totalItems || size == nextPageSize;
+                    if (!allowThisSize) break;
+
+                    var selectedAttr = size == selectedPageSize ? "selected" : null;
+                    <option value="@size" selected=@selectedAttr>@size 筆</option>
+                }
+            }
+        </select>
+    </div>
+
+</nav>

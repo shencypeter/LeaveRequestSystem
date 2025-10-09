@@ -1,0 +1,20 @@
+﻿@model string? // 傳入目前選擇的供應商分類
+@{
+    var groups = new[] { "其他供應商", "原料供應商", "特殊供應商", "雜項供應商" };
+    var isRequired = ViewData["PurchaseSupplierClassIsRequired"] as bool? ?? false;// 欄位是否必填
+    var isShowOther = ViewData["PurchaseSupplierClassIsShowOther"] as bool? ?? false;// 是否只顯示其他欄位
+
+    if (isShowOther)
+    {
+        groups = new[] { "其他供應商" };
+    }
+}
+
+<select class="form-select" id="SupplierClass" name="SupplierClass" @(isRequired ? "required" : "")>
+    <option value="">全部</option>
+    @foreach (var cls in groups)
+    {
+        var isSelected = Model?.Trim() == cls;
+        <option value="@cls" selected="@(isSelected ? "selected" : null)">@cls</option>
+    }
+</select>

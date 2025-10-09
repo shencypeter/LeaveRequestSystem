@@ -1,0 +1,55 @@
+﻿@{
+    Layout = null;
+
+    // Title 來源優先序：FullTitle（BaseController 組好的）→ Title → 預設
+    var fullTitle = ViewData["FullTitle"]?.ToString()
+                    ?? ViewData["Title"]?.ToString()
+                    ?? "文管與電子採購系統";
+
+    var htmlClass = ViewData["HtmlClass"] as string ?? "";
+}
+<!DOCTYPE html>
+<html lang="zh-Hant" data-bs-theme="auto" class="@htmlClass">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="color-scheme" content="light dark" />
+    <title>@fullTitle</title>
+
+    <!-- 核心共用 CSS（僅底層必需品；其餘在上層 Layout 加） -->
+    <link rel="stylesheet" href="~/js/sys_element/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/js/sys_element/bootstrap-table.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/all.min.css" asp-append-version="true" /> @* fontawesome *@
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/PR.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/bootstrap-icons.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/jstree/dist/themes/default/style.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />    
+
+    @* 頁面或上層 Layout 想在 <head> 追加 CSS *@
+    @RenderSection("Styles", required: false)
+
+    @* 額外 <head> 內容（如 og/meta/script 等） *@
+    @RenderSection("HeadExtra", required: false)
+</head>
+<body>
+
+    @RenderBody()
+
+    <!-- 核心共用 JS（僅底層必需品；其餘在上層 Layout 加） -->
+    <script src="~/js/sys_element/jquery.js" asp-append-version="true"></script>
+    <script src="~/js/sys_element/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    <script src="~/js/sys_element/bootstrap-table.min.js" asp-append-version="true"></script>
+    <script src="~/js/PR.js" asp-append-version="true"></script>
+    <script src="~/jstree/dist/jstree.min.js" asp-append-version="true"></script>    
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @* 頁面或上層 Layout 的一般腳本（通常初始化程式放這） *@
+    @RenderSection("Scripts", required: false)
+
+    @* 需要確保在 body 結尾的片段（如監聽器、微量 inline script）。
+       若你啟用 CSP-Nonce，請在上層/頁面使用：<script nonce="@ViewBag.CspNonce">... *@
+    @RenderSection("BodyEnd", required: false)
+</body>
+</html>

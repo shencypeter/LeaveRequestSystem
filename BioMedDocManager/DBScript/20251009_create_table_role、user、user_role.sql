@@ -1,0 +1,52 @@
+-- 建立role、user、user_role
+CREATE TABLE [dbo].[role](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[role_name] [nvarchar](100) NOT NULL,
+	[role_group] [nvarchar](100) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+CREATE TABLE [dbo].[user](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[username] [nvarchar](100) NOT NULL,
+	[password] [nvarchar](255) NOT NULL,
+	[full_name] [nvarchar](100) NOT NULL,
+	[is_active] [bit] NOT NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[username] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+CREATE TABLE [dbo].[user_role](
+	[user_id] [int] NOT NULL,
+	[role_id] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[user_id] ASC,
+	[role_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[user] ADD  DEFAULT ((1)) FOR [is_active]
+GO
+ALTER TABLE [dbo].[user] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[user_role]  WITH CHECK ADD FOREIGN KEY([role_id])
+REFERENCES [dbo].[role] ([id])
+GO
+ALTER TABLE [dbo].[user_role]  WITH CHECK ADD FOREIGN KEY([user_id])
+REFERENCES [dbo].[user] ([id])
+GO

@@ -1,0 +1,218 @@
+﻿@{
+    Layout = null;
+    var pathToAssets = Url.Content("~");
+    var message = TempData["_JSShowAlert"] as string;
+
+    //示範登入, 編碼
+    var sampleUser = "";
+    var samplePassword = "";
+
+#if DEBUG
+    sampleUser = "534159";
+    samplePassword = "Abcd534159";
+#endif
+
+    //取得最近使用的ID
+    var lastUser = TempData["lastUserId"] as string;
+
+    if (!string.IsNullOrEmpty(lastUser))
+    {
+        sampleUser = lastUser;
+        samplePassword = "";
+    }
+
+    var returnUrl = ViewBag.ReturnUrl as string;
+
+    if (!string.IsNullOrEmpty(returnUrl) && returnUrl.Contains("Login"))
+    {
+        //防止return 導回自己
+        returnUrl = null;
+    }
+
+    bool captchaRequred = false;
+
+#if RELEASE
+        captchaRequred = true; // 正式環境需要驗證碼
+#endif
+}
+
+<!DOCTYPE html>
+<html lang="zh-hant">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>文管與電子採購系統-登入</title>
+    <link href="~/js/sys_element/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/all.min.css" referrerpolicy="no-referrer" />
+    <link href="~/css/login.css" rel="stylesheet">
+    <link href="~/css/style.css" rel="stylesheet">
+    <script src="~/js/sys_element/jquery.js" referrerpolicy="no-referrer"></script>
+    <script src="~/js/sys_element/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+</head>
+
+<body>
+    <div class="Main flex-container" id="Main">
+        <div class="pt-5" id="Main_Page">
+            @{
+                //從設定檔取出訊息,段行符號切多筆訊息 📣 訊息1 📣 訊息2 📣
+                var textareaMessage = TempData["Messages"] as string ?? "";
+                var scrollMessages = textareaMessage
+                .Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(m => m.Trim())
+                .ToList();
+            }
+
+            @if (scrollMessages.Any())
+            {
+                <marquee id="newsMarquee"
+                         behavior="scroll"
+                         direction="left"
+                         scrollamount="7">
+                    @foreach (var scrollMessage in scrollMessages)
+                    {
+                        <i class="fa-solid fa-bullhorn text-danger me-1"></i> @*📣*@
+                        @scrollMessage @Html.Raw("&ensp;&ensp;&ensp;")
+                    }
+                </marquee>
+            }
+
+            <div class="sub-div"></div>
+
+            <div class="login-div">
+                <div class="login-text">
+                    <form method="post" action="@Url.Action("Login")">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                        <font class="fs-3 fw-bold my-1">文管與電子採購系統</font><br>
+
+                        @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl as string))
+                        {
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i> 系統偵測到您的登入已過期，請點選下方登入以繼續操作。
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(message))
+                        {
+                            if (message.Contains("謝謝"))
+                            {
+                                @*送客 Success Message*@
+                                <div class="alert alert-success" role="alert">
+                                    <i class="fas fa-check-circle me-2"></i> @message
+                                </div>
+                            }
+                            else
+                            {
+                                @*登入失敗 Error Message*@
+                                <div class="alert alert-danger" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-2"></i> @message
+                                </div>
+                            }
+                        }
+                        <div class="row my-3">
+                            <font class="fs-6 fw-bold col-md-2 col-sm-3 col-12 col-form-label font-text">帳號</font>
+                            <div class="col-md-9 col-sm-8 col-12">
+                                <input type="text" class="form-control" id="account" name="username" required value="@sampleUser" placeholder="請輸入您的登入ID" required>
+                            </div>
+                        </div>
+                        <div class="row my-3">
+                            <font class="fs-6 fw-bold col-md-2 col-sm-3 col-12 col-form-label font-text">密碼</font>
+                            <div class="col-md-9 col-sm-8 col-12">
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password" value="@samplePassword" placeholder="請輸入您的密碼" required>
+                                    <button class="btn btn-outline-secondary border togglePasswordButton" data-id="password" type="button">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        @if (captchaRequred)
+                        {
+                            <div class="row my-3">
+                                <font class="fs-6 fw-bold col-md-2 col-sm-3 col-12 col-form-label font-text">驗證碼</font>
+                                <div class="col-md-9 col-sm-8 col-12">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control text-uppercase" name="captcha" pattern="[A-Za-z0-9]*"
+                                               inputmode="latin" placeholder="請輸入圖片中的驗證碼，點擊圖片換下一組" maxlength="5" required>
+                                        <img id="captchaImage"
+                                             src="@Url.Action("GetCaptcha", "Login")"
+                                             data-url="@Url.Action("GetCaptcha", "Login")"
+                                             alt="驗證碼"
+                                             title="點擊圖片可重新產生"
+                                             class="captcha-img ms-2 border rounded" />
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <button type="submit" class="btn btn-primary my-3 col-sm-6">登入</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="banner-footer">
+        @await Html.PartialAsync("_Footer")
+    </div>
+
+    <script nonce="@ViewBag.CspNonce">
+        $(function () {
+            // 如果登入頁被載入在 iframe 中（例如 session 過期後透過 modal 顯示），就跳出 iframe
+            if (window.top !== window.self) {
+                // 取得當前完整網址（包含 query string）
+                var currentUrl = window.location.href;
+
+                // 建立 URL 查詢參數物件
+                var urlParams = new URLSearchParams(window.location.search);
+
+                // 嘗試取得 returnUrl 參數值（若有）
+                var returnUrl = urlParams.get('returnUrl');
+
+                // 決定跳出 iframe 後要導向的網址：
+                // 如果有 returnUrl，就保留它；否則保留原本所有的查詢參數
+                var redirectUrl = returnUrl
+                    ? window.location.pathname + '?returnUrl=' + encodeURIComponent(returnUrl)
+                    : window.location.pathname + window.location.search;
+
+                // 將父視窗導向跳脫 iframe 的正確網址
+                window.top.location = redirectUrl;
+
+                //如要驗證:https://localhost:7010/iframeLoader?src=/Login
+            }
+
+            passwordVisibilityListener();// 密碼重設頁-密碼顯示按鈕事件監聽
+
+            // Captcha 驗證碼圖片
+            // 點擊重新產生 & 載入失敗自動重試
+            $(document).on("click", "#captchaImage", function () {
+                refreshCaptcha(this);
+            });
+
+            $(document).on("error", "#captchaImage", function () {
+                refreshCaptcha(this);
+            });
+
+            // 跑馬燈
+            // 滑鼠移入 -> 停止
+            $(document).on("mouseover", "#newsMarquee", function () {
+                this.stop();
+            });
+
+            // 滑鼠移出 -> 繼續
+            $(document).on("mouseout", "#newsMarquee", function () {
+                this.start();
+            });
+
+        });
+    </script>
+
+    @if (TempData["_JSShowAlert"] != null)
+    {
+        <script nonce="@ViewBag.CspNonce">
+            alert('@Html.Raw(TempData["_JSShowAlert"])');
+        </script>
+    }
+</body>
+</html>

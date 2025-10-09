@@ -1,0 +1,17 @@
+﻿@{
+    Layout = "_AssetLayout";
+
+    var frameSrc = TempData["src"] as string;
+    var request = Context.Request;
+    var hostPrefix = $"{request.Scheme}://{request.Host}";
+
+    // Ensure src is a relative path before prefixing
+    var absoluteFrameSrc = string.IsNullOrWhiteSpace(frameSrc)
+        ? ""
+        : (frameSrc.StartsWith("http") ? frameSrc : $"{hostPrefix}{frameSrc}");
+}
+<iframe id="iframeLoader" src="@absoluteFrameSrc"
+        style="width: 100%; height: 100%; border: none;"
+        allowfullscreen
+        loading="lazy">
+</iframe>

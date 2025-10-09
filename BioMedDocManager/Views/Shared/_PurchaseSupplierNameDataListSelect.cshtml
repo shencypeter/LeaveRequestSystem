@@ -1,0 +1,26 @@
+﻿@model string? // 傳入目前選擇的供應商名稱
+@{
+    var isRequired = ViewData["PurchaseSupplierNameDataListIsRequired"] as bool? ?? false;// 欄位是否必填
+    var PurchaseSupplierName = ViewData["PurchaseSupplierName"] as List<QualifiedSupplier> ?? new List<QualifiedSupplier>();
+    var groupedSupplier = PurchaseSupplierName.GroupBy(pc => pc.SupplierClass);
+}
+<input class="form-control"
+       type="text"
+       list="SupplierNameList"
+       id="SupplierName"
+       name="SupplierName"
+       value="@Model"
+       placeholder="請輸入或選擇供應商..." 
+       @(isRequired ? "required" : "") 
+       />
+
+<datalist id="SupplierNameList">
+    @foreach (var group in groupedSupplier)
+    {
+        @* Since datalist doesn't support <optgroup>, we prefix items with the group name *@
+        @foreach (var suppClass in group)
+        {
+            <option value="@suppClass.SupplierName">@suppClass.ProductClass @suppClass.ProductClassTitle</option>
+        }
+    }
+</datalist>

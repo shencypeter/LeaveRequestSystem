@@ -1,0 +1,56 @@
+﻿@using System.Linq
+@using System.Collections.Generic
+@{
+    var hasDoc = ViewData["hasDoc"] as bool? ?? false;
+    var hasPur = ViewData["hasPur"] as bool? ?? false;
+    var pageMode = ViewData["PageMode"]?.ToString() ?? "";
+    var controllerLabel = ViewData["ControllerLabel"]?.ToString() ?? "";
+
+    // 建議你的 PageLink 類：Controller/Action/Label
+    var navPages = ViewData["NavPages"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    bool navEmpty = !navPages.Any();
+}
+
+<div class="scroll-container">
+    <button class="scroll-btn left"><i class="fa fa-chevron-left"></i></button>
+
+    <div class="banner-menu" id="scrollableMenu">
+        @* 雙系統切換 *@
+        @if (!string.IsNullOrEmpty(pageMode) && hasDoc && hasPur)
+        {
+            var otherSystemLink = pageMode == "Document" ? "/Purchase" : "/Control";
+            var otherSystemLabel = pageMode == "Document" ? "往採購系統" : "往文管系統";
+            <a href="@otherSystemLink" id="linkSystemSelect" class="btn btn1 btn-info btn-start">
+                <i class="fas fa-arrow-left me-1"></i> @otherSystemLabel
+            </a>
+        }
+
+        @if (navEmpty)
+        {
+            var isLoggedIn = User?.Identity?.IsAuthenticated == true;
+            var linkUrl = isLoggedIn ? Url.Content("~/Logout") : Url.Content("~/Login");
+            var message = isLoggedIn
+            ? "您的帳號尚未開通使用權限 — 若有疑問請聯絡系統管理員"
+            : "您尚未登入，請點此登入";
+
+            <a href="@linkUrl" id="linkSystemSelect" class="btn btn1 btn-info">
+                <i class="fas fa-sign-out-alt me-1"></i> @message
+            </a>
+        }
+        else
+        {
+            foreach (dynamic item in navPages)
+            {
+                string label = item.Label ?? "";
+                string ctrl = item.Controller ?? "";
+                string act = item.Action ?? "Index";
+                var isActive = controllerLabel == label ? "active" : "";
+                var btnCls = $"btn btn1 btn-info {isActive}";
+                var url = $"/{ctrl}/{act}";
+                <a href="@url" class="@btnCls" role="button">@label</a>
+            }
+        }
+    </div>
+
+    <button class="scroll-btn right"><i class="fa fa-chevron-right"></i></button>
+</div>

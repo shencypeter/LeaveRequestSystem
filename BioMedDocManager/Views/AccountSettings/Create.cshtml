@@ -1,0 +1,140 @@
+﻿@model BioMedDocManager.Models.CreateUser
+@{
+    ViewData["Title"] = "帳號設定-新增";
+    Layout = "_NoNavLayout";
+
+    // 角色
+    var allRoles = ViewData["AllRoles"] as List<Role>;
+    int total = allRoles.Count;// 所有角色總數
+    var half = (int)Math.Ceiling(allRoles.Count / 2.0);
+    var leftRoles = allRoles.Take(half).ToList();
+    var rightRoles = allRoles.Skip(half).ToList();
+    int roleIndex = 0;
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2"><i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]</h4>
+    <form id="myForm" class="PasswordForm" method="post" action="@Url.Action("Create", "AccountSettings", new { Username = Model.Username })" target="_top">
+        @Html.AntiForgeryToken()
+        <div class="pop">
+            <!-- 帳號(工號) -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.Username)：</strong></div>
+                <div class="col-md-10">
+                    @Html.TextBoxFor(m => m.Username, new { @class = "form-control", @required = "required" })
+                </div>
+            </div>
+
+            <!-- 姓名 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.FullName)：</strong></div>
+                <div class="col-md-10">
+                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", @required = "required" })
+                </div>
+            </div>
+
+            <!-- 密碼 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.Password)：</strong>
+                </div>
+                <div class="col-md-10">
+                    <span class="text-12 fw-bold">*密碼長度至少需8個字元</span>
+                    <input asp-for="Password" class="form-control" type="password" required="required" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- 確認密碼 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.ConfirmPassword)：</strong>
+                </div>
+                <div class="col-md-10">
+                    <span class="text-12 fw-bold">*密碼長度至少需8個字元</span>
+                    <input asp-for="ConfirmPassword" class="form-control" type="password" required="required" />
+                    <span id="ConfirmPasswordValidation" asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- 使用者是否啟用 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.IsActive)：</strong></div>
+                <div class="col-md-10">
+                    @Html.DropDownListFor(model => model.IsActive, new List<SelectListItem>
+                    {
+                        new SelectListItem { Text = "啟用", Value = "true" },
+                                        new SelectListItem { Text = "停用", Value = "false" }
+                                        }, new { @class = "form-select" })
+                </div>
+            </div>
+
+            <!-- 管理角色 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.RoleName)：</strong></div>
+                <div class="col-md-10">
+                    <div class="row">
+                        <div class="col-md-6">
+                            @foreach (var role in leftRoles)
+                            {
+                                string checkboxId = $"role{roleIndex++}";
+                                bool isChecked = Model.RoleName != null && Model.RoleName.Contains(role.RoleName);
+                                <div class="form-check text-start">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="RoleName"
+                                           value="@role.RoleName"
+                                           id="@checkboxId"
+                                           @(isChecked ? "checked" : "") />
+                                    <label class="form-check-label" for="@checkboxId">【@role.RoleGroup】@role.RoleName</label>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            @foreach (var role in rightRoles)
+                            {
+                                string checkboxId = $"role{roleIndex++}";
+                                bool isChecked = Model.RoleName != null && Model.RoleName.Contains(role.RoleName);
+                                <div class="form-check text-start">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="RoleName"
+                                           value="@role.RoleName"
+                                           id="@checkboxId"
+                                           @(isChecked ? "checked" : "") />
+                                    <label class="form-check-label" for="@checkboxId">【@role.RoleGroup】@role.RoleName</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 建立日期 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.CreatedAt)：</strong></div>
+                <div class="col-md-10">
+                    @Html.TextBox("CreatedAt", Model.CreatedAt?.ToString("yyyy-MM-dd"), new { @class = "form-control", @type = "date", @required = "required" })
+
+                </div>
+            </div>
+
+            <!-- 按鈕列 -->
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap justify-content-center">
+                    <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-check-circle"></i>&ensp;儲存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        $(function () {
+            CheckConfirmPassword();
+        });
+    </script>
+}

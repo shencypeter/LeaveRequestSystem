@@ -1,0 +1,10 @@
+﻿@model bool? // 傳入目前選擇的類型
+@{
+    var isRequired = ViewData["DocumentClaimSensitiveSelectIsRequired"] as bool? ?? false;
+}
+
+<select id="IsSensitive" name="IsSensitive" class="form-select" @(isRequired ? "required" : "")>
+    <option value="">請選擇</option>
+    <option value="false" selected="@(false == Model ? "selected" : null)">否</option>
+    <option value="true" selected="@(true == Model ? "selected" : null)">是</option>
+</select>

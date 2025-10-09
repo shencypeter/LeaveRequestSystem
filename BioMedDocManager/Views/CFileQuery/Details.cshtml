@@ -1,0 +1,111 @@
+﻿@model BioMedDocManager.Models.DocControlMaintable
+@{
+    ViewData["Title"] = "文件查詢-檢視";
+    Layout = "_NoNavLayout";//套用無Nav的Layout
+}
+<div class="m-4">
+    <h4 class="m-3 px-2"><i class="bi bi-search me-2"></i>@ViewData["Title"]</h4>
+
+    <div class="pop">
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.DateTime)：</strong></div>
+            <div class="col-md-4">@Html.DisplayFor(m => m.DateTime)</div>
+            <div class="col-md-2 col-form-label  text-md-end text-start"><strong>@Html.LabelFor(m => m.IdNo)：</strong></div>
+            <div class="col-md-4">@Html.DisplayFor(m => m.IdNo)</div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.PersonName)：</strong></div>
+            <div class="col-md-4">@Html.DisplayFor(m => m.Person.FullName)</div>
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                @if (Model.Type == "B")
+                {
+                    <strong>@Html.LabelFor(m => m.OriginalDocNo)：</strong>
+                }
+                else
+                {
+                    <strong>
+                        <span>原始編號：</span>
+                    </strong>
+                }
+            </div>
+            <div class="col-md-4">@Html.DisplayFor(m => m.OriginalDocNo)</div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            @if (Model.Type == "B")
+            {
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.DocVer)：</strong></div>
+                <div class="col-md-4">@Html.DisplayFor(m => m.DocVer)</div>
+            }
+            <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.ProjectName)：</strong></div>
+            <div class="col-md-@(Model.Type == "B" ? "4" : "10")">@Html.DisplayFor(m => m.ProjectName)</div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                @if (Model.Type == "B")
+                {
+                    <strong>@Html.LabelFor(m => m.Name)：</strong>
+                }
+                else
+                {
+                    <strong>文件名稱：</strong>
+                }
+            </div>
+            <div class="col-md-10">@Html.DisplayFor(m => m.Name)</div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                @if (Model.Type == "B")
+                {
+                    <strong>@Html.LabelFor(m => m.Purpose)：</strong>
+                }
+                else
+                {
+                    <strong>內容簡述：</strong>
+                }
+            </div>
+            <div class="col-md-10">@Html.DisplayFor(m => m.Purpose)</div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.InTime)：</strong></div>
+            <div class="col-md-4">@Html.DisplayFor(m => m.InTime)</div>
+            <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UnuseTime)：</strong></div>
+            <div class="col-md-4">@Html.DisplayFor(m => m.UnuseTime)</div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.RejectReason)：</strong></div>
+            <div class="col-md-10">@Html.DisplayFor(m => m.RejectReason)</div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.IsConfidential)：</strong></div>
+            <div class="col-md-4">
+                @(Model.IsConfidential.HasValue ? (Model.IsConfidential.Value ? "是" : "否") : "無")
+            </div>
+            <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.IsSensitive)：</strong></div>
+            <div class="col-md-4">
+                @(Model.IsSensitive.HasValue ? (Model.IsSensitive.Value ? "是" : "否") : "無")
+            </div>
+        </div>
+
+        @if (Model.Type == "B")
+        {
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>下載文件：</strong></div>
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="@(Model.RealFileName)" readonly />
+                        <a class="btn btn-sm btn-primary" asp-controller="File" asp-action="GetClaimFileByAdmin" asp-route-IdNo="@Model.IdNo">
+                            取得
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

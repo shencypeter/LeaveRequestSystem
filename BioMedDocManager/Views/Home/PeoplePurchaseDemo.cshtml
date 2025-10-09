@@ -1,0 +1,359 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "_AssetLayout";
+
+}
+
+
+<div class="accordion" id="accordionExample">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingOne">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                <i class="fa fa-search" ></i>&ensp;關鍵字搜尋
+            </button>
+        </h2>
+        <div id="flush-collapseOne" class="accordion-collapse collapse show" aria-labelledby="flush-headingOne"
+             data-bs-parent="#accordionFlushExample">
+            <div class="accordion-body mx-3">
+                <style>
+                    .search-div {
+                        display: flex;
+                        align-items: center;
+                    }
+
+                        .search-div label {
+                            flex: 0 0 130px; /* fixed width for all labels */
+                            text-align: right;
+                            margin-right: 0.75rem; /* some spacing */
+                            white-space: nowrap; /* prevent label wrapping */
+                        }
+
+                        .search-div input,
+                        .search-div select {
+                            flex: 1; /* fill remaining space */
+                            max-width: 100%;
+                        }
+                    /* Special case for your date range input group */
+                    .date-range {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                    }
+
+                        .date-range input {
+                            flex: 1;
+                        }
+
+                        .date-range span {
+                            flex: 0 0 auto;
+                        }
+                    /* Override the Bootstrap justify-content-center to left align */
+                    .row.justify-content-center {
+                        justify-content: flex-start !important;
+                    }
+                </style>
+
+                <div class="row align-items-center justify-content-start">
+                    <div class="col-md-6 search-div my-1 pad-left-px-23">
+                        <label for="start_date">請購日期請購日期請購日期：</label>
+                        <div class="date-range">
+                            <input type="date" id="start_date" class="form-control">
+                            <span>~</span>
+                            <input type="date" id="end_date" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 search-div my-1">
+                        <label for="partno_text">請購編號碼：</label>
+                        <input type="text" id="partno_text" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 search-div my-1">
+                        <label for="requester">請購人員：</label>
+                        <select id="requester" class="form-select">
+                            <option value="">請選擇</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 search-div my-1">
+                        <label for="item_no">品項編號：</label>
+                        <input type="text" id="item_no" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 search-div my-1">
+                        <label for="product_name">產品名稱：</label>
+                        <input type="text" id="product_name" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 search-div my-1">
+                        <label for="purchaser">採購人員：</label>
+                        <select id="purchaser" class="form-select">
+                            <option value="">請選擇</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 search-div my-1">
+                        <label for="vendor_name">供應商名稱：</label>
+                        <select id="vendor_name" class="form-select">
+                            <option value="">請選擇</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12 d-flex my-1 align-items-center justify-content-start gap-2">
+                        <button type="button" class="btn2 btn-primary mt-2 col-6 col-md-3">
+                            <i class="fa fa-search" ></i>&ensp;查詢
+                        </button>
+                        <button type="button" class="btn2 btn-danger mt-2 col-6 col-md-3">
+                            <i class="fa fa-trash" ></i>&ensp;一鍵清除
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="btn-group my-1 mx-4">
+    <button type="button" class="btn2 btn-primary">
+        <i class="fa fa-file" ></i>&ensp;匯出EXCEL
+    </button>
+    <button type="button" class="btn2 btn-success" onclick="openPopup()">
+        <i class="fa fa-plus" ></i>&ensp;新增 (打開彈窗)
+    </button>
+</div>
+<div class="table">
+    <table class="table table-striped table-hover " data-toggle="table" data-sortable="true">
+        <thead>
+            <tr>
+                <th data-field="order1" data-sortable="true">#</th>
+                <th data-field="order2" data-sortable="true">請購日期</th>
+                <th data-field="order3" data-sortable="true">請購人</th>
+                <th data-field="order4" data-sortable="true">請購單號</th>
+                <th data-field="order5" data-sortable="true">採購人員</th>
+                <th data-field="order6" data-sortable="true">產品名稱</th>
+                <th data-field="order7" data-sortable="true">收貨狀態</th>
+                <th data-field="order8" data-sortable="true">品項編號</th>
+                <th data-field="order9" data-sortable="true">品項說明</th>
+                <th data-field="order10" data-sortable="true">供應商名稱</th>
+                <th data-field="order11" data-sortable="true">供應商統編</th>
+                <th data-field="order12">明細</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><th scope="row">1</th><td>2024-06-20</td><td>林怡君</td><td>B202406001</td><td>王小明</td><td>影印紙 A4</td><td>已收貨</td><td>PRD-1001</td><td>70磅影印紙</td><td>新全文具</td><td>12345678</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">2</th><td>2024-06-19</td><td>陳威廷</td><td>B202406002</td><td>林美麗</td><td>白板筆</td><td>未收貨</td><td>PRD-1002</td><td>可擦白板筆（黑）</td><td>宏達文具</td><td>87654321</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">3</th><td>2024-06-18</td><td>許珮珊</td><td>B202406003</td><td>王小明</td><td>便利貼</td><td>已收貨</td><td>PRD-1003</td><td>3x3 黃色便利貼</td><td>聯強紙品</td><td>55667788</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">4</th><td>2024-06-17</td><td>張博翔</td><td>B202406004</td><td>林美麗</td><td>修正帶</td><td>部分收貨</td><td>PRD-1004</td><td>雙頭修正帶</td><td>新全文具</td><td>12345678</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">5</th><td>2024-06-16</td><td>陳威廷</td><td>B202406005</td><td>王小明</td><td>釘書機</td><td>未收貨</td><td>PRD-1005</td><td>迷你型釘書機</td><td>宏達文具</td><td>87654321</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">6</th><td>2024-06-15</td><td>林怡君</td><td>B202406006</td><td>林美麗</td><td>名片紙</td><td>已收貨</td><td>PRD-1006</td><td>高磅數名片紙</td><td>聯強紙品</td><td>55667788</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">7</th><td>2024-06-14</td><td>許珮珊</td><td>B202406007</td><td>王小明</td><td>資料夾</td><td>已收貨</td><td>PRD-1007</td><td>透明L型資料夾</td><td>新全文具</td><td>12345678</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">8</th><td>2024-06-13</td><td>張博翔</td><td>B202406008</td><td>林美麗</td><td>文件櫃</td><td>未收貨</td><td>PRD-1008</td><td>三層鐵製文件櫃</td><td>宏達文具</td><td>87654321</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">9</th><td>2024-06-12</td><td>林怡君</td><td>B202406009</td><td>王小明</td><td>筆記本</td><td>部分收貨</td><td>PRD-1009</td><td>A5 橫線筆記本</td><td>聯強紙品</td><td>55667788</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">10</th><td>2024-06-11</td><td>許珮珊</td><td>B202406010</td><td>林美麗</td><td>滑鼠墊</td><td>已收貨</td><td>PRD-1010</td><td>舒適型滑鼠墊</td><td>新全文具</td><td>12345678</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">11</th><td>2024-06-10</td><td>張博翔</td><td>B202406011</td><td>王小明</td><td>雙面膠</td><td>未收貨</td><td>PRD-1011</td><td>透明雙面膠帶</td><td>宏達文具</td><td>87654321</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">12</th><td>2024-06-09</td><td>陳威廷</td><td>B202406012</td><td>林美麗</td><td>計算機</td><td>部分收貨</td><td>PRD-1012</td><td>12位數桌上型計算機</td><td>聯強紙品</td><td>55667788</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">13</th><td>2024-06-08</td><td>林怡君</td><td>B202406013</td><td>王小明</td><td>膠水</td><td>已收貨</td><td>PRD-1013</td><td>液體強力膠</td><td>新全文具</td><td>12345678</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">14</th><td>2024-06-07</td><td>張博翔</td><td>B202406014</td><td>林美麗</td><td>名牌夾</td><td>已收貨</td><td>PRD-1014</td><td>磁吸式名牌夾</td><td>宏達文具</td><td>87654321</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">15</th><td>2024-06-06</td><td>許珮珊</td><td>B202406015</td><td>王小明</td><td>迴紋針</td><td>未收貨</td><td>PRD-1015</td><td>大號金屬迴紋針</td><td>聯強紙品</td><td>55667788</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">16</th><td>2024-06-05</td><td>陳威廷</td><td>B202406016</td><td>林美麗</td><td>長尾夾</td><td>部分收貨</td><td>PRD-1016</td><td>25mm 黑色長尾夾</td><td>新全文具</td><td>12345678</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">17</th><td>2024-06-04</td><td>林怡君</td><td>B202406017</td><td>王小明</td><td>標籤紙</td><td>已收貨</td><td>PRD-1017</td><td>A4 不乾膠標籤紙</td><td>宏達文具</td><td>87654321</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">18</th><td>2024-06-03</td><td>張博翔</td><td>B202406018</td><td>林美麗</td><td>噴墨紙</td><td>未收貨</td><td>PRD-1018</td><td>高解析噴墨紙</td><td>聯強紙品</td><td>55667788</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">19</th><td>2024-06-02</td><td>許珮珊</td><td>B202406019</td><td>王小明</td><td>裝訂機</td><td>已收貨</td><td>PRD-1019</td><td>10頁用裝訂機</td><td>新全文具</td><td>12345678</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+<tr><th scope="row">20</th><td>2024-06-01</td><td>陳威廷</td><td>B202406020</td><td>林美麗</td><td>快勞</td><td>部分收貨</td><td>PRD-1020</td><td>資料快勞文件夾</td><td>宏達文具</td><td>87654321</td><td><button class="btn btn-sm btn3 btn-primary">編輯</button></td></tr>
+            @* @for (int x = 0; x < 20; x++)
+            {
+                <tr>
+                    <th scope="row">@(x+1)</th>
+                    <td>2024-06-12</td>
+                    <td>Otto</td>
+                    <td>B202406@($"{x:000}")</td>
+                    <td>Mark</td>
+                    <td>一般文具</td>
+                    <td>TEST</td>
+                    <td>Mark</td>
+                    <td>Otto</td>
+                    <td>TEST</td>
+                    <td>Mark</td>
+                    <td><button class="btn btn-sm btn3 btn-primary">編輯</button></td>
+                </tr>
+                
+            }
+ *@
+          
+        </tbody>
+    </table>
+</div>
+
+<div id="overlay" class="overlay">
+    <div class="popup">
+        <span class="close-btn" onclick="closePopup()">×</span>
+        <h2>人員請購單</h2>
+        <div class="mx-3 text-12 pop">
+            <div class="row align-items-center my-1 ">
+                <div class="col-md-6 form-df my-1">
+                    <label for="start_date" class="me-2">請購日期：</label>
+                    <input type="date" id="start_date" class="form-control width-3">
+                    <span class="mx-1">~</span>
+                    <input type="date" id="end_date" class="form-control width-3">
+                </div>
+                <div class="col-md-6 form-df my-1">
+                    <label for="requester" class="me-2">請購人員：</label>
+                    <select id="requester" class="form-select width-23">
+                        <option value="">請選擇</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row align-items-center my-1 ">
+                <div class="col-md-6 form-df my-1">
+                    <label for="start_date" class="me-2">radiobutton選項：</label>
+                    <input class="form-check-input mx-2 my-1" type="radio" name="inlineRadioOptions" id="inlineRadio1"
+                           value="option1">
+                    <label class="form-check-label" for="inlineRadio1">test-1：</label>
+                    <input class="form-check-input mx-2 my-1" type="radio" name="inlineRadioOptions" id="inlineRadio2"
+                           value="option2">
+                    <label class="form-check-label" for="inlineRadio2">test-2：</label>
+                    <input class="form-check-input mx-2 my-1" type="radio" name="inlineRadioOptions" id="inlineRadio3"
+                           value="option3" disabled>
+                    <label class="form-check-label" for="inlineRadio3">test-3(disabled)：</label>
+                </div>
+                <div class="col-md-6 form-df my-1">
+                    <label for="start_date" class="me-2">請購日期：</label>
+                    <input class="form-control width-23" type="text" value="PartNo-12345678"
+                           aria-label="readonly input example" readonly>
+                </div>
+            </div>
+            <div class="row align-items-center my-1 ">
+                <div class="col-md-6 form-df my-1">
+                    <label for="start_date" class="me-2">checkbox選項：</label>
+                    <input class="form-check-input mx-2 my-1" type="checkbox" id="inlinecheckbox1" value="option1">
+                    <label class="form-check-label" for="inlinecheckbox1">test-1：</label>
+                    <input class="form-check-input mx-2 my-1" type="checkbox" id="inlinecheckbox2" value="option2">
+                    <label class="form-check-label" for="inlinecheckbox2">test-2：</label>
+                    <input class="form-check-input mx-2 my-1" type="checkbox" id="inlinecheckbox3" value="option3"
+                           disabled>
+                    <label class="form-check-label" for="inlinecheckbox3">test-3(disabled)：</label>
+                </div>
+                <div class="col-md-6 form-df my-1">
+                    <label for="formFile" class="me-2">上傳附件：</label>
+                    <input class="form-control width-23" type="file" id="formFile">
+                </div>
+            </div>
+            <div class="row align-items-center my-1 ">
+                <div class="col-md-12 form-df my-1">
+                    <label for="start_date" class="me-2">請購日期：</label>
+                    <textarea class="form-control width-23" id="exampleFormControlTextarea1" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="col-md-12 d-flex my-1 align-items-center justify-content-center">
+                <button type="button" class="btn2 btn-primary mt-2 col-6 col-md-6">
+                    <i class="fa fa-check" ></i>&ensp;送出
+                </button>
+                <button type="button" class="btn2 btn-danger mt-2 col-6 col-md-6">
+                    <i class="fa fa-times" ></i>&ensp;取消
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<nav aria-label="Page navigation">
+    <div class="d-flex justify-content-center align-items-center">
+        <ul class="pagination mb-0" id="paginationLinks">
+            <!-- First Page -->
+            <li class="page-item disabled">
+                <a class="page-link" href="#" onclick="navigatePage(1)">首頁</a>
+            </li>
+
+            <!-- Previous Page -->
+            <li class="page-item disabled">
+                <a class="page-link" href="#" onclick="navigatePage(1)">&laquo; 前一頁</a>
+            </li>
+
+            <!-- Page Numbers -->
+            <li class="page-item active">
+                <a class="page-link" href="#" onclick="navigatePage(1)">1</a>
+            </li>
+            <li class="page-item ">
+                <a class="page-link" href="#" onclick="navigatePage(2)">2</a>
+            </li>
+            <li class="page-item ">
+                <a class="page-link" href="#" onclick="navigatePage(3)">3</a>
+            </li>
+            <li class="page-item ">
+                <a class="page-link" href="#" onclick="navigatePage(4)">4</a>
+            </li>
+            <li class="page-item ">
+                <a class="page-link" href="#" onclick="navigatePage(5)">5</a>
+            </li>
+            <li class="page-item ">
+                <a class="page-link" href="#" onclick="navigatePage(6)">6</a>
+            </li>
+            <li class="page-item ">
+                <a class="page-link" href="#" onclick="navigatePage(7)">7</a>
+            </li>
+            <li class="page-item ">
+                <a class="page-link" href="#" onclick="navigatePage(8)">8</a>
+            </li>
+            <li class="page-item ">
+                <a class="page-link" href="#" onclick="navigatePage(9)">9</a>
+            </li>
+            <li class="page-item ">
+                <a class="page-link" href="#" onclick="navigatePage(10)">10</a>
+            </li>
+
+            <!-- Next Page -->
+            <li class="page-item ">
+                <a class="page-link" href="#" onclick="navigatePage(2)">下一頁 &raquo;</a>
+            </li>
+
+            <!-- Last Page -->
+            <li class="page-item ">
+                <a class="page-link" href="#" onclick="navigatePage(55)">末頁</a>
+            </li>
+        </ul>
+    </div>
+    <!-- Page Size Dropdown -->
+    <div class="d-flex align-items-center ml-3 py-2 justify-content-center align-items-center">
+        <!--<select class="form-select" style="width:250px;" disabled>
+            <option>共 550 項, 每頁顯示: </option>
+        </select> -->
+        <font>總共 550 筆， </font>
+        <font>每頁顯示&nbsp;&nbsp;</font>
+        <select id="pageSize" class="form-select" aria-label="Page size select" style="width:100px;" onchange="updatePageSize()">
+            <option value="10" selected>10 筆</option>
+            <option value="20">20 筆</option>
+            <option value="30">30 筆</option>
+            <option value="50">50 筆</option>
+            <option value="80">80 筆</option>
+            <option value="100">100 筆</option>
+        </select>
+    </div>
+
+</nav>
+
+<script>
+
+    $('.tree_page').text(page_name);
+
+    function loadDetail(button) {
+        const row = button.closest('tr');
+        const requestNumber = row.cells[3].innerText;
+
+        alert(`載入明細：${requestNumber}`);
+    }
+
+    function openPopup() {
+        $('#overlay').show();
+    }
+
+    function closePopup() {
+        $('#overlay').hide();
+    }
+
+</script>

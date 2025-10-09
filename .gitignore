@@ -1,0 +1,47 @@
+# gitignore 2027.02.25 Peter
+
+# Ignore Visual Studio-specific files
+/.vs/
+
+# Ignore build outputs
+/bin/
+/obj/
+/artifacts/
+
+# Ignore user-specific settings
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignore dependencies (but NOT package reference files)
+packages/
+project.lock.json
+npm-debug.log
+yarn-error.log
+*.nuget
+node_modules/
+
+# Ignore logs and debug files
+*.log
+**/*.log
+
+# Ignore published files
+publish/
+wwwroot/dist/
+
+# Ignore Rider & JetBrains settings (if applicable)
+.idea/
+*.sln.iml
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+
+# Preserve appsettings.json files (NOT ignored)
+/mobileheroMang/obj/Debug/net8.0
+/mobilehero/obj
+/mobileheroMang/obj
+/mobilehero/bin/Debug/net8.0

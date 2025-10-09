@@ -1,0 +1,22 @@
+﻿@{
+    var jsAlerts = new Dictionary<string, string>
+    {
+        ["_JSShowAlert"] = "alert",
+        ["_JSShowSuccess"] = "alert",
+        ["_JSShowConfirm"] = "Confirm",
+        ["_JSShowModalAlert"] = "showModalAlert",
+        ["_JSShowModalSuccess"] = "showModalSuccess",
+        ["_JSShowModalConfirm"] = "showModalConfirm"
+    };
+}
+
+@foreach (var kvp in jsAlerts)
+{
+    var temp = TempData[kvp.Key];
+    if (temp != null)
+    {
+        <script nonce="@ViewBag.CspNonce">
+            @Html.Raw(kvp.Value + "(\"" + Html.Raw(temp.ToString()) + "\");")
+        </script>
+    }
+}

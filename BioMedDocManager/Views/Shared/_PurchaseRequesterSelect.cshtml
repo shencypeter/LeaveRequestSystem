@@ -1,0 +1,16 @@
+﻿@model string? // 傳入目前選擇的 Id
+@{
+    var PurchaseRequester = ViewData["PurchaseRequester"] as SelectOption?[] ?? new SelectOption[] { };
+    var isRequired = ViewData["PurchaseRequesterIsRequired"] as bool? ?? false;
+}
+
+<select id="Requester"  name="Requester" class="form-select" @(isRequired ? "required" : "")>
+    <option value="">請選擇</option>
+    @foreach (var user in PurchaseRequester)
+    {
+        <option value="@user.OptionValue"
+                selected="@(user.OptionValue == Model?.Trim() ? "selected" : null)">
+            @user.OptionText
+        </option>
+    }
+</select>

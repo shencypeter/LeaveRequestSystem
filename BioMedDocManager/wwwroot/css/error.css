@@ -1,0 +1,38 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f9f9f9;
+    color: #333;
+    padding: 50px;
+}
+
+h1 {
+    font-size: 100px;
+    margin-top: 20px;
+}
+
+.icon {
+    font-size: 150px;
+    color: #c0392b;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 20px;
+    margin-top: 10px;
+}
+
+.back-home {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    font-size: 16px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+    .back-home:hover {
+        background-color: #2980b9;
+    }
