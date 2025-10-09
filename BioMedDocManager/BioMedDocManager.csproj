@@ -17,8 +17,6 @@
 
   <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
-    <None Include="wwwroot\jstree\.github\FUNDING.yml" />
-    <None Include="wwwroot\jstree\.github\workflows\npm-publish.yml" />
   </ItemGroup>
 
   <ItemGroup>
