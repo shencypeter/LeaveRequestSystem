@@ -4,31 +4,7 @@ using Microsoft.AspNetCore.Identity;
 public static class PasswordUtil
 {
     
-    /// <summary>
-    /// 將明碼密碼一次轉換為雜湊密碼（使用要注意，避免重複加密）
-    /// </summary>
-    /// <param name="dbContext"></param>
-    public static void ConvertPassword(DocControlContext dbContext)
-    {
-        var people = dbContext.PeopleControlTables.ToList();
-        int updatedCount = 0;
-
-        foreach (var person in people)
-        {
-            string password = person.Password ?? string.Empty;
-
-
-            if (!AlreadyHashed(password))
-            {
-                person.Password = Hash(password);
-                updatedCount++;
-            }
-        }
-
-        dbContext.SaveChanges();
-        Console.WriteLine($"🔐 Hashed {updatedCount} password(s).");
-    }
-
+    
     /// <summary>
     /// 檢查密碼是否被hash過
     /// </summary>

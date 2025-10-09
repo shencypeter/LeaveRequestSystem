@@ -17,6 +17,7 @@
     <form id="myForm" class="PasswordForm" method="post" action="@Url.Action("Create", "AccountSettings", new { Username = Model.Username })" target="_top">
         @Html.AntiForgeryToken()
         <div class="pop">
+
             <!-- 帳號(工號) -->
             <div class="row align-items-center my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.Username)：</strong></div>
@@ -30,6 +31,49 @@
                 <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.FullName)：</strong></div>
                 <div class="col-md-10">
                     @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", @required = "required" })
+                </div>
+            </div>
+
+            <!-- 職稱 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.JobTitle)：</strong></div>
+                <div class="col-md-10">
+                    @Html.TextBoxFor(m => m.JobTitle, new { @class = "form-control", @maxlength = "100", placeholder = "例：工程師、經理" })
+                </div>
+            </div>
+
+            <!-- 部門名稱 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.DepartmentName)：</strong></div>
+                <div class="col-md-10">
+                    @Html.TextBoxFor(m => m.DepartmentName, new { @class = "form-control", @maxlength = "100", placeholder = "例：資訊部、人資部" })
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.Email)：</strong>
+                </div>
+                <div class="col-md-10">
+                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control", @type = "email", @required = "required", @maxlength = "255", placeholder = "name@example.com" })
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- 聯絡電話 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.Phone)：</strong></div>
+                <div class="col-md-10">
+                    @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", @maxlength = "50", placeholder = "市話（選填）" })
+                </div>
+            </div>
+
+            <!-- 手機 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.Mobile)：</strong></div>
+                <div class="col-md-10">
+                    @Html.TextBoxFor(m => m.Mobile, new { @class = "form-control", @maxlength = "50", placeholder = "手機（選填）" })
                 </div>
             </div>
 
@@ -66,6 +110,46 @@
                         new SelectListItem { Text = "啟用", Value = "true" },
                                         new SelectListItem { Text = "停用", Value = "false" }
                                         }, new { @class = "form-select" })
+                </div>
+            </div>
+
+            <!-- 是否鎖定 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.IsLocked)：</strong></div>
+                <div class="col-md-10">
+                    @Html.DropDownListFor(model => model.IsLocked, new List<SelectListItem>
+                                        {
+                        new SelectListItem { Text = "未鎖定", Value = "false" },
+                                        new SelectListItem { Text = "鎖定", Value = "true" }
+                                        }, new { @class = "form-select" })
+                </div>
+            </div>
+
+            @*
+            <!-- 狀態 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.Status)：</strong>
+                </div>
+                <div class="col-md-10">
+                    @Html.DropDownListFor(m => m.Status,
+                                        new SelectList(Enum.GetValues(typeof(BioMedDocManager.Enum.AccountStatus))
+                                        .Cast<BioMedDocManager.Enum.AccountStatus>()
+                                        .Select(e => new SelectListItem
+                                        {
+                                            Text = e.ToString(),   // 顯示文字 (Active, Inactive, Locked...)
+                                            Value = ((int)e).ToString(), // 存入資料庫的數值
+                                        }), "Value", "Text"),
+                                        "請選擇狀態",
+                                        new { @class = "form-select" })
+                </div>
+            </div>
+            *@
+            <!-- 備註 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.Remarks)：</strong></div>
+                <div class="col-md-10">
+                    @Html.TextAreaFor(m => m.Remarks, 4, 50, new { @class = "form-control", @maxlength = "255", placeholder = "備註（選填）" })
                 </div>
             </div>
 
@@ -115,7 +199,6 @@
                 <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.CreatedAt)：</strong></div>
                 <div class="col-md-10">
                     @Html.TextBox("CreatedAt", Model.CreatedAt?.ToString("yyyy-MM-dd"), new { @class = "form-control", @type = "date", @required = "required" })
-
                 </div>
             </div>
 
@@ -127,6 +210,7 @@
                     </button>
                 </div>
             </div>
+
         </div>
     </form>
 </div>

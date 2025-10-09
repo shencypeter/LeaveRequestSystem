@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BioMedDocManager.Enum;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BioMedDocManager.Models
@@ -112,6 +113,48 @@ namespace BioMedDocManager.Models
         public string FullName { get; set; } = null!;
 
         /// <summary>
+        /// 職稱
+        /// </summary>
+        [Column("job_title")]
+        [Display(Name = "職稱")]
+        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
+        public string? JobTitle { get; set; }
+
+        /// <summary>
+        /// 部門名稱
+        /// </summary>
+        [Column("department_name")]
+        [Display(Name = "部門名稱")]
+        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
+        public string? DepartmentName { get; set; }
+
+        /// <summary>
+        /// Email
+        /// </summary>
+        [Column("email")]
+        [Display(Name = "Email")]
+        [Required(ErrorMessage = "請輸入「Email」")]
+        [EmailAddress(ErrorMessage = "Email 格式不正確")]
+        [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
+        public string? Email { get; set; } = null!;
+
+        /// <summary>
+        /// 聯絡電話
+        /// </summary>
+        [Column("phone")]
+        [Display(Name = "聯絡電話")]
+        [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
+        public string? Phone { get; set; }
+
+        /// <summary>
+        /// 手機
+        /// </summary>
+        [Column("mobile")]
+        [Display(Name = "手機")]
+        [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
+        public string? Mobile { get; set; }
+
+        /// <summary>
         /// 密碼
         /// </summary>
         [Required(ErrorMessage = "請輸入「密碼」")]
@@ -134,6 +177,29 @@ namespace BioMedDocManager.Models
         [Column("is_active")]
         [Display(Name = "是否啟用")]
         public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// 是否鎖定
+        /// </summary>
+        [Column("is_locked")]
+        [Display(Name = "是否鎖定")]
+        public bool IsLocked { get; set; } = false;
+
+        /// <summary>
+        /// 狀態（例如 Active / Suspended）
+        /// </summary>
+        [Column("status")]
+        [Display(Name = "狀態")]
+        [StringLength(20, ErrorMessage = "{0}最多{1}字元")]
+        public string? Status { get; set; }
+
+        /// <summary>
+        /// 備註
+        /// </summary>
+        [Column("remarks")]
+        [Display(Name = "備註")]
+        [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
+        public string? Remarks { get; set; }
 
         /// <summary>
         /// 角色群組(List)
@@ -295,7 +361,44 @@ namespace BioMedDocManager.Models
         /// 姓名
         /// </summary>
         [Display(Name = "姓名")]
+        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
         public string FullName { get; set; }
+
+        /// <summary>
+        /// 職稱
+        /// </summary>
+        [Display(Name = "職稱")]
+        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
+        public string? JobTitle { get; set; }
+
+        /// <summary>
+        /// 部門名稱
+        /// </summary>
+        [Display(Name = "部門名稱")]
+        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
+        public string? DepartmentName { get; set; }
+
+        /// <summary>
+        /// Email
+        /// </summary>
+        [Display(Name = "Email")]
+        [EmailAddress(ErrorMessage = "Email 格式不正確")]
+        [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
+        public string Email { get; set; }
+
+        /// <summary>
+        /// 聯絡電話
+        /// </summary>
+        [Display(Name = "聯絡電話")]
+        [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
+        public string? Phone { get; set; }
+
+        /// <summary>
+        /// 手機
+        /// </summary>
+        [Display(Name = "手機")]
+        [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
+        public string? Mobile { get; set; }
 
         /// <summary>
         /// 角色群組(List)
@@ -322,5 +425,28 @@ namespace BioMedDocManager.Models
         [Column("is_active")]
         [Display(Name = "是否啟用")]
         public bool? IsActive { get; set; }
+
+        /// <summary>
+        /// 是否鎖定
+        /// </summary>
+        [Column("is_locked")]
+        [Display(Name = "是否鎖定")]
+        public bool? IsLocked { get; set; }
+
+        /// <summary>
+        /// 狀態
+        /// </summary>
+        [Column("status")]
+        [Display(Name = "帳號狀態")]
+        public AccountStatus Status { get; set; } = AccountStatus.Active;
+
+        /// <summary>
+        /// 備註
+        /// </summary>
+        [Column("remarks")]
+        [Display(Name = "備註")]
+        [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
+        public string? Remarks { get; set; }
     }
+
 }

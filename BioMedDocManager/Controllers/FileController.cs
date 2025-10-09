@@ -69,28 +69,7 @@ public class FileController(DocControlContext context, IWebHostEnvironment hosti
 
     }
 
-    /// <summary>
-    /// 取得表單檔案
-    /// </summary>
-    /// <param name="OriginalDocNo">表單編號</param>
-    /// <param name="DocVer">版本</param>
-    /// <returns></returns>
-    [HttpGet("File/GetFormFile/{OriginalDocNo}/{DocVer}")]
-    [Authorize(Roles = "領用人")]
-    public async Task<IActionResult> GetFormFile(string OriginalDocNo, string DocVer)
-    {
 
-        var model = await context.IssueTables.FirstOrDefaultAsync(d => d.OriginalDocNo == OriginalDocNo && d.DocVer == DocVer);
-
-        if (model == null)
-        {
-            return NotFound();
-        }
-
-        //回傳文件檔案blob
-        return GetFormFile(model);
-
-    }
 
 
 

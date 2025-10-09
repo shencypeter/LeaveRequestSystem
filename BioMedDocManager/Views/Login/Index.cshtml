@@ -41,7 +41,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <title>文管與電子採購系統-登入</title>
+    <title>文管與電子採購系統(範例)-登入</title>
     <link href="~/js/sys_element/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/all.min.css" referrerpolicy="no-referrer" />
     <link href="~/css/login.css" rel="stylesheet">
@@ -84,7 +84,7 @@
                     <form method="post" action="@Url.Action("Login")">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="returnUrl" value="@returnUrl" />
-                        <font class="fs-3 fw-bold my-1">文管與電子採購系統</font><br>
+                        <font class="fs-3 fw-bold my-1">文管與電子採購系統(範例)</font><br>
 
                         @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl as string))
                         {

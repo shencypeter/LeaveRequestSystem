@@ -150,7 +150,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 5) Title 與問候語
-            var baseTitle = "文管與電子採購系統";
+            var baseTitle = "文管與電子採購系統(範例)";
             // 若 Action/子頁面有自己設定 ViewData["Title"]，保留它；否則用 controllerLabel
             var existingTitle = ViewData["Title"]?.ToString();
             var suffix = !string.IsNullOrWhiteSpace(controllerLabel)
@@ -342,7 +342,7 @@ namespace BioMedDocManager.Controllers
         /// <returns>合成文件編號後的Excel檔</returns>
         protected byte[] GenerateExcelDocument(DocControlMaintable model)
         {
-            string FormPath = GetFormPath();// 取得使用者指定的檔案儲存路徑
+            string FormPath = "";// GetFormPath();// 取得使用者指定的檔案儲存路徑
             string sourcefilePath_REAL = Path.Combine(FormPath, model.RealFormFileName);//到時候真實檔案名稱
             string sourcefilePath_default = Path.Combine(_hostingEnvironment.WebRootPath, "docs", "範例Excel.xlsx");
 
@@ -378,7 +378,7 @@ namespace BioMedDocManager.Controllers
         /// <returns>合成文件編號後的Word檔</returns>
         protected byte[] GenerateWordDocument(DocControlMaintable model)
         {
-            string FormPath = GetFormPath();// 取得使用者指定的檔案儲存路徑
+            string FormPath = "";// GetFormPath();// 取得使用者指定的檔案儲存路徑
             string sourcefilePath_REAL = Path.Combine(FormPath, model.RealFormFileName);//到時候真實檔案名稱
             string sourcefilePath_default = Path.Combine(_hostingEnvironment.WebRootPath, "docs", "範例Word.docx");
 
@@ -429,7 +429,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         protected byte[] GeneratePowerPointDocument(DocControlMaintable model)
         {
-            string formPath = GetFormPath(); // 取得使用者指定的檔案儲存路徑
+            string formPath = "";// GetFormPath(); // 取得使用者指定的檔案儲存路徑
             string sourcefilePath_REAL = Path.Combine(formPath, model.RealFormFileName); // 真實檔案名稱
             string sourcefilePath_default = Path.Combine(_hostingEnvironment.WebRootPath, "docs", "範例PPT.pptx");
 
@@ -585,492 +585,6 @@ namespace BioMedDocManager.Controllers
             Response.Headers[HeaderNames.ContentDisposition] = disposition;
 
             return File(fileBytes, contentType);
-        }
-
-        /// <summary>
-        /// 取得表單檔案
-        /// </summary>
-        /// <param name="model">表單物件</param>
-        /// <returns>表單檔案</returns>
-        protected IActionResult GetFormFile(IssueTable model)
-        {
-            // 檢查 model 是否為 null
-            if (model == null)
-            {
-                return NotFound();
-            }
-
-            // 取得實體檔案路徑
-            var sourcefilePath_REAL = Path.Combine(GetFormPath(), model.RealFileName);//到時候的真實檔名
-            string sourcefilePath_default = Path.Combine(_hostingEnvironment.WebRootPath, "docs", "範例Word.docx");
-
-            // 判斷檔案是否存在，不存在就使用範例
-            string finalSourcePath = System.IO.File.Exists(sourcefilePath_REAL)
-                ? sourcefilePath_REAL
-                : sourcefilePath_default;
-
-            // 檢查檔案是否存在
-            if (!System.IO.File.Exists(finalSourcePath))
-            {
-                return NotFound();
-            }
-
-            var asciiFileName = "download"; // ASCII-safe 備援名稱
-
-            // 讀取檔案內容
-            var fileBytes = System.IO.File.ReadAllBytes(finalSourcePath);
-
-            // 轉成UTF-8檔名
-            string encodedName = Uri.EscapeDataString(model.RealFileName);   // 轉成UTF-8
-
-            // 撰寫檔名Disposition
-            var disposition = $"attachment; filename=\"{asciiFileName}\"; filename*=UTF-8''{encodedName}";
-
-            Response.Headers[HeaderNames.ContentDisposition] = disposition;
-
-            return File(fileBytes, model.ContentType);
-
-        }
-
-        /// <summary>
-        /// 儲存表單檔案到指定路徑
-        /// </summary>
-        /// <param name="file">上傳的檔案 (IFormFile)</param>
-        /// <param name="model">IssueTable 物件，用於命名與寫入副檔名</param>
-        /// <returns>成功儲存後的完整檔案路徑；若失敗則回傳 null</returns>
-        protected string SaveFormFile(IFormFile file, IssueTable model)
-        {
-            if (file == null || file.Length == 0 || model == null)
-                return null;
-
-            try
-            {
-                // 取得儲存路徑
-                var savePath = GetFormPath();
-
-                // 確保資料夾存在
-                if (!Directory.Exists(savePath))
-                {
-                    Directory.CreateDirectory(savePath);
-                }
-
-                // 取得副檔名與儲存檔名
-                var fileExt = Path.GetExtension(file.FileName); // e.g., ".docx"
-
-                // 更新模型的副檔名
-                model.FileExtension = fileExt.TrimStart('.'); // e.g., "docx"
-
-                var fileName = $"{model.OriginalDocNo}(v{model.DocVer}).{model.FileExtension}";
-
-                // 組成完整路徑
-                var fullPath = Path.Combine(savePath, fileName);
-
-                // 儲存檔案
-                using (var stream = new FileStream(fullPath, FileMode.Create))
-                {
-                    file.CopyTo(stream);
-                }
-
-                return model.FileExtension;
-            }
-            catch (Exception ex)
-            {
-                // 這裡可以加上 log 或錯誤處理
-                Console.WriteLine("檔案儲存失敗：" + ex.Message);
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// 刪除表單檔案（實際為重新命名前加上 DEL_）
-        /// </summary>
-        /// <param name="model">IssueTable 物件，用於抓取檔名</param>
-        protected void RenameDeleteFormFile(IssueTable model)
-        {
-            if (model == null || string.IsNullOrWhiteSpace(model.OriginalDocNo) || string.IsNullOrWhiteSpace(model.DocVer) || string.IsNullOrWhiteSpace(model.FileExtension))
-                return;
-
-            try
-            {
-                // 組成檔案名稱與路徑
-                var savePath = GetFormPath();
-
-                // 原始檔名 (不帶副檔名)
-                var baseFileName = $"{model.OriginalDocNo}(V{model.DocVer})";
-                var fullPath = Path.Combine(savePath, baseFileName + "." + model.FileExtension);
-
-                if (System.IO.File.Exists(fullPath))
-                {
-                    // 新檔案名稱 (DEL_前綴 + 原檔名 + 刪除時間 + 副檔名)
-                    var timeStamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-                    var newFileName = $"DEL_{baseFileName}_{timeStamp}.{model.FileExtension}";
-                    var newFullPath = Path.Combine(savePath, newFileName);
-
-                    System.IO.File.Move(fullPath, newFullPath);
-                    Console.WriteLine("刪除表單檔案，檔案已重新命名：" + newFullPath);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                // 可以記錄 log
-                Console.WriteLine("刪除表單檔案，檔案重新命名失敗：" + ex.Message);
-            }
-        }
-
-
-        /// <summary>
-        /// 刪除表單檔案(真的會刪除檔案)
-        /// </summary>
-        /// <param name="model">IssueTable 物件，用於抓取檔名</param>
-        protected void DeleteFormFile(IssueTable model)
-        {
-            if (model == null || string.IsNullOrWhiteSpace(model.OriginalDocNo) || string.IsNullOrWhiteSpace(model.DocVer) || string.IsNullOrWhiteSpace(model.FileExtension))
-                return;
-
-            try
-            {
-                // 組成檔案名稱與路徑
-                var savePath = GetFormPath();
-                var fileName = $"{model.OriginalDocNo}(v{model.DocVer}).{model.FileExtension}";
-                var fullPath = Path.Combine(savePath, fileName);
-
-                // 檢查檔案是否存在並刪除
-                if (System.IO.File.Exists(fullPath))
-                {
-                    System.IO.File.Delete(fullPath);
-                    Console.WriteLine("刪除表單檔案，檔案已刪除：" + fullPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                // 可以記錄 log
-                Console.WriteLine("刪除表單檔案，檔案刪除失敗：" + ex.Message);
-            }
-        }
-
-
-        /// <summary>
-        /// 確認要領用的表單是存在的、領用日期>=表單發行日期
-        /// </summary>
-        /// <param name="date">領用日期</param>
-        /// <param name="DocNo">表單編號</param>
-        /// <param name="docver">表單版次</param>
-        /// <returns>T：檔案存在、F：檔案不存在</returns>
-        protected bool CheckIssueTablesExist(DateTime date, string? DocNo, string? docver)
-        {
-            var formIssue = _context.IssueTables
-                    .FirstOrDefault(m => m.OriginalDocNo == DocNo && m.DocVer == docver && m.IssueDatetime <= date);
-
-            if (formIssue == null)
-            {
-                return false;
-            }
-
-            return true;
-
-        }
-
-        /// <summary>
-        /// 取得表單儲存路徑
-        /// </summary>
-        /// <returns>表單儲存路徑</returns>
-        public string GetFormPath()
-        {
-
-            // 取得表單儲存路徑
-            var form_path = _context.Bulletins.FirstOrDefault(b => b.Code == "form_path");
-            return form_path?.Value ?? string.Empty;
-        }
-
-        /// <summary>
-        /// 取得文件儲存路徑
-        /// </summary>
-        /// <returns>文件儲存路徑</returns>
-        public string GetDocPath()
-        {
-
-            // 取得文件儲存路徑
-            var doc_path = _context.Bulletins.FirstOrDefault(b => b.Code == "doc_path");
-            return doc_path?.Value ?? string.Empty;
-        }
-
-        /// <summary>
-        /// 取得登入公告設定
-        /// </summary>
-        /// <returns></returns>
-        public string? GetLoginMessage()
-        {
-            var doc_path = _context.Bulletins.Where(b => b.Code == "login_message").FirstOrDefault();
-
-            return (doc_path != null && !string.IsNullOrEmpty(doc_path.Value)) ? doc_path.Value : string.Empty;
-        }
-
-
-        /// <summary>
-        /// 取得「文件領用」公告訊息與關閉文件領用日期。
-        /// </summary>
-        /// <param name="type">網址參數 type（例：demo）</param>
-        /// <param name="key">網址參數 key（例：vbuWad_Gyr5j25f）</param>
-        /// <param name="inDatetime">網址參數 inDatetime（日期字串）</param>
-        /// <param name="previewContent">預覽模式下自行帶入的 BulletinContent</param>
-        /// <returns>
-        /// Tuple：<br/>
-        /// - Item1 → messages (string) 公告訊息內容<br/>
-        /// - Item2 → turnOffDate (DateOnly?) 關閉文件領用日期，若無則為 null
-        /// </returns>
-        public (string Message, DateTime? TurnOffDate) GetDocCtrlBulletin(
-            string? type = "",
-            string? key = "",
-            string? inDatetime = "",
-            string? previewContent = "")
-        {
-            // 先預設空值
-            string messages = string.Empty;
-            string stringDate = "";
-            DateTime? turnOffDate = null;
-
-            // 取得關閉文件領用日期、訊息內容
-            var turnoff = _context.Bulletins.FirstOrDefault(b => b.Code == "turnoff_date");
-            var turnoff_content = _context.Bulletins.FirstOrDefault(b => b.Code == "turnoff_content");
-
-            // 是否為「管理預覽模式」？
-            bool isPreview = !string.IsNullOrEmpty(type) &&
-                             type.Equals("demo", StringComparison.OrdinalIgnoreCase) &&
-                             !string.IsNullOrEmpty(key) &&
-                             key == "vbuWad_Gyr5j25f" &&
-                             !string.IsNullOrEmpty(inDatetime) &&
-                             !string.IsNullOrEmpty(previewContent);
-
-            if (isPreview)
-            {
-                // 預覽：使用網址帶入的內容
-                messages = previewContent!;// 訊息內容
-                stringDate = inDatetime ?? "2024-04-30"; ;// 關閉文件領用日期
-            }
-            else
-            {
-                // 一般模式：抓資料庫設定
-                messages = turnoff_content?.Value ?? string.Empty;// 訊息內容
-                stringDate = turnoff?.Value ?? "2024-04-30";
-            }
-
-            if (DateTime.TryParse(stringDate, out var dt))
-            {
-                turnOffDate = dt;// 關閉文件領用日期
-            }
-
-            turnOffDate = dt;// 關閉文件領用日期
-
-            return (messages, turnOffDate);
-        }
-
-        /// <summary>
-        /// 驗證領用日期是否在關閉日與當日之間
-        /// </summary>
-        /// <param name="claimDate">領用日期</param>
-        /// <param name="turnOffDate">關閉日</param>
-        /// <returns>true 表示合法</returns>
-        public bool IsValidClaimDate(DateTime claimDate)
-        {
-            // 確認是否為管理設定的預覽模式，並取得相關參數(公告訊息、關閉文件領用日期)
-            var (messages, turnOffDate) = GetDocCtrlBulletin();
-
-            return IsDateAGreaterOrEqualThanB(claimDate, turnOffDate) && IsDateAGreaterOrEqualThanB(DateTime.Today, claimDate);
-        }
-
-        /// <summary>
-        /// 依據輸入日期與文件類型，產生文件領用編號（純文字回傳）
-        /// </summary>
-        /// <param name="date">領用日期（yyyy-MM-dd）</param>
-        /// <param name="docType">文件類別（如B/E）</param>
-        /// <param name="error">錯誤訊息（若有錯）</param>
-        /// <returns>文件編號，或空字串</returns>
-        public string GetDocNumber(string date, string docType, string controllerType)
-        {
-
-            if (!DateTime.TryParse(date, out DateTime parsedDate))
-            {
-                return "領用日期格式錯誤";
-            }
-
-            if (controllerType == "CDocumentClaim" && !IsValidClaimDate(parsedDate))
-            {
-                return "領用日期選擇錯誤，應於關閉日期~當日之間";
-            }
-
-            string monthString = parsedDate.Year.ToString() + parsedDate.Month.ToString("D2"); // 補0
-            string docNoPrefix = docType + monthString;
-            if (controllerType == "CDocumentClaim")
-            {
-                return NonReserveDocNos(docNoPrefix); // 一般領用取號
-            }
-            else if (controllerType == "CDocumentClaimReserve")
-            {
-                return ReserveDocNos(docNoPrefix); // 保留號領用取號
-            }
-            else
-            {
-                return "文件類別錯誤";
-            }
-        }
-
-        /// <summary>
-        /// 將表單資料填入 DocControlMaintable 模型中，依據不同欄位與類別判斷設定屬性。
-        /// </summary>
-        /// <param name="formData">Request.Form資料</param>
-        /// <param name="model">DocControlMaintable Model</param>
-        protected void BindDocControlModelFromForm(IFormCollection formData, DocControlMaintable model)
-        {
-            // 先抓文件類別（決定是B或E）
-            model.Type = formData["rdbtype"];
-
-            // 依據Key設定各欄位值
-            foreach (var key in formData.Keys)
-            {
-                switch (key)
-                {
-                    case "rdbtype":
-                        model.Type = formData[key];
-                        break;
-
-                    // 理論上要刪掉*******
-                    //case "txt_person_name":
-                    //    model.PersonName = formData[key];
-                    //    break;
-                    // *******************
-                    case "DateTime":
-                        DateTime.TryParse(formData[key], out DateTime parsedDate);
-                        model.DateTime = parsedDate;
-                        break;
-
-                    case "txt_person_id":
-                    case "Id":
-                        model.Id = formData[key];
-                        break;
-                    case "txt_project_name":
-                        model.ProjectName = formData[key];
-                        break;
-
-                    case "txt_Boriginal_doc_no" when model.Type == "B":
-                        model.OriginalDocNo = formData[key];
-                        break;
-
-                    case "txt_Eoriginal_doc_no" when model.Type == "E":
-                        model.OriginalDocNo = formData[key];
-                        break;
-
-                    case "txt_Bdoc_ver" when model.Type == "B":
-                        model.DocVer = formData[key];
-                        break;
-
-                    case "txt_Bpurpose" when model.Type == "B":
-                        model.Purpose = formData[key];
-                        break;
-
-                    case "txt_Epurpose" when model.Type == "E":
-                        model.Purpose = formData[key];
-                        break;
-
-                    case "txt_Bname" when model.Type == "B":
-                        model.Name = formData[key];
-                        break;
-
-                    case "txt_Ename" when model.Type == "E":
-                        model.Name = formData[key];
-                        break;
-
-                    case "btnSend":
-                    case "txt_nextIdNo":
-                    case "__RequestVerificationToken":
-                    default:
-                        // 忽略不需綁定的欄位
-                        break;
-                }
-            }
-
-            // model變數是Call by Reference，所以沒有用return
-        }
-
-        /// <summary>
-        /// 驗證 DocControlMaintable 表單內容是否合法，回傳錯誤訊息列表。
-        /// </summary>
-        /// <param name="model">DocControlMaintable 模型</param>
-        /// <returns>錯誤訊息集合，如無錯誤則為空</returns>
-        protected List<string> ValidateDocControlForm(DocControlMaintable model)
-        {
-            var errors = new List<string>();
-
-            // 共用欄位驗證
-            if (!model.DateTime.HasValue)
-            {
-                errors.Add("請選擇領用日期。");
-            }
-            if (string.IsNullOrWhiteSpace(model.Type))
-            {
-                errors.Add("請選擇文件類別。");
-            }
-            if (string.IsNullOrWhiteSpace(model.Id))
-            {
-                errors.Add("請選擇領用人。");
-            }
-
-            // 廠內文件驗證（B）
-            if (model.Type == "B")
-            {
-                if (string.IsNullOrWhiteSpace(model.OriginalDocNo))
-                {
-                    errors.Add("請輸入表單編號。");
-                }
-                if (string.IsNullOrWhiteSpace(model.DocVer))
-                {
-                    errors.Add("請輸入表單版次。");
-                }
-                if (string.IsNullOrWhiteSpace(model.Name))
-                {
-                    errors.Add("請輸入紀錄名稱。");
-                }
-                if (string.IsNullOrWhiteSpace(model.Purpose))
-                {
-                    errors.Add("請輸入領用目的。");
-                }
-
-                // 檢查表單是否存在（假設 CheckIssueTablesExist 為可用的方法）
-                if (!CheckIssueTablesExist(model.DateTime.Value, model.OriginalDocNo, model.DocVer))
-                {
-                    errors.Add("請選擇正確的表單編號與表單版次。");
-                }
-            }
-
-            // 外來文件驗證（E）
-            if (model.Type == "E")
-            {
-                if (string.IsNullOrWhiteSpace(model.Name))
-                {
-                    errors.Add("請輸入文件名稱。");
-                }
-                if (string.IsNullOrWhiteSpace(model.Purpose))
-                {
-                    errors.Add("請輸入內容簡述。");
-                }
-            }
-
-            return errors;
-        }
-
-        /// <summary>
-        /// 新增文件領用紀錄
-        /// </summary>
-        /// <param name="input">資料</param>
-        /// <returns></returns>
-        protected async Task InsertDocControlMaintableAsync(DocControlMaintable input)
-        {
-
-            var IssueTable = _context.IssueTables.FirstOrDefault(m => m.OriginalDocNo == input.OriginalDocNo && m.DocVer == input.DocVer);
-            input.FileExtension = IssueTable?.FileExtension ?? "docx"; // 預設為docx
-
-            _context.DocControlMaintables.Add(input);
-            await _context.SaveChangesAsync();
         }
 
         /// <summary>
@@ -1443,28 +957,6 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 透過請購編號取得合格供應商資料
-        /// </summary>
-        /// <param name="RequestNo">請購編號</param>
-        /// <returns></returns>
-        public async Task<QualifiedSupplier> GetQualifiedSupplierByRequestNo(string RequestNo)
-        {
-            var purchase = await _context.PurchaseRecords
-                .Include(p => p.RequesterUser)
-                .Include(p => p.PurchaserUser)
-                .FirstOrDefaultAsync(s => s.RequestNo == RequestNo);
-
-            // 複合條件抓對應供應商
-            var supplierInfo = await _context.QualifiedSuppliers
-                .FirstOrDefaultAsync(m =>
-                    m.SupplierName == purchase.SupplierName &&
-                    m.ProductClass == purchase.ProductClass)
-                ?? new QualifiedSupplier();
-
-            return supplierInfo;
-        }
-
-        /// <summary>
         /// 匯出Word樣板檔案
         /// </summary>
         /// <param name="code">樣板檔案代號</param>
@@ -1794,112 +1286,6 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 填入評分旗標（依級距展開）
-        /// </summary>
-        /// <param name="purchaseRecord">原始請購資料</param>
-        /// <param name="dict">要匯出的資料</param>
-        protected static void ApplyScoreFlags(PurchaseRecord purchaseRecord, IDictionary<string, object> dict)
-        {
-            // 依你的固定級距展開
-            FillScoreFlags(dict, "PriceSelect", purchaseRecord.PriceSelect, 10, 5);
-            FillScoreFlags(dict, "SpecSelect", purchaseRecord.SpecSelect, 25, 15, 0);
-            FillScoreFlags(dict, "ServiceSelect", purchaseRecord.ServiceSelect, 15, 10, 5, 0);
-            FillScoreFlags(dict, "DeliverySelect", purchaseRecord.DeliverySelect, 10, 0);
-            FillScoreFlags(dict, "QualitySelect", purchaseRecord.QualitySelect, 40, 25, 5);
-        }
-
-        /// <summary>
-        /// 填入標記（依選項展開）
-        /// </summary>
-        /// <param name="dict">資料</param>
-        /// <param name="baseName">欄位名</param>
-        /// <param name="value">數值</param>
-        /// <param name="options">選項</param>
-        private static void FillEnumFlags(
-            IDictionary<string, object> dict,
-            string baseName,
-            string? value,
-            params (string Suffix, string[] Matches)[] options)
-        {
-            foreach (var (suffix, matches) in options)
-            {
-                var key = $"{baseName}{suffix}";
-                dict[key] = MarkCheckRadio(EqualsAny(value, matches));
-            }
-
-            // 清掉原本單一欄位避免干擾
-            if (dict.ContainsKey(baseName))
-                dict.Remove(baseName);
-        }
-
-        /// <summary>
-        /// 初供評核結果
-        /// </summary>
-        /// <param name="supplier1stAssess">原始初供資料</param>
-        /// <param name="dict">要匯出的資料</param>
-        protected static void ApplyQualityAgreementFlags(
-            PurchaseRecord purchaseRecord,
-            IDictionary<string, object> dict)
-        {
-            var v = purchaseRecord.QualityAgreement; // 例如 "是"、"否"
-            FillEnumFlags(dict, "QualityAgreement", v,
-                ("_Y", new[] { "是" }),
-                ("_N", new[] { "否" })
-            );
-        }
-
-        /// <summary>
-        /// 初供評核結果
-        /// </summary>
-        /// <param name="supplier1stAssess">原始初供資料</param>
-        /// <param name="dict">要匯出的資料</param>
-        protected static void ApplyAssessResultFlags(
-            Supplier1stAssess supplier1stAssess,
-            IDictionary<string, object> dict)
-        {
-            var v = supplier1stAssess.AssessResult; // 例如 "合格"、"改善後合格"、"不合格"
-            FillEnumFlags(dict, "AssessResult", v,
-                ("Qualified", new[] { "合格" }),
-                ("Requalified", new[] { "改善後合格" }),
-                ("Unqualified", new[] { "不合格" })
-            );
-        }
-
-        /// <summary>
-        /// 供應商分類
-        /// </summary>
-        /// <param name="supplier1stAssess">原始初供資料</param>
-        /// <param name="dict">要匯出的資料</param>
-        protected static void ApplySupplierClassFlags(
-            Supplier1stAssess supplier1stAssess,
-            IDictionary<string, object> dict)
-        {
-            var v = supplier1stAssess.SupplierClass; // 可能是 "RM" 或 "原料供應商" 之類
-            FillEnumFlags(dict, "SupplierClass", v,
-                ("RM", new[] { "原料供應商" }),
-                ("MI", new[] { "雜項供應商" }),
-                ("SP", new[] { "特殊供應商" })
-            );
-        }
-
-        /// <summary>
-        /// 風險類型
-        /// </summary>
-        /// <param name="supplier1stAssess">原始初供資料</param>
-        /// <param name="dict">要匯出的資料</param>
-        protected static void ApplyRiskLevelFlags(
-            Supplier1stAssess supplier1stAssess,
-            IDictionary<string, object> dict)
-        {
-            var v = supplier1stAssess.RiskLevel; // 例如 "高風險"、"中風險"、"低風險"
-            FillEnumFlags(dict, "RiskLevel", v,
-                ("Height", new[] { "高" }),
-                ("Medium", new[] { "中" }),
-                ("Low", new[] { "低" })
-            );
-        }
-
-        /// <summary>
         /// 關閉Modal並回傳訊息給父視窗
         /// </summary>
         /// <param name="alertMsg">訊息</param>
@@ -1940,40 +1326,7 @@ namespace BioMedDocManager.Controllers
 
 
         #region 變數
-        /// <summary>
-        /// 文管系統-前綴詞
-        /// </summary>
-        protected string _prefix
-        {
-            get
-            {
-                string? prefix = HttpContext.Session.GetString("SearchIssueModalPrefix");
-                if (string.IsNullOrEmpty(prefix))
-                {
-                    prefix = "_" + Guid.NewGuid().ToString("N").Substring(0, 8);
-                    HttpContext.Session.SetString("SearchIssueModalPrefix", prefix);
-                }
-                return prefix;
-            }
-        }
-
-        /// <summary>
-        /// 文管系統-文件編號前綴詞
-        /// </summary>
-        protected string _CDprefix
-        {
-            get
-            {
-                string? prefix = HttpContext.Session.GetString("CDocumentPrefix");
-                if (string.IsNullOrEmpty(prefix))
-                {
-                    prefix = "_" + Guid.NewGuid().ToString("N").Substring(0, 8);
-                    HttpContext.Session.SetString("CDocumentPrefix", prefix);
-                }
-                return prefix;
-            }
-        }
-
+        
         public static class AdminRoleStrings
         {
             public const string 系統管理者 = "系統管理者";
@@ -2026,8 +1379,10 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         public static readonly PageLink[] DocControlPages =
         [
-            new PageLink { Controller = "CDocumentClaim", Label = "文件領用", Roles = [DocRoleStrings.領用人] },
+            
+            // new PageLink { Controller = "CDocumentClaim", Label = "文件領用", Roles = [DocRoleStrings.領用人] },
             new PageLink { Controller = "CFileQuery", Label = "文件查詢", Roles = [DocRoleStrings.領用人] },
+            /*
             new PageLink { Controller = "CDocumentCancel", Label = "文件註銷", Roles = [DocRoleStrings.領用人] },
             new PageLink { Controller = "COldDocCtrlMaintables", Label = "2020年前表單查詢", Roles = [DocRoleStrings.領用人] },
             new PageLink { Controller = "CFormQuery", Label = "表單查詢", Roles = [DocRoleStrings.領用人] },
@@ -2036,6 +1391,7 @@ namespace BioMedDocManager.Controllers
             new PageLink { Controller = "CDocumentManage", Label = "文件管制", Roles = [DocRoleStrings.負責人] },
             new PageLink { Controller = "CBatchStorage", Label = "批量入庫", Roles = [DocRoleStrings.負責人] },
             new PageLink { Controller = "CManagementSettings", Label = "管理設定", Roles = [DocRoleStrings.負責人] }
+            */
         ];
 
         /// <summary>
@@ -2043,6 +1399,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         public static readonly PageLink[] PurchasingPages =
         [
+            /*
             new PageLink { Controller = "PSupplier1stAssess", Label = "初供評核", Roles = [PurchaseRoleStrings.評核人] },// 任何人請購人都可初供評核
             new PageLink { Controller = "PProductClass", Label = "品項選單維護",  Roles = [PurchaseRoleStrings.評核人]},// 限評核人才能維護品項選單
             new PageLink { Controller = "PPurchaseTables", Label = "請購", Roles = [PurchaseRoleStrings.Anyone] },// 任何人都可請購
@@ -2051,7 +1408,8 @@ namespace BioMedDocManager.Controllers
             new PageLink { Controller = "PAssessmentResult", Label = "評核結果查詢", Roles = [PurchaseRoleStrings.Anyone] },// 任何人都可看評核結果
             new PageLink { Controller = "PPurchaseRecords", Label = "請購分析",  Roles = [PurchaseRoleStrings.Anyone]},// 任何人都可看請購分析
             new PageLink { Controller = "PQualifiedSuppliers", Label = "供應商清冊", Roles = [PurchaseRoleStrings.Anyone] },// 任何人都可查看供應商清冊、新增供應商
-            new PageLink { Controller = "PSupplierReassessments", Label = "再評估",  Roles = [PurchaseRoleStrings.評核人] },// 限評核人才能再評估            
+            new PageLink { Controller = "PSupplierReassessments", Label = "再評估",  Roles = [PurchaseRoleStrings.評核人] },// 限評核人才能再評估
+            */
         ];
 
         /// <summary>
@@ -2163,37 +1521,6 @@ namespace BioMedDocManager.Controllers
                 .ToArray();
             return users;
         }
-
-        /// <summary>
-        /// 電子採購系統-品項編號
-        /// </summary>
-        /// <returns></returns>
-        public List<ProductClass> ProductClassMenu(bool IsEnabled = false)
-        {
-            var list = _context.ProductClasses
-                .Where(pc => !IsEnabled || !pc.ProductClassTitle.Contains("停用"))
-                .AsEnumerable() // 將查詢從 DB 拉到記憶體中（因 EF Core 不支援 Culture-aware OrderBy）
-                .OrderBy(u => u.ProductClassTitle, Comparer<string>.Create((x, y) => comparer.Compare(x, y, CompareOptions.StringSort)))
-                .ToList();
-
-            return list;
-        }
-
-        /// <summary>
-        /// 電子採購系統-供應商
-        /// </summary>
-        /// <returns></returns>
-        public List<QualifiedSupplier> SupplierMenu()
-        {
-            var list = _context.QualifiedSuppliers
-                .AsEnumerable() // 將查詢從 DB 拉到記憶體中（因 EF Core 不支援 Culture-aware OrderBy）
-                .OrderBy(u => u.SupplierName, Comparer<string>.Create((x, y) => comparer.Compare(x, y, CompareOptions.StringSort)))
-                .ThenBy(u => u.SupplierClass, Comparer<string>.Create((x, y) => comparer.Compare(x, y, CompareOptions.StringSort)))
-                .ToList();
-
-            return list;
-        }
-
 
         #endregion
     }

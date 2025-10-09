@@ -41,9 +41,9 @@ namespace BioMedDocManager.Controllers
             // 將 returnUrl 存入 ViewData 或 ViewBag 或 TempData
             ViewBag.ReturnUrl = returnUrl;
 
-            var messages = context.Bulletins.Where(s => s.Name == "登入公告" && s.Value.Length > 0).ToList();
+            //var messages = context.Bulletins.Where(s => s.Name == "登入公告" && s.Value.Length > 0).ToList();
 
-            TempData["Messages"] = messages.Any() ? messages.FirstOrDefault()?.Value.ToString() : new List<Bulletin>();
+            TempData["Messages"] = "登入公告文字";// messages.Any() ? messages.FirstOrDefault()?.Value.ToString() : new List<Bulletin>();
 
             return View();
         }

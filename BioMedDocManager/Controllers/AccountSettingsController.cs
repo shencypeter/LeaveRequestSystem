@@ -30,10 +30,13 @@ namespace BioMedDocManager.Controllers
 
             // 使用者相關
             { "username", "帳號" },
+            { "department_name", "部門" },
+            { "job_title", "職稱" },
             { "full_name", "使用者名稱" },
             { "is_active", "是否啟用" },
             { "created_at", "註冊時間" },
             { "RoleNameList", "系統角色" },
+            { "status", "狀態" },
         };
 
         /// <summary>
@@ -201,18 +204,27 @@ namespace BioMedDocManager.Controllers
             {
                 UserName = user.UserName,
                 FullName = user.FullName,
+                JobTitle = user.JobTitle,
+                DepartmentName = user.DepartmentName,
+                Email = user.Email,
+                Phone = user.Phone,
+                Mobile = user.Mobile,
                 CreatedAt = user.CreatedAt,
                 IsActive = user.IsActive,
+                IsLocked = user.IsLocked,
+                Status = user.Status,
+                Remarks = user.Remarks,
                 RoleName = user.UserRoles?
                     .Where(ur => ur.Role != null)
                     .Select(ur => ur.Role.RoleName)
                     .ToList() ?? new List<string>(),
-                RoleNameList = user.UserRoles?
-                    .Where(ur => ur.Role != null)
-                    .Select(ur => ur.Role.RoleGroup + "-" + ur.Role.RoleName)
-                    .DefaultIfEmpty()
-                    .Aggregate((a, b) => a + "、" + b) ?? ""
+                RoleNameList = string.Join("、",
+                        user.UserRoles?
+                            .Where(ur => ur.Role != null)
+                            .Select(ur => ur.Role.RoleGroup + "-" + ur.Role.RoleName)
+                        ?? Enumerable.Empty<string>())
             };
+
 
             // 載入角色List
             ViewData["AllRoles"] = await GetRoles();
@@ -359,7 +371,7 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         [Route("[controller]/ResetPassword/{UserName}")]
         public async Task<IActionResult> ResetPassword([FromRoute] string UserName)
-        {            
+        {
             if (string.IsNullOrEmpty(UserName))
             {
                 return NotFound();
@@ -397,12 +409,12 @@ namespace BioMedDocManager.Controllers
         [ValidateAntiForgeryToken]
         [Route("[controller]/ResetPassword/{UserName}")]
         public async Task<IActionResult> ResetPassword([FromRoute] string UserName, ChangePasswordModel PostedUser)
-        {            
+        {
             if (UserName != PostedUser.UserName)
             {
                 return NotFound();
             }
-            
+
             // 過濾文字
             QueryableExtensions.TrimStringProperties(UserName);
             QueryableExtensions.TrimStringProperties(PostedUser);
@@ -476,6 +488,7 @@ namespace BioMedDocManager.Controllers
             return View(result);
         }
 
+
         /// <summary>
         /// 查詢SQL
         /// </summary>
@@ -483,6 +496,99 @@ namespace BioMedDocManager.Controllers
         /// <param name="parameters"></param>
         /// <param name="sqlQuery"></param>
         private static void BuildQueryAccountSettings(AccountModel queryModel, out DynamicParameters parameters, out string sqlQuery)
+        {
+            sqlQuery = @"
+        SELECT 
+            u.id,
+            u.username,
+            u.full_name,
+            u.job_title,
+            u.department_name,
+            u.email,
+            u.phone,
+            u.mobile,
+            CASE WHEN u.is_active = 1 THEN N'啟用' ELSE N'停用' END AS is_active,
+            u.is_locked,
+            u.login_failed_count,
+            u.last_login_at,
+            u.last_login_ip,
+            u.password_changed_at,
+            u.status,
+            u.remarks,
+            u.created_at,
+            u.created_by,
+            u.updated_at,
+            u.updated_by,
+            u.deleted_at,
+            u.deleted_by,
+            r.RoleNameList
+        FROM [user] u
+        LEFT JOIN (
+            SELECT 
+                ur.user_id,
+                STRING_AGG(r.role_group + N'-' + r.role_name, N'、') AS RoleNameList
+            FROM user_role ur
+            INNER JOIN role r ON ur.role_id = r.id
+            GROUP BY ur.user_id
+        ) r ON r.user_id = u.id
+        WHERE 1 = 1
+    ";
+
+            var whereClauses = new List<string>();
+            parameters = new DynamicParameters();
+
+            // 工號(帳號)
+            if (!string.IsNullOrEmpty(queryModel.UserName))
+            {
+                whereClauses.Add("u.username LIKE @UserName");
+                parameters.Add("UserName", $"%{queryModel.UserName.Trim()}%");
+            }
+
+            // 姓名
+            if (!string.IsNullOrEmpty(queryModel.FullName))
+            {
+                whereClauses.Add("u.full_name LIKE @FullName");
+                parameters.Add("FullName", $"%{queryModel.FullName.Trim()}%");
+            }
+
+            // 是否啟用
+            if (!string.IsNullOrEmpty(queryModel.IsActive.ToString()))
+            {
+                whereClauses.Add("u.is_active = @IsActive");
+                parameters.Add("IsActive", queryModel.IsActive);
+            }
+
+            // 系統角色（用子查詢改寫後，若要用角色做條件可追加 EXISTS）
+            if (queryModel.RoleName != null && queryModel.RoleName.Any())
+            {
+                whereClauses.Add(@"
+            EXISTS (
+                SELECT 1
+                FROM user_role ur2
+                INNER JOIN role r2 ON ur2.role_id = r2.id
+                WHERE ur2.user_id = u.id
+                  AND r2.role_name IN @RoleName
+            )
+        ");
+                parameters.Add("RoleName", queryModel.RoleName);
+            }
+
+            if (whereClauses.Any())
+            {
+                sqlQuery += " AND " + string.Join(" AND ", whereClauses);
+            }
+
+            // 不要 GROUP BY（因為已用子查詢聚合角色，主查詢可直接排序/分頁）
+        }
+
+
+        /// <summary>
+        /// 查詢SQL
+        /// </summary>
+        /// <param name="queryModel"></param>
+        /// <param name="parameters"></param>
+        /// <param name="sqlQuery"></param>
+        private static void BuildQueryAccountSettings0(AccountModel queryModel, out DynamicParameters parameters, out string sqlQuery)
         {
 
             sqlQuery = @"
