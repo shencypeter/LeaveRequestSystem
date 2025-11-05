@@ -33,9 +33,12 @@ public class FileController(DocControlContext context, IWebHostEnvironment hosti
     {
 
         // 抓登入者資料工號
-        string Id = GetLoginUserId();
+        User? LoginUser = GetLoginUser();
+        if (LoginUser==null) {
+            return NotFound();
+        }
 
-        var model = await context.DocControlMaintables.FirstOrDefaultAsync(d => d.IdNo == IdNo && d.Id == Id);
+        var model = await context.DocControlMaintables.FirstOrDefaultAsync(d => d.IdNo == IdNo && d.Id == LoginUser.UserAccount);// 因為DocControlMaintables的Id是工號不是id
 
         if (model == null)
         {

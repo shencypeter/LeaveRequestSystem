@@ -1,0 +1,52 @@
+﻿### 紀錄開始 ###
+[2025/10/14 16:22:55]
+customErrorString: 假裝有Exception
+RequestUrl: https://localhost:7010/AccountSettings
+ClientIp: 127.0.0.1
+Message: 帳號設定-顯示清單頁-假裝有Exception
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/10/14 16:23:51]
+customErrorString: 假裝有Exception
+RequestUrl: https://localhost:7010/AccountSettings
+ClientIp: 127.0.0.1
+Message: 帳號設定-顯示清單頁-假裝有Exception
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/10/14 16:24:18]
+customErrorString: 假裝有Exception
+RequestUrl: https://localhost:7010/AccountSettings
+ClientIp: 127.0.0.1
+Message: 帳號設定-顯示清單頁-假裝有Exception
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/10/14 16:24:42]
+customErrorString: 假裝有Exception
+RequestUrl: https://localhost:7010/AccountSettings
+ClientIp: 127.0.0.1
+Message: 帳號設定-顯示清單頁-假裝有Exception
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+

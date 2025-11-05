@@ -835,18 +835,18 @@ function startRedirectCountdown(seconds, redirectUrl) {
 
 
 // 密碼重設頁-快捷鍵事件監聽
-function copyUserNameButtonListener() {
-    $(document).on("click", ".copyUserNameButton", function (event) {
-        copyUserName();
+function copyUserAccountButtonListener() {
+    $(document).on("click", ".copyUserAccountButton", function (event) {
+        copyUserAccount();
     });
 }
 
 
 // 密碼重設頁-快捷鍵，重設密碼為Abcd+工號
-function copyUserName() {
-    var UserName = $("#UserName").val();
-    $("#NewPassword").val("Abcd" + UserName);
-    $("#ConfirmPassword").val("Abcd" + UserName);
+function copyUserAccount() {
+    var UserAccount = $("#UserAccount").val();
+    $("#UserNewPassword").val("Abcd" + UserAccount);
+    $("#UserConfirmPassword").val("Abcd" + UserAccount);
 }
 
 // 密碼重設頁-密碼顯示按鈕事件監聽
@@ -1332,4 +1332,208 @@ function toggleDisabledText(inputSelector, btnSelector, disabledText, classEnabl
 function refreshCaptcha(img) {
     const base = img.getAttribute('data-url');
     img.src = base + '?t=' + Date.now(); // 防快取
+}
+
+// 編輯權限頁面事件監聽器
+function editRoleEventListener() {
+    const all = document.getElementById('allGroups');
+    const selected = document.getElementById('selectedGroups');
+    const btnAddSelected = document.getElementById('btnAddSelected');
+    const btnAddAll = document.getElementById('btnAddAll');
+    const btnRemoveSelected = document.getElementById('btnRemoveSelected');
+    const btnRemoveAll = document.getElementById('btnRemoveAll');
+    const form = document.getElementById('myFormDetail');
+
+    const btnPreview = form.querySelector('button[name="command"][value="preview"]');
+
+    const rolesContainer = document.getElementById('effectiveRolesContainer');
+    const permsContainer = document.getElementById('effectivePermissionsContainer');
+
+    function editRoleMoveOptions(src, dest, onlySelected) {
+        const options = Array.from(src.options);
+        options.forEach(opt => {
+            if (!onlySelected || opt.selected) {
+                const newOpt = new Option(opt.text, opt.value);
+                dest.add(newOpt);
+                src.remove(opt.index);
+            }
+        });
+    }
+
+    btnAddSelected.addEventListener('click', function () {
+        editRoleMoveOptions(all, selected, true);
+    });
+
+    btnAddAll.addEventListener('click', function () {
+        editRoleMoveOptions(all, selected, false);
+    });
+
+    btnRemoveSelected.addEventListener('click', function () {
+        editRoleMoveOptions(selected, all, true);
+    });
+
+    btnRemoveAll.addEventListener('click', function () {
+        editRoleMoveOptions(selected, all, false);
+    });
+
+    // 儲存時：確保右側全部選取（這部分你原本就有）
+    form.addEventListener('submit', function (e) {
+        // 如果是儲存就讓 form 走原本的 POST
+        const activeElement = document.activeElement;
+        if (activeElement && activeElement.name === 'command' && activeElement.value === 'save') {
+            Array.from(selected.options).forEach(o => o.selected = true);
+            return; // 不阻止
+        }
+
+        // 其他 submit（例如按 Enter）一律阻止，以避免誤觸
+        e.preventDefault();
+    });
+
+    // 試算預覽：用 fetch 呼叫後端，更新兩個區塊
+    btnPreview.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const userId = document.getElementById('userId');
+
+        const groupIds = Array.from(selected.options).map(o => parseInt(o.value, 10));
+        const previewUrl = '/AccountSettings/PreviewUserPermissions';
+        const tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
+        const csrfToken = tokenInput ? tokenInput.value : '';
+
+        const payload = {
+            userId: userId.value,
+            selectedUserGroupIds: groupIds
+        };
+
+        rolesContainer.innerHTML = '<div class="text-muted">計算中...</div>';
+        permsContainer.innerHTML = '<div class="text-muted">計算中...</div>';
+
+        fetch(previewUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(r => {
+                if (!r.ok) throw new Error('預覽失敗');
+                return r.json();
+            })
+            .then(data => {
+                renderRoles(data.roles || []);
+                renderPermissions(data.permissions || []);
+            })
+            .catch(err => {
+                console.error(err);
+                rolesContainer.innerHTML = '<div class="text-danger">預覽失敗</div>';
+                permsContainer.innerHTML = '<div class="text-danger">預覽失敗</div>';
+            });
+    });
+
+    function renderRoles(roles) {
+        if (!roles.length) {
+            rolesContainer.innerHTML = '<div class="text-muted">(無)</div>';
+            return;
+        }
+
+        let html = '<ul class="list-group">';
+        for (const r of roles) {
+            const previewTag = r.isNew
+                ? '<span class="badge bg-warning text-dark ms-2">(預覽)</span>'
+                : '';
+
+            const groupsText = (r.fromGroups && r.fromGroups.length)
+                ? r.fromGroups.map(g => escapeHtml(g.userGroupName)).join('、')
+                : '（無）';
+
+            html += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>${escapeHtml(r.roleGroup)} - ${escapeHtml(r.roleName)} ${previewTag}</span>
+                  <span class="badge bg-primary">
+                    ${groupsText}
+                  </span>
+                </li>`;
+        }
+        html += '</ul>';
+        rolesContainer.innerHTML = html;
+    }
+
+
+    function renderPermissions(perms) {
+        if (!perms.length) {
+            permsContainer.innerHTML = '<div class="text-muted">(無)</div>';
+            return;
+        }
+
+        // group by Resource
+        const groups = {};
+        for (const p of perms) {
+            const key = p.resourceId + '|' + p.resourceKey;
+            if (!groups[key]) {
+                groups[key] = {
+                    resourceId: p.resourceId,
+                    resourceKey: p.resourceKey,
+                    resourceDisplayName: p.resourceDisplayName,
+                    items: []
+                };
+            }
+            groups[key].items.push(p);
+        }
+
+        let html = '';
+        Object.values(groups).forEach(g => {
+            html += `
+                <div class="mb-3">
+                  <h6 class="mb-1">
+                    ${escapeHtml(g.resourceDisplayName)}
+                  </h6>
+                  <div>
+                `;
+            g.items.forEach(p => {
+                const previewTag = p.isNew ? ' (預覽)' : '';
+                const badgeClass = p.isNew
+                    ? 'badge bg-warning text-dark me-1 mb-1'
+                    : 'badge bg-success me-1 mb-1';
+
+                html += `
+                    <span class="badge ${badgeClass} me-1 mb-1" title="動作：${escapeHtml(p.appActionName)}">
+                      ${escapeHtml(p.appActionDisplayName)}${previewTag}
+                    </span>`;
+            });
+
+            html += `
+              </div>
+            </div>`;
+        });
+
+        permsContainer.innerHTML = html;
+    }
+
+
+
+}
+
+
+
+function escapeHtml(str) {
+    if (str == null) return '';
+    return str.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+
+function editRoleeditRoleMoveOptions(src, dest, onlySelected) {
+    const options = Array.from(src.options);
+    options.forEach(opt => {
+        if (!onlySelected || opt.selected) {
+            const newOpt = new Option(opt.text, opt.value);
+            dest.add(newOpt);
+            src.remove(opt.index);
+        }
+    });
 }

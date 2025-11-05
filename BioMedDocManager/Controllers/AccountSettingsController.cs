@@ -1,8 +1,15 @@
-﻿using BioMedDocManager.Models;
+﻿using BioMedDocManager.Extensions;
+using BioMedDocManager.Factory;
+using BioMedDocManager.Helpers;
+using BioMedDocManager.Interface;
+using BioMedDocManager.Models;
 using Dapper;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace BioMedDocManager.Controllers
 {
@@ -11,33 +18,24 @@ namespace BioMedDocManager.Controllers
     /// </summary>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
-    [Authorize(Roles = AdminRoleStrings.系統管理者)]
-    public class AccountSettingsController(DocControlContext context, IWebHostEnvironment hostingEnvironment) : BaseController(context, hostingEnvironment)
+    //[Authorize(Roles = AppSettings.AdminRoleStrings.系統管理者)]
+    [Route("[controller]")]
+
+    public class AccountSettingsController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
 
         /// <summary>
         /// 預設排序依據
         /// </summary>
-        public const string InitSort = "username";
+        public const string InitSort = "UserFullName";
 
         /// <summary>
         /// 查詢畫面的表頭DB與中文對照 (因為沒有結果也要顯示)
         /// </summary>
-        public Dictionary<string, string> TableHeaders = new()
-        {
-            // 系統用欄位
-            { "RowNum", "#" },
-
-            // 使用者相關
-            { "username", "帳號" },
-            { "department_name", "部門" },
-            { "job_title", "職稱" },
-            { "full_name", "使用者名稱" },
-            { "is_active", "是否啟用" },
-            { "created_at", "註冊時間" },
-            { "RoleNameList", "系統角色" },
-            { "status", "狀態" },
-        };
+        public Dictionary<string, string> TableHeaders = TableHeaderFactory.Build<User>(
+            includeRowNum: true,
+            onlyProps: new[] { "UserAccount", "Department.Department_Name", "UserJobTitle", "UserFullName", "UserIsActiveText", "UserIsLockedText", "CreatedAt", "UserGroupRoleList" }
+        );
 
         /// <summary>
         /// 顯示帳號設定頁面
@@ -46,12 +44,12 @@ namespace BioMedDocManager.Controllers
         /// <param name="PageNumber">第幾頁</param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber)
+        public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
-            // Retrieve query model from session or create a default one
+            // 從Session抓queryModel查詢物件
             var queryModel = GetSessionQueryModel<AccountModel>();
 
-            // 如果query string有帶入page參數，才使用；否則保留Session中的值
+            // 如果query string有page參數，才使用；否則保留Session中的值
             if (PageSize.HasValue)
             {
                 queryModel.PageSize = PageSize.Value;
@@ -70,7 +68,12 @@ namespace BioMedDocManager.Controllers
             // 載入角色List
             ViewData["AllRoles"] = await GetRoles();
 
-            return await LoadPage(queryModel);
+            // 載入角色List
+            ViewData["AllRoles"] = await GetRoles();
+
+            await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "顯示清單頁");
+
+            return await BuildQueryAccountSettings(queryModel, ct);
         }
 
         /// <summary>
@@ -80,10 +83,12 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Index(AccountModel queryModel)
+        public async Task<IActionResult> Index(AccountModel queryModel)
         {
             // 儲存查詢model到session中
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
+
+            await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "清單頁送出查詢");
 
             // 轉跳到GET方法頁面，顯示查詢內容
             return RedirectToAction(nameof(Index));
@@ -93,7 +98,7 @@ namespace BioMedDocManager.Controllers
         /// 顯示新增頁
         /// </summary>
         /// <returns></returns>
-        [Route("[controller]/Create/")]
+        [HttpGet("Create")]
         public async Task<IActionResult> Create()
         {
             var accountModel = new CreateUser
@@ -104,6 +109,8 @@ namespace BioMedDocManager.Controllers
             // 載入角色List
             ViewData["AllRoles"] = await GetRoles();
 
+            await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "顯示新增頁");
+
             return View(accountModel);
 
         }
@@ -113,9 +120,8 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="user">資料</param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("Create")]
         [ValidateAntiForgeryToken]
-        [Route("[controller]/Create")]
         public async Task<IActionResult> Create(CreateUser PostedUser)
         {
             if (PostedUser == null)
@@ -142,34 +148,18 @@ namespace BioMedDocManager.Controllers
                 await context.Users.AddAsync(newUser);
                 await context.SaveChangesAsync(); // 儲存後 newUser.Id 才有值
 
-                // 角色
-
-                // 抓選被checkbox的角色名稱
-                var roleEntities = context.Roles
-                    .AsEnumerable()
-                    .Where(r => PostedUser.RoleName.Contains(r.RoleName))
-                    .ToList();
-                if (roleEntities.Count > 0)
-                {
-                    // 加入新角色
-                    foreach (var role in roleEntities)
-                    {
-                        newUser.UserRoles.Add(new UserRole
-                        {
-                            UserId = newUser.Id,
-                            RoleId = role.Id
-                        });
-                    }
-
-                    await context.SaveChangesAsync();
-                }
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                TempData["_JSShowAlert"] = "帳號設定-" + PostedUser.FullName + "資料新增【失敗】!";
+                string customErrorString = "\"帳號設定-\" + PostedUser.FullName + \"資料新增【失敗】!\"";
+                Utilities.WriteExceptionIntoLogFile(customErrorString, ex, this.HttpContext);
+                TempData["_JSShowAlert"] = customErrorString;
+                await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "資料新增【失敗】", customErrorString, true);
             }
 
-            TempData["_JSShowSuccess"] = "帳號設定-" + PostedUser.FullName + "資料新增成功!";
+            TempData["_JSShowSuccess"] = "帳號設定-" + PostedUser.UserFullName + "資料新增成功!";
+
+            await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "新增頁資料新增成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -177,23 +167,20 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示編輯頁
         /// </summary>
-        /// <param name="UserName">工號</param>
+        /// <param name="UserId">使用者Id</param>
         /// <returns></returns>
-        [Route("[controller]/Edit/{UserName}")]
-        public async Task<IActionResult> Edit([FromRoute] string UserName)
+        [HttpGet("Edit/{userId:int}")]
+        public async Task<IActionResult> Edit([FromRoute] int? UserId)
         {
-            if (string.IsNullOrEmpty(UserName))
+            if (UserId.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
-            // 過濾文字
-            QueryableExtensions.TrimStringProperties(UserName);
-
             var user = await context.Users
                 .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
-                .FirstOrDefaultAsync(s => s.UserName == UserName);
+                .FirstOrDefaultAsync(s => s.UserId == UserId);
 
             if (user == null)
             {
@@ -202,32 +189,22 @@ namespace BioMedDocManager.Controllers
 
             var accountModel = new AccountModel
             {
-                UserName = user.UserName,
-                FullName = user.FullName,
-                JobTitle = user.JobTitle,
-                DepartmentName = user.DepartmentName,
-                Email = user.Email,
-                Phone = user.Phone,
-                Mobile = user.Mobile,
+                UserAccount = user.UserAccount,
+                UserFullName = user.UserFullName,
+                UserJobTitle = user.UserJobTitle,
+                DepartmentName = user.Department.DepartmentName,
+                UserEmail = user.UserEmail,
+                UserPhone = user.UserPhone,
+                UserMobile = user.UserMobile,
                 CreatedAt = user.CreatedAt,
-                IsActive = user.IsActive,
-                IsLocked = user.IsLocked,
-                Status = user.Status,
-                Remarks = user.Remarks,
-                RoleName = user.UserRoles?
-                    .Where(ur => ur.Role != null)
-                    .Select(ur => ur.Role.RoleName)
-                    .ToList() ?? new List<string>(),
-                RoleNameList = string.Join("、",
-                        user.UserRoles?
-                            .Where(ur => ur.Role != null)
-                            .Select(ur => ur.Role.RoleGroup + "-" + ur.Role.RoleName)
-                        ?? Enumerable.Empty<string>())
+                UserIsActive = user.UserIsActive,
+                UserIsLocked = user.UserIsLocked,
+                UserRemarks = user.UserRemarks,
             };
 
+            ViewBag.DepartmentOptions = DepartmentNameOptions(onlyActive: true);
 
-            // 載入角色List
-            ViewData["AllRoles"] = await GetRoles();
+            await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "顯示編輯頁");
 
             return View(accountModel);
         }
@@ -238,25 +215,22 @@ namespace BioMedDocManager.Controllers
         /// <param name="id">工號</param>
         /// <param name="user">資料</param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("Edit/{userId:int}")]
         [ValidateAntiForgeryToken]
-        [Route("[controller]/Edit/{UserName}")]
-        public async Task<IActionResult> Edit([FromRoute] string UserName, AccountModel user)
+        public async Task<IActionResult> Edit([FromRoute] int? UserId, AccountModel user)
         {
-            if (UserName != user.UserName)
+            if (user == null || UserId.GetValueOrDefault() <= 0 || UserId != user.UserId)
             {
                 return NotFound();
             }
 
             // 過濾文字
-            QueryableExtensions.TrimStringProperties(UserName);
             QueryableExtensions.TrimStringProperties(user);
-
 
             var DBuser = await context.Users
                 .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role) // 確保 Role 有載入
-                .FirstOrDefaultAsync(s => s.UserName == user.UserName);
+                .FirstOrDefaultAsync(s => s.UserId == user.UserId);
 
             if (DBuser == null)
             {
@@ -265,123 +239,53 @@ namespace BioMedDocManager.Controllers
 
             try
             {
-                // 確認有選擇新角色
-                if (user.RoleName != null)
-                {
+                DBuser.UserFullName = user.UserFullName?.Trim();
+                DBuser.UserJobTitle = user.UserJobTitle?.Trim();
+                DBuser.UserEmail = user.UserEmail?.Trim();
+                DBuser.UserPhone = user.UserPhone?.Trim();
+                DBuser.UserMobile = user.UserMobile?.Trim();
 
-                    DBuser.IsActive = user.IsActive.HasValue ? user.IsActive.Value : false;// 是否啟用
-                    DBuser.FullName = user.FullName;// 使用者姓名
+                // 這兩個是 bool? 的寫法（若你的欄位是 bool?）
+                DBuser.UserIsActive = user.UserIsActive ?? false;
+                DBuser.UserIsLocked = user.UserIsLocked ?? false;
 
+                DBuser.UserRemarks = string.IsNullOrWhiteSpace(user.UserRemarks) ? null : user.UserRemarks.Trim();
 
-                    // 角色
-                    //是否為管理者
-                    var isAdmin = User?.IsInRole("系統管理者") ?? false;
-                    var isEditingSelfAdmin = (DBuser.UserName == GetLoginUserId()) && isAdmin;
+                await context.SaveChangesAsync();
 
-                    // 1) 記憶體過濾：把前端勾選的角色名稱正規化並轉為集合
-                    var selectedNames = (user.RoleName ?? Enumerable.Empty<string>())
-                        .Select(n => (n ?? string.Empty).Trim())
-                        .Where(n => n.Length > 0)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .ToArray();
-
-                    var roleLookup = await context.Roles
-                        .Select(r => new { r.Id, r.RoleName })
-                        .ToListAsync();
-
-                    var selectedSet = new HashSet<string>(selectedNames, StringComparer.OrdinalIgnoreCase);
-
-                    var desiredRoleIds = roleLookup
-                        .Where(r => selectedSet.Contains(r.RoleName))
-                        .Select(r => r.Id)
-                        .ToList();
-
-                    // 2) 目前資料庫中這位使用者的角色 Id
-                    var currentRoleIds = DBuser.UserRoles
-                        .Select(ur => ur.RoleId)
-                        .ToList();
-
-                    // 3) 若是系統管理者在編修自己帳號：保留「系統」群組的角色，不受此次異動影響
-                    var preservedSystemRoleIds = isEditingSelfAdmin
-                        ? DBuser.UserRoles
-                            .Where(ur => ur.Role?.RoleGroup == "系統")
-                            .Select(ur => ur.RoleId)
-                            .ToHashSet()
-                        : new HashSet<int>();
-
-                    // 4) 計算需要移除與需要新增的角色
-                    //    - 要移除：目前有、但（不在此次目標集合）且（也不是要保留的系統角色）
-                    var toRemoveRoleIds = currentRoleIds
-                        .Where(id => !desiredRoleIds.Contains(id) && !preservedSystemRoleIds.Contains(id))
-                        .ToList();
-
-                    //    - 要新增：目標集合有，但目前沒有（即可避免新增重覆）
-                    var toAddRoleIds = desiredRoleIds
-                        .Where(id => !currentRoleIds.Contains(id))
-                        .ToList();
-
-                    // 5) 真的移除
-                    if (toRemoveRoleIds.Count > 0)
-                    {
-                        var removeEntities = DBuser.UserRoles
-                            .Where(ur => toRemoveRoleIds.Contains(ur.RoleId))
-                            .ToList();
-
-                        context.UserRoles.RemoveRange(removeEntities);
-                    }
-
-                    // 6) 真的新增
-                    foreach (var roleId in toAddRoleIds)
-                    {
-                        DBuser.UserRoles.Add(new UserRole
-                        {
-                            UserId = DBuser.Id,
-                            RoleId = roleId
-                        });
-                    }
-
-                    // 7) 其他欄位更新
-                    DBuser.IsActive = user.IsActive ?? false;
-                    DBuser.FullName = user.FullName;
-
-                    await context.SaveChangesAsync();
-
-                }
-                else
-                {
-                    // 未選擇任何角色
-                    TempData["_JSShowAlert"] = "帳號設定-" + DBuser.FullName + "資料更新【失敗】，未選擇任何角色!";
-                    return RedirectToAction(nameof(Index));
-                }
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                TempData["_JSShowAlert"] = "帳號設定-" + DBuser.FullName + "資料更新【失敗】!";
+                string customErrorString = "帳號設定-" + DBuser.UserFullName + "資料更新【失敗】!";
+                Utilities.WriteExceptionIntoLogFile(customErrorString, ex, this.HttpContext);
+                TempData["_JSShowAlert"] = customErrorString;
+                await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "編輯頁資料更新【失敗】", customErrorString, true);
+
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = "帳號設定-" + DBuser.FullName + "資料更新成功!";
+            TempData["_JSShowSuccess"] = "帳號設定-" + DBuser.UserFullName + "資料更新成功!";
+
+            await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "編輯頁資料更新成功");
+
             return RedirectToAction(nameof(Index));
         }
 
         /// <summary>
         /// 顯示密碼重設頁
         /// </summary>
-        /// <param name="UserName">工號</param>
+        /// <param name="UserId">使用者Id</param>
         /// <returns></returns>
-        [Route("[controller]/ResetPassword/{UserName}")]
-        public async Task<IActionResult> ResetPassword([FromRoute] string UserName)
+        [HttpGet("ResetPassword/{userId:int}")]
+        public async Task<IActionResult> ResetPassword([FromRoute] int? UserId)
         {
-            if (string.IsNullOrEmpty(UserName))
+            if (UserId.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
-            // 過濾文字
-            QueryableExtensions.TrimStringProperties(UserName);
-
             var user = await context.Users
-                .FirstOrDefaultAsync(s => s.UserName == UserName);
+                .FirstOrDefaultAsync(s => s.UserId == UserId);
 
             if (user == null)
             {
@@ -391,9 +295,11 @@ namespace BioMedDocManager.Controllers
             // 產生變更密碼模型
             var model = new ChangePasswordModel
             {
-                UserName = user.UserName,
-                FullName = user.FullName,
+                UserAccount = user.UserAccount,
+                UserFullName = user.UserFullName,
             };
+
+            await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "顯示密碼重設頁");
 
             return View(model);
 
@@ -405,23 +311,21 @@ namespace BioMedDocManager.Controllers
         /// <param name="id">工號</param>
         /// <param name="user">資料</param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("ResetPassword/{userId:int}")]
         [ValidateAntiForgeryToken]
-        [Route("[controller]/ResetPassword/{UserName}")]
-        public async Task<IActionResult> ResetPassword([FromRoute] string UserName, ChangePasswordModel PostedUser)
+        public async Task<IActionResult> ResetPassword([FromRoute] int? UserId, ChangePasswordModel PostedUser)
         {
-            if (UserName != PostedUser.UserName)
+            if (PostedUser == null || UserId.GetValueOrDefault() <= 0 || UserId != PostedUser.UserId)
             {
                 return NotFound();
             }
 
             // 過濾文字
-            QueryableExtensions.TrimStringProperties(UserName);
             QueryableExtensions.TrimStringProperties(PostedUser);
 
             var User = await context.Users
                 .Include(u => u.UserRoles)
-                .FirstOrDefaultAsync(s => s.UserName == PostedUser.UserName);
+                .FirstOrDefaultAsync(s => s.UserId == PostedUser.UserId);
 
             if (User == null)
             {
@@ -439,218 +343,498 @@ namespace BioMedDocManager.Controllers
                 }
 
                 // 將新密碼寫入資料庫
-                User.Password = HashPassword(User, PostedUser.NewPassword);
+                User.UserPasswordHash = HashPassword(User, PostedUser.UserNewPassword);
 
                 await context.SaveChangesAsync();
 
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                TempData["_JSShowAlert"] = "帳號設定-" + User.FullName + "密碼重設【失敗】!";
+                string customErrorString = "帳號設定-" + User.UserFullName + "密碼重設【失敗】!";
+                Utilities.WriteExceptionIntoLogFile(customErrorString, ex, this.HttpContext);
+                TempData["_JSShowAlert"] = customErrorString;
+                await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "密碼重設【失敗】", customErrorString, true);
             }
 
-            TempData["_JSShowSuccess"] = "帳號設定-" + User.FullName + "密碼重設完成!";
+            TempData["_JSShowSuccess"] = "帳號設定-" + User.UserFullName + "密碼重設完成!";
+
+            await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "密碼重設完成");
 
             return RedirectToAction(nameof(Index));
 
         }
 
         /// <summary>
-        /// 載入資料與回傳畫面
+        /// 顯示編輯權限頁面 GET: /EditRole/5  或  /EditRole/5?groupIds=1&groupIds=2&preview=true
         /// </summary>
-        private async Task<IActionResult> LoadPage(AccountModel queryModel)
+        /// <param name="UserId">使用者Id</param>
+        /// <param name="groupIds">群組Ids</param>
+        /// <param name="preview">是否預覽</param>
+        /// <returns></returns>
+        [HttpGet("EditRole/{userId:int}")]
+        public async Task<IActionResult> EditRole([FromRoute] int? UserId, [FromQuery] int[]? groupIds, bool preview = false)
+        {
+            if (UserId.GetValueOrDefault() <= 0)
+            {
+                return NotFound();
+            }
+
+            var user = await context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserId == UserId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // 所有群組
+            var allGroups = await context.UserGroups
+                .AsNoTracking()
+                .OrderBy(g => g.UserGroupName)
+                .Select(g => new { g.UserGroupId, g.UserGroupName, g.UserGroupDescription })
+                .ToListAsync();
+
+            // 目前DB已有的群組
+            var currentGroupIds = await context.UserGroupMembers
+                .Where(m => m.UserId == UserId)
+                .Select(m => m.UserGroupId)
+                .ToListAsync();
+
+            // 本次要預覽/顯示用的群組集合（若 querystring 有帶 groupIds 且 preview=true，就用它；否則用DB現況）
+            var workingGroupIds = (preview && groupIds is { Length: > 0 })
+                ? groupIds!.Distinct().ToList()
+                : currentGroupIds;
+
+            var vm = new EditUserGroupsViewModel
+            {
+                UserId = user.UserId,
+                UserAccount = user.UserAccount,
+                UserFullName = user.UserFullName,
+                SelectedUserGroupIds = workingGroupIds,
+                AllUserGroups = allGroups.Select(g => new SelectListItem
+                {
+                    Value = g.UserGroupId.ToString(),
+                    Text = g.UserGroupName,
+                    Selected = workingGroupIds.Contains(g.UserGroupId)
+                }).ToList()
+            };
+
+            // 計算預覽（有效角色、有效權限）
+            await ComputePreviewAsync(vm);
+
+            await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "顯示編輯使用者權限群組頁面");
+
+            return View(vm);
+        }
+
+        /// <summary>
+        /// 編輯權限頁面儲存 POST: /EditRole/5
+        /// </summary>
+        /// <param name="form">表單物件</param>
+        /// <param name="command">命令(save/preview)</param>
+        /// <returns></returns>
+        [HttpPost("EditRole/{userId:int}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditRole([FromRoute] int? UserId, EditUserGroupsPostModel PostedUser, string command)
+        {
+            if (PostedUser == null || UserId.GetValueOrDefault() <= 0 || UserId != PostedUser.UserId)
+            {
+                return NotFound();
+            }
+
+            // 確認使用者存在
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == PostedUser.UserId);
+            if (user == null) { 
+                return NotFound();
+            }
+
+            // 目標群組（右側 selectedGroups 全部值；JS 在 submit 前已全部設成 selected）
+            var want = PostedUser.SelectedUserGroupIds?
+                           .Distinct()
+                           .ToList()
+                       ?? new List<int>();
+
+            // 目前 DB 裡的群組
+            var existing = await context.UserGroupMembers
+                .Where(m => m.UserId == UserId)
+                .Select(m => m.UserGroupId)
+                .ToListAsync();
+
+            var toAdd = want.Except(existing).ToList();
+            var toRemove = existing.Except(want).ToList();
+
+            if (toAdd.Count == 0 && toRemove.Count == 0)
+            {
+                TempData["_JSShowAlert"] = "帳號設定-使用者權限群組未異動，不儲存。";
+            }
+            else
+            {
+                using var tx = await context.Database.BeginTransactionAsync();
+                try
+                {
+                    if (toRemove.Count > 0)
+                    {
+                        await context.UserGroupMembers
+                            .Where(m => m.UserId == UserId && toRemove.Contains(m.UserGroupId))
+                            .ExecuteDeleteAsync();// 真的刪除(軟刪除會非常複雜)
+                    }
+
+                    foreach (var gid in toAdd)
+                    {
+                        context.UserGroupMembers.Add(new UserGroupMember
+                        {
+                            UserId = UserId.Value,
+                            UserGroupId = gid,
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+
+                    await context.SaveChangesAsync();
+                    await tx.CommitAsync();
+                    TempData["_JSShowSuccess"] = "帳號設定-使用者權限群組儲存成功";
+                }
+                catch
+                {
+                    await tx.RollbackAsync();
+                    TempData["_JSShowAlert"] = "帳號設定-使用者權限群組儲存【失敗】";
+                    await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "使用者權限群組儲存【失敗】");
+                }
+            }
+
+            await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "使用者權限群組儲存成功");
+
+            // PRG：回到帳號管理清單頁
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// AJAX：試算目前選取群組產生的「有效角色 / 有效權限」，並標出哪些是新增加的
+        /// </summary>
+        /// <param name="req">使用者權限預覽請求</param>
+        /// <returns>使用者權限預覽結果</returns>
+        [HttpPost("PreviewUserPermissions")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PreviewUserPermissions([FromBody] PreviewUserPermissionsRequest req)
+        {
+            var userId = req.UserId;
+            var newGroupIds = (req.SelectedUserGroupIds ?? new()).Distinct().ToList();
+
+            // 目前 DB 裡這個使用者實際擁有的群組
+            var currentGroupIds = await context.UserGroupMembers
+                .Where(m => m.UserId == userId)
+                .Select(m => m.UserGroupId)
+                .Distinct()
+                .ToListAsync();
+
+            // === 先算「目前 DB 狀態」的角色/權限 ===
+            var currentRoleIds = await context.UserGroupRoles
+                .Where(ugr => currentGroupIds.Contains(ugr.UserGroupId))
+                .Select(ugr => ugr.RoleId)
+                .Distinct()
+                .ToListAsync();
+
+            var currentPermKeys = await context.RolePermissions
+                .Where(rp => currentRoleIds.Contains(rp.RoleId))
+                .Select(rp => new { rp.ResourceId, rp.AppActionId })
+                .Distinct()
+                .ToListAsync();
+            var currentPermSet = currentPermKeys
+                .Select(x => (x.ResourceId, x.AppActionId))
+                .ToHashSet();
+
+            // === 再算「這次選取之後」的角色/權限 ===
+            var roleFromGroups = await context.UserGroupRoles
+                .Where(ugr => newGroupIds.Contains(ugr.UserGroupId))
+                .Join(context.UserGroups,
+                    ugr => ugr.UserGroupId,
+                    ug => ug.UserGroupId,
+                    (ugr, ug) => new
+                    {
+                        ugr.RoleId,
+                        ug.UserGroupId,
+                        ug.UserGroupName
+                    })
+                .ToListAsync();
+
+            var newRoleIds = roleFromGroups
+                .Select(x => x.RoleId)
+                .Distinct()
+                .ToList();
+
+            var roles = await context.Roles
+                .Where(r => newRoleIds.Contains(r.RoleId))
+                .ToListAsync();
+
+            var roleDtos = roles
+                .Select(r => new PreviewRoleDto
+                {
+                    RoleId = r.RoleId,
+                    RoleName = r.RoleName,
+                    RoleGroup = r.RoleGroup,
+                    IsNew = !currentRoleIds.Contains(r.RoleId),   // 這裡沿用原本「是不是新角色」
+                    FromGroups = roleFromGroups
+                        .Where(x => x.RoleId == r.RoleId)
+                        .Select(x => new PreviewRoleSourceGroupDto
+                        {
+                            UserGroupId = x.UserGroupId,
+                            UserGroupName = x.UserGroupName
+                        })
+                        .Distinct()
+                        .ToList()
+                })
+                .OrderBy(r => r.RoleGroup)
+                .ThenBy(r => r.RoleName)
+                .ToList();
+
+            // 權限：RolePermission + Resource + AppAction
+            var permsRaw = await context.RolePermissions
+                .Where(rp => newRoleIds.Contains(rp.RoleId))
+                .Join(context.Resources,
+                    rp => rp.ResourceId,
+                    res => res.ResourceId,
+                    (rp, res) => new { rp, res })
+                .Join(context.AppActions, // 你的動作表若叫 Action，就換成 context.Actions
+                    j => j.rp.AppActionId,
+                    act => act.AppActionId,
+                    (j, act) => new
+                    {
+                        j.rp.RoleId,
+                        j.rp.ResourceId,
+                        j.rp.AppActionId,
+                        j.res.ResourceKey,
+                        j.res.ResourceDisplayName,
+                        act.AppActionName,
+                        act.AppActionDisplayName
+                    })
+                .ToListAsync();
+
+            // 合併同一 Resource + Action（多角色來源只看有沒有 this key）
+            var permDtos = permsRaw
+                .GroupBy(p => new
+                {
+                    p.ResourceId,
+                    p.ResourceKey,
+                    p.ResourceDisplayName,
+                    p.AppActionId,
+                    p.AppActionName,
+                    p.AppActionDisplayName
+                })
+                .Select(g => new PreviewPermissionDto
+                {
+                    ResourceId = g.Key.ResourceId,
+                    ResourceKey = g.Key.ResourceKey,
+                    ResourceDisplayName = g.Key.ResourceDisplayName,
+                    AppActionId = g.Key.AppActionId,
+                    AppActionName = g.Key.AppActionName,
+                    AppActionDisplayName = g.Key.AppActionDisplayName,
+                    IsNew = !currentPermSet.Contains((g.Key.ResourceId, g.Key.AppActionId)) // 原本沒有 → 預覽
+                })
+                .OrderBy(p => p.ResourceDisplayName)
+                .ThenBy(p => p.AppActionName)
+                .ToList();
+
+            return Json(new
+            {
+                roles = roleDtos,
+                permissions = permDtos
+            });
+        }
+
+        /// <summary>
+        /// 計算「有效角色」與「有效權限」並放入 ViewModel
+        /// </summary>
+        private async Task ComputePreviewAsync(EditUserGroupsViewModel vm)
+        {
+            var selected = vm.SelectedUserGroupIds?.Distinct().ToList() ?? new();
+
+            // 1) 先把群組→角色對照拉回來 (在記憶體)
+            var roleFromGroups = await context.UserGroupRoles
+                .Where(x => selected.Contains(x.UserGroupId))
+                .Select(x => new { x.RoleId, x.UserGroupId })
+                .ToListAsync();
+
+            var roleIds = roleFromGroups.Select(x => x.RoleId).Distinct().ToList();
+
+            // 2) 在記憶體先做 RoleId -> List<UserGroupId> 的 map，避免在 EF 查詢內再關聯
+            var roleIdToGroupIds = roleFromGroups
+                .GroupBy(x => x.RoleId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.UserGroupId).Distinct().ToList()
+                );
+
+            // 3) 角色先整包查回（僅資料列），再在記憶體組 EffectiveRoleVm
+            var roles = await context.Roles
+                .Where(r => roleIds.Contains(r.RoleId))
+                .AsNoTracking()
+                .OrderBy(r => r.RoleGroup)
+                .ThenBy(r => r.RoleName)
+                .ToListAsync();
+
+            vm.EffectiveRoles = roles.Select(r => new EffectiveRoleVm
+            {
+                RoleId = r.RoleId,
+                RoleName = r.RoleName,
+                RoleGroup = r.RoleGroup,
+                FromUserGroupIds = roleIdToGroupIds.TryGetValue(r.RoleId, out var list) ? list : new List<int>()
+            }).ToList();
+
+            // ===== 以下原本權限計算維持不動（你這段是在記憶體再做 GroupBy，不會有翻譯問題） =====
+
+            var actionOrders = await context.AppActions
+                .Select(a => new { a.AppActionId, a.AppActionOrder, a.AppActionName, a.AppActionDisplayName })
+                .AsNoTracking()
+                .ToListAsync();
+
+            var actionOrderMap = actionOrders.ToDictionary(a => a.AppActionId, a => a.AppActionOrder);
+
+            var rawPerms = await context.RolePermissions
+                .Where(rp => roleIds.Contains(rp.RoleId))
+                .Join(context.Resources, rp => rp.ResourceId, res => res.ResourceId, (rp, res) => new { rp, res })
+                .Join(context.AppActions, j => j.rp.AppActionId, act => act.AppActionId, (j, act) => new
+                {
+                    j.rp.RoleId,
+                    j.rp.ResourceId,
+                    j.rp.AppActionId,
+                    j.res.ResourceKey,
+                    j.res.ResourceDisplayName,
+                    AppActionName = act.AppActionName,
+                    AppActionDisplayName = act.AppActionDisplayName
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            var permGroups = rawPerms
+                .GroupBy(p => new { p.ResourceId, p.ResourceKey, p.ResourceDisplayName, p.AppActionId, p.AppActionName, p.AppActionDisplayName })
+                .Select(g => new EffectivePermissionVm
+                {
+                    ResourceId = g.Key.ResourceId,
+                    ResourceKey = g.Key.ResourceKey,
+                    ResourceDisplayName = g.Key.ResourceDisplayName,
+                    AppActionId = g.Key.AppActionId,
+                    AppActionName = g.Key.AppActionName,
+                    AppActionDisplayName = g.Key.AppActionDisplayName,
+                    FromRoleIds = g.Select(x => x.RoleId).Distinct().ToList()
+                })
+                .ToList();
+
+            vm.EffectivePermissions = permGroups
+                .OrderBy(p => p.ResourceDisplayName)
+                .ThenBy(p => actionOrderMap.TryGetValue(p.AppActionId, out var ord) ? ord : int.MaxValue)
+                .ToList();
+        }
+
+        /// <summary>
+        /// 建立查詢EF（帳號設定）
+        /// </summary>
+        /// <param name="queryModel">查詢model</param>
+        /// <param name="ct">取消token</param>
+        /// <returns>查詢結果ViewResult</returns>
+        public async Task<IActionResult> BuildQueryAccountSettings(AccountModel queryModel, CancellationToken ct)
         {
             ViewData["pageNumber"] = queryModel.PageNumber.ToString();
 
-            BuildQueryAccountSettings(queryModel, out DynamicParameters parameters, out string sqlDef);
-
+            // 1) 篩選與排序（你的白名單：Key=屬性名, Value=顯示文字）
             FilterOrderBy(queryModel, TableHeaders, InitSort);
 
-            // 使用Dapper對查詢進行分頁(Paginate)
-            var (items, totalCount) = await context.BySqlGetPagedWithCountAsync<dynamic>(
-                sqlDef,
-                orderByPart: $" ORDER BY  {queryModel.OrderBy} {queryModel.SortDir}",
-                queryModel.PageNumber,
-                queryModel.PageSize,
-                parameters
+            // 2) 產生查詢物件（載入角色關聯）
+            IQueryable<User> q = context.Users
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .AsNoTracking();
+
+            // 3) 條件判斷
+            // 工號(帳號)
+            if (!string.IsNullOrEmpty(queryModel.UserAccount))
+            {
+                var s = $"%{queryModel.UserAccount.Trim()}%";
+                q = q.Where(u => EF.Functions.Like(u.UserAccount, s));
+            }
+
+            // 姓名
+            if (!string.IsNullOrEmpty(queryModel.UserFullName))
+            {
+                var s = $"%{queryModel.UserFullName.Trim()}%";
+                q = q.Where(u => EF.Functions.Like(u.UserFullName, s));
+            }
+
+            // 是否啟用
+            if (queryModel.UserIsActive.HasValue)
+            {
+                q = q.Where(u => u.UserIsActive == queryModel.UserIsActive.Value);
+            }
+
+
+            /*
+            // 系統角色（相當於 EXISTS 子查詢）
+            if (queryModel.RoleName != null && queryModel.RoleName.Any())
+            {
+                var roleNames = queryModel.RoleName.ToList();
+                q = q.Where(u => u.UserRoles.Any(ur => roleNames.Contains(ur.Role.RoleName)));
+            }
+            */
+
+
+
+            // 4) 排序（用屬性名白名單）
+            q = q.OrderByWhitelist(
+                queryModel.OrderBy,          // 例如 "UserAccount" / "UserFullName" / "UserLastLoginAt"
+                queryModel.SortDir,          // "asc" / "desc"
+                TableHeaders,                // Key=屬性名, Value=顯示文字
+                tiebreakerProperty: "UserId"     // 第2排序欄位：主鍵
             );
 
-            // 即使無資料，也要確認標題存在
-            List<Dictionary<string, object>> result = items?.Select(item =>
-                (item as IDictionary<string, object>)?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
-            ).ToList() ?? new List<Dictionary<string, object>>();
+            // 5) 分頁＋總筆數
+            var (entityList, totalCount) =
+                await q.PaginateWithCountAsync(queryModel.PageNumber, queryModel.PageSize, ct);
 
-            // Pass data to ViewData
+            // 6) 投影顯示：把 RoleName 串成字串（在記憶體端處理）
+            var shaped = entityList.Select(u => new
+            {
+                u.UserId,
+                u.UserAccount,
+                u.UserFullName,
+                u.UserJobTitle,
+                u.Department.DepartmentName,
+                u.UserEmail,
+                u.UserPhone,
+                u.UserMobile,
+                u.UserIsActiveText,
+                u.UserIsLockedText,
+                u.UserLoginFailedCount,
+                u.UserLastLoginAt,
+                u.UserLastLoginIp,
+                u.UserPasswordChangedAt,
+                u.UserRemarks,
+                u.CreatedAt,
+                u.CreatedBy,
+                u.UpdatedAt,
+                u.UpdatedBy,
+                u.DeletedAt,
+                u.DeletedBy,
+                u.RoleNameList,
+            }).ToList();
+
+            // 7) 轉成 View 需要的 List<Dictionary<string, object>>
+            //    （用屬性名當 key，讓 tbody 依 headers.Keys 的順序渲染）
+            var result = BuildRows(
+                entities: shaped,
+                tableHeaders: TableHeaders,       // Key=屬性名, Value=顯示文字；含 "RowNum" => "#"
+                pageNumber: queryModel.PageNumber,
+                pageSize: queryModel.PageSize,
+                keyMode: KeyMode.PropertyName, // 用屬性名當輸出鍵
+                includeRowNum: true,
+                payloadProps: new[] { "UserId" } // 這裡指名要帶進每列的欄位，但不渲染顯示
+            );
+
             ViewData["totalCount"] = totalCount;
-
             ViewData["tableHeaders"] = TableHeaders;
 
             return View(result);
         }
 
-
-        /// <summary>
-        /// 查詢SQL
-        /// </summary>
-        /// <param name="queryModel"></param>
-        /// <param name="parameters"></param>
-        /// <param name="sqlQuery"></param>
-        private static void BuildQueryAccountSettings(AccountModel queryModel, out DynamicParameters parameters, out string sqlQuery)
-        {
-            sqlQuery = @"
-        SELECT 
-            u.id,
-            u.username,
-            u.full_name,
-            u.job_title,
-            u.department_name,
-            u.email,
-            u.phone,
-            u.mobile,
-            CASE WHEN u.is_active = 1 THEN N'啟用' ELSE N'停用' END AS is_active,
-            u.is_locked,
-            u.login_failed_count,
-            u.last_login_at,
-            u.last_login_ip,
-            u.password_changed_at,
-            u.status,
-            u.remarks,
-            u.created_at,
-            u.created_by,
-            u.updated_at,
-            u.updated_by,
-            u.deleted_at,
-            u.deleted_by,
-            r.RoleNameList
-        FROM [user] u
-        LEFT JOIN (
-            SELECT 
-                ur.user_id,
-                STRING_AGG(r.role_group + N'-' + r.role_name, N'、') AS RoleNameList
-            FROM user_role ur
-            INNER JOIN role r ON ur.role_id = r.id
-            GROUP BY ur.user_id
-        ) r ON r.user_id = u.id
-        WHERE 1 = 1
-    ";
-
-            var whereClauses = new List<string>();
-            parameters = new DynamicParameters();
-
-            // 工號(帳號)
-            if (!string.IsNullOrEmpty(queryModel.UserName))
-            {
-                whereClauses.Add("u.username LIKE @UserName");
-                parameters.Add("UserName", $"%{queryModel.UserName.Trim()}%");
-            }
-
-            // 姓名
-            if (!string.IsNullOrEmpty(queryModel.FullName))
-            {
-                whereClauses.Add("u.full_name LIKE @FullName");
-                parameters.Add("FullName", $"%{queryModel.FullName.Trim()}%");
-            }
-
-            // 是否啟用
-            if (!string.IsNullOrEmpty(queryModel.IsActive.ToString()))
-            {
-                whereClauses.Add("u.is_active = @IsActive");
-                parameters.Add("IsActive", queryModel.IsActive);
-            }
-
-            // 系統角色（用子查詢改寫後，若要用角色做條件可追加 EXISTS）
-            if (queryModel.RoleName != null && queryModel.RoleName.Any())
-            {
-                whereClauses.Add(@"
-            EXISTS (
-                SELECT 1
-                FROM user_role ur2
-                INNER JOIN role r2 ON ur2.role_id = r2.id
-                WHERE ur2.user_id = u.id
-                  AND r2.role_name IN @RoleName
-            )
-        ");
-                parameters.Add("RoleName", queryModel.RoleName);
-            }
-
-            if (whereClauses.Any())
-            {
-                sqlQuery += " AND " + string.Join(" AND ", whereClauses);
-            }
-
-            // 不要 GROUP BY（因為已用子查詢聚合角色，主查詢可直接排序/分頁）
-        }
-
-
-        /// <summary>
-        /// 查詢SQL
-        /// </summary>
-        /// <param name="queryModel"></param>
-        /// <param name="parameters"></param>
-        /// <param name="sqlQuery"></param>
-        private static void BuildQueryAccountSettings0(AccountModel queryModel, out DynamicParameters parameters, out string sqlQuery)
-        {
-
-            sqlQuery = @"
-                SELECT 
-                    u.id,
-                    u.username,
-                    u.full_name,
-                    CASE WHEN u.is_active =1 THEN '啟用' ELSE '停用' END AS is_active,
-                    u.created_at,
-                    STRING_AGG(r.role_group+'-'+r.role_name, '、') AS RoleNameList 
-                FROM [user] u
-                LEFT JOIN user_role ur ON u.id = ur.user_id
-                LEFT JOIN role r ON ur.role_id = r.id
-                Where 1=1
-                ";
-
-            var whereClauses = new List<string>();
-            parameters = new DynamicParameters();
-
-            // 工號
-            if (!string.IsNullOrEmpty(queryModel.UserName))
-            {
-                whereClauses.Add("u.username LIKE @UserName");
-                parameters.Add("UserName", $"%{queryModel.UserName.Trim()}%");
-            }
-
-            // 姓名
-            if (!string.IsNullOrEmpty(queryModel.FullName))
-            {
-                whereClauses.Add("u.full_name LIKE @FullName");
-                parameters.Add("FullName", $"%{queryModel.FullName.Trim()}%");
-            }
-
-            // 是否啟用
-            if (!string.IsNullOrEmpty(queryModel.IsActive.ToString()))
-            {
-                whereClauses.Add("u.is_active = @IsActive");
-                parameters.Add("IsActive", queryModel.IsActive);
-            }
-
-            // 系統角色
-            if (queryModel.RoleName != null && queryModel.RoleName.Any())
-            {
-                whereClauses.Add("r.role_name IN @RoleName");
-                parameters.Add("RoleName", queryModel.RoleName);
-            }
-
-
-            // Add whereClauses to the SQL query if they exist
-            if (whereClauses.Any())
-            {
-                sqlQuery += " AND " + string.Join(" AND ", whereClauses);
-            }
-
-            sqlQuery += " GROUP BY u.id, u.username, u.full_name, u.is_active, u.created_at";
-
-        }
-
-
-
-
-
+        
 
 
     }

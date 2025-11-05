@@ -1,0 +1,20 @@
+﻿### 紀錄開始 ###
+[2025/10/16 13:35:05]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/Login/Login
+ClientIp: 127.0.0.1
+Message: Data is Null. This method or property cannot be called on Null values.
+Source: Microsoft.Data.SqlClient
+StackTrace:
+   at Microsoft.Data.SqlClient.SqlBuffer.ThrowIfNull()
+   at Microsoft.Data.SqlClient.SqlBuffer.get_Int32()
+   at Microsoft.Data.SqlClient.SqlDataReader.GetInt32(Int32 i)
+   at lambda_method85(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 101
+
+### 紀錄結束 ###
+
+

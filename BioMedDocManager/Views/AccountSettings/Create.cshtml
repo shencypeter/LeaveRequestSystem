@@ -3,109 +3,109 @@
     ViewData["Title"] = "帳號設定-新增";
     Layout = "_NoNavLayout";
 
-    // 角色
-    var allRoles = ViewData["AllRoles"] as List<Role>;
-    int total = allRoles.Count;// 所有角色總數
-    var half = (int)Math.Ceiling(allRoles.Count / 2.0);
-    var leftRoles = allRoles.Take(half).ToList();
-    var rightRoles = allRoles.Skip(half).ToList();
-    int roleIndex = 0;
+    var deptItems = new SelectList(
+        (IEnumerable<SelectOption>)ViewBag.DepartmentOptions,
+        "OptionValue", "OptionText"
+    );
+
 }
 
 <div class="m-4">
     <h4 class="m-3 px-2"><i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]</h4>
-    <form id="myForm" class="PasswordForm" method="post" action="@Url.Action("Create", "AccountSettings", new { Username = Model.Username })" target="_top">
+    <form id="myForm" class="PasswordForm" method="post" action="@Url.Action("Create", "AccountSettings", new { UserAccount = Model.UserAccount })" target="_top">
         @Html.AntiForgeryToken()
         <div class="pop">
 
             <!-- 帳號(工號) -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.Username)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserAccount)：</strong></div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.Username, new { @class = "form-control", @required = "required" })
+                    @Html.TextBoxFor(m => m.UserAccount, new { @class = "form-control", @required = "required" })
                 </div>
             </div>
 
             <!-- 姓名 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.FullName)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserFullName)：</strong></div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", @required = "required" })
+                    @Html.TextBoxFor(m => m.UserFullName, new { @class = "form-control", @required = "required" })
                 </div>
             </div>
 
             <!-- 職稱 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.JobTitle)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserJobTitle)：</strong></div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.JobTitle, new { @class = "form-control", @maxlength = "100", placeholder = "例：工程師、經理" })
+                    @Html.TextBoxFor(m => m.UserJobTitle, new { @class = "form-control", @maxlength = "100", placeholder = "例：工程師、經理" })
                 </div>
             </div>
 
             <!-- 部門名稱 -->
-            <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.DepartmentName)：</strong></div>
-                <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.DepartmentName, new { @class = "form-control", @maxlength = "100", placeholder = "例：資訊部、人資部" })
-                </div>
-            </div>
+            @await Html.PartialAsync("_DepartmentSelect", Model.DepartmentId?.ToString(),
+            new ViewDataDictionary(ViewData)
+            {
+                ["Options"] = ViewBag.DepartmentOptions,   // SelectOption[]
+                ["IsRequired"] = true,
+                ["FieldName"] = "DepartmentId",
+                ["LabelText"] = "-- 請選擇部門 --"
+            })
 
             <!-- Email -->
             <div class="row align-items-center my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start">
-                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.Email)：</strong>
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.UserEmail)：</strong>
                 </div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control", @type = "email", @required = "required", @maxlength = "255", placeholder = "name@example.com" })
-                    <span asp-validation-for="Email" class="text-danger"></span>
+                    @Html.TextBoxFor(m => m.UserEmail, new { @class = "form-control", @type = "email", @required = "required", @maxlength = "255", placeholder = "name@example.com" })
+                    <span asp-validation-for="UserEmail" class="text-danger"></span>
                 </div>
             </div>
 
             <!-- 聯絡電話 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.Phone)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserPhone)：</strong></div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", @maxlength = "50", placeholder = "市話（選填）" })
+                    @Html.TextBoxFor(m => m.UserPhone, new { @class = "form-control", @maxlength = "50", placeholder = "市話（選填）" })
                 </div>
             </div>
 
             <!-- 手機 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.Mobile)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserMobile)：</strong></div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.Mobile, new { @class = "form-control", @maxlength = "50", placeholder = "手機（選填）" })
+                    @Html.TextBoxFor(m => m.UserMobile, new { @class = "form-control", @maxlength = "50", placeholder = "手機（選填）" })
                 </div>
             </div>
 
             <!-- 密碼 -->
             <div class="row align-items-center my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start">
-                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.Password)：</strong>
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.UserPasswordHash)：</strong>
                 </div>
                 <div class="col-md-10">
                     <span class="text-12 fw-bold">*密碼長度至少需8個字元</span>
-                    <input asp-for="Password" class="form-control" type="password" required="required" />
-                    <span asp-validation-for="Password" class="text-danger"></span>
+                    <input asp-for="UserPasswordHash" class="form-control" type="password" required="required" />
+                    <span asp-validation-for="UserPasswordHash" class="text-danger"></span>
                 </div>
             </div>
 
             <!-- 確認密碼 -->
             <div class="row align-items-center my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start">
-                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.ConfirmPassword)：</strong>
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.UserConfirmPassword)：</strong>
                 </div>
                 <div class="col-md-10">
                     <span class="text-12 fw-bold">*密碼長度至少需8個字元</span>
-                    <input asp-for="ConfirmPassword" class="form-control" type="password" required="required" />
-                    <span id="ConfirmPasswordValidation" asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    <input asp-for="UserConfirmPassword" class="form-control" type="password" required="required" />
+                    <span id="ConfirmPasswordValidation" asp-validation-for="UserConfirmPassword" class="text-danger"></span>
                 </div>
             </div>
 
             <!-- 使用者是否啟用 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.IsActive)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserIsActive)：</strong></div>
                 <div class="col-md-10">
-                    @Html.DropDownListFor(model => model.IsActive, new List<SelectListItem>
+                    @Html.DropDownListFor(model => model.UserIsActive, new List<SelectListItem>
                     {
                         new SelectListItem { Text = "啟用", Value = "true" },
                                         new SelectListItem { Text = "停用", Value = "false" }
@@ -115,9 +115,9 @@
 
             <!-- 是否鎖定 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.IsLocked)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserIsLocked)：</strong></div>
                 <div class="col-md-10">
-                    @Html.DropDownListFor(model => model.IsLocked, new List<SelectListItem>
+                    @Html.DropDownListFor(model => model.UserIsLocked, new List<SelectListItem>
                                         {
                         new SelectListItem { Text = "未鎖定", Value = "false" },
                                         new SelectListItem { Text = "鎖定", Value = "true" }
@@ -125,72 +125,11 @@
                 </div>
             </div>
 
-            @*
-            <!-- 狀態 -->
-            <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start">
-                    <strong>@Html.LabelFor(m => m.Status)：</strong>
-                </div>
-                <div class="col-md-10">
-                    @Html.DropDownListFor(m => m.Status,
-                                        new SelectList(Enum.GetValues(typeof(BioMedDocManager.Enum.AccountStatus))
-                                        .Cast<BioMedDocManager.Enum.AccountStatus>()
-                                        .Select(e => new SelectListItem
-                                        {
-                                            Text = e.ToString(),   // 顯示文字 (Active, Inactive, Locked...)
-                                            Value = ((int)e).ToString(), // 存入資料庫的數值
-                                        }), "Value", "Text"),
-                                        "請選擇狀態",
-                                        new { @class = "form-select" })
-                </div>
-            </div>
-            *@
             <!-- 備註 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.Remarks)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserRemarks)：</strong></div>
                 <div class="col-md-10">
-                    @Html.TextAreaFor(m => m.Remarks, 4, 50, new { @class = "form-control", @maxlength = "255", placeholder = "備註（選填）" })
-                </div>
-            </div>
-
-            <!-- 管理角色 -->
-            <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.RoleName)：</strong></div>
-                <div class="col-md-10">
-                    <div class="row">
-                        <div class="col-md-6">
-                            @foreach (var role in leftRoles)
-                            {
-                                string checkboxId = $"role{roleIndex++}";
-                                bool isChecked = Model.RoleName != null && Model.RoleName.Contains(role.RoleName);
-                                <div class="form-check text-start">
-                                    <input class="form-check-input"
-                                           type="checkbox"
-                                           name="RoleName"
-                                           value="@role.RoleName"
-                                           id="@checkboxId"
-                                           @(isChecked ? "checked" : "") />
-                                    <label class="form-check-label" for="@checkboxId">【@role.RoleGroup】@role.RoleName</label>
-                                </div>
-                            }
-                        </div>
-                        <div class="col-md-6">
-                            @foreach (var role in rightRoles)
-                            {
-                                string checkboxId = $"role{roleIndex++}";
-                                bool isChecked = Model.RoleName != null && Model.RoleName.Contains(role.RoleName);
-                                <div class="form-check text-start">
-                                    <input class="form-check-input"
-                                           type="checkbox"
-                                           name="RoleName"
-                                           value="@role.RoleName"
-                                           id="@checkboxId"
-                                           @(isChecked ? "checked" : "") />
-                                    <label class="form-check-label" for="@checkboxId">【@role.RoleGroup】@role.RoleName</label>
-                                </div>
-                            }
-                        </div>
-                    </div>
+                    @Html.TextAreaFor(m => m.UserRemarks, 4, 50, new { @class = "form-control", @maxlength = "255", placeholder = "備註（選填）" })
                 </div>
             </div>
 

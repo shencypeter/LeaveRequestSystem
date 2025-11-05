@@ -1,10 +1,13 @@
-﻿using BioMedDocManager.Models;
+﻿using BioMedDocManager.Helpers;
+using BioMedDocManager.Interface;
+using BioMedDocManager.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Identity.Client;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -19,6 +22,9 @@ namespace BioMedDocManager
             // 產生web建立工具
             var builderWeb = WebApplication.CreateBuilder(args);
 
+            // 存取系統設定值
+            AppSettings.Initialize(builderWeb.Configuration);
+
             // 移除 Kestrel Server Header
             builderWeb.WebHost.ConfigureKestrel(options =>
             {
@@ -32,10 +38,16 @@ namespace BioMedDocManager
             builderWeb.Services.AddHttpContextAccessor();
             builderWeb.Services.AddDbContext<DocControlContext>(options =>
                 options.UseSqlServer(builderWeb.Configuration.GetConnectionString("DefaultConnection")));
+            builderWeb.Services.AddScoped<IAccessLogService, AccessLogService>();// 紀錄連線log
             builderWeb.Services.AddDistributedMemoryCache();
             builderWeb.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(20); // 20分鐘
+            });
+
+            builderWeb.Services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "RequestVerificationToken";
             });
 
             // 全站Cookie Policy：一律加Secure、設定SameSite與HttpOnly
@@ -72,9 +84,13 @@ namespace BioMedDocManager
             .PersistKeysToFileSystem(new DirectoryInfo(@"C:\DataProtection-Keys"))
             .SetApplicationName("itriDoc");
 
+            
             // ==============================================
             // 建立web應用程式
             var appWeb = builderWeb.Build();
+
+            // 在Utilities設定網站運作環境變數
+            Utilities.ConfigurePaths(appWeb.Services.GetRequiredService<IWebHostEnvironment>());
 
             // 自訂Headers
             appWeb.UseForwardedHeaders(new ForwardedHeadersOptions

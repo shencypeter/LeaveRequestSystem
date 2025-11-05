@@ -4,7 +4,7 @@
     var isRequired = ViewData["DocUserIsRequired"] as bool? ?? false;// 欄位是否必填
 }
 
-<select id="Id"  name="Id" class="form-select" @(isRequired ? "required" : "")>
+<select id="Id" name="Id" class="form-select" @(isRequired ? "required" : "")>
     <option value="">請選擇</option>
     @foreach (var user in DocUser)
     {

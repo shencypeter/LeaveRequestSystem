@@ -16,7 +16,7 @@
 
         <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.PersonName)：</strong></div>
-            <div class="col-md-4">@Html.DisplayFor(m => m.Person.FullName)</div>
+            <div class="col-md-4">@Html.DisplayFor(m => m.Person.UserFullName)</div>
             <div class="col-md-2 col-form-label text-md-end text-start">
                 @if (Model.Type == "B")
                 {

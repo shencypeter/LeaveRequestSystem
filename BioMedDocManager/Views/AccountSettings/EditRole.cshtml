@@ -1,0 +1,161 @@
+﻿@model BioMedDocManager.Models.EditUserGroupsViewModel
+@{
+    ViewData["Title"] = "帳號設定-編輯使用者權限群組";
+    Layout = "_NoNavLayout";
+
+    var selectedIds = Model.SelectedUserGroupIds ?? new List<int>();
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2"><i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]</h4>
+
+    <form id="myFormDetail" method="post" action="@Url.Action("EditRole", "AccountSettings", new { UserId = Model.UserId })" target="_top">
+        @Html.AntiForgeryToken()
+
+        <div class="pop">
+
+            <!-- 使用者(唯讀) -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>使用者：</strong>
+                </div>
+                <div class="col-md-10">
+                    @Model.UserFullName (@Model.UserAccount)
+                    <input type="hidden" id="userId" name="UserId" value="@Model.UserId" />
+                </div>
+            </div>
+
+            <!-- 群組指派：左右兩側 + 箭頭工具 -->
+            <div class="row align-items-start my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>使用者群組：</strong>
+                </div>
+
+                <div class="col-md-10">
+                    <label class="form-label d-block">（左：可選群組，右：已指派群組）</label>
+
+                    <div class="row">
+                        <!-- 左側：全部群組（未指派） -->
+                        <div class="col-md-5 col-sm-5">
+                            <div class="form-text mb-1">可選群組</div>
+                            <select id="allGroups" multiple class="form-select" size="10">
+                                @foreach (var item in Model.AllUserGroups.Where(g => !g.Selected))
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- 中間：箭頭按鈕 -->
+                        <div class="col-md-2 col-sm-2 d-flex flex-column justify-content-center align-items-center gap-2">
+                            <button type="button" id="btnAddSelected" class="btn btn-outline-secondary">&gt;</button>
+                            <button type="button" id="btnAddAll" class="btn btn-outline-secondary">&gt;&gt;</button>
+                            <button type="button" id="btnRemoveSelected" class="btn btn-outline-secondary">&lt;</button>
+                            <button type="button" id="btnRemoveAll" class="btn btn-outline-secondary">&lt;&lt;</button>
+                        </div>
+
+                        <!-- 右側：已擁有群組（送到後端） -->
+                        <div class="col-md-5 col-sm-5">
+                            <div class="form-text mb-1">已指派群組</div>
+                            <select id="selectedGroups" name="SelectedUserGroupIds" multiple class="form-select" size="10">
+                                @foreach (var item in Model.AllUserGroups.Where(g => g.Selected))
+                                {
+                                    <option value="@item.Value" selected="selected">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" name="command" value="preview" class="btn btn-secondary">預覽權限</button>
+                        <button type="submit" name="command" value="save" class="btn btn-primary">儲存</button>
+                        <a class="btn btn-outline-dark" href="@Url.Action("EditRole", "AccountSettings", new { userId = Model.UserId })">還原</a>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        備註：預覽權限後，若確認無誤請務必點選「儲存」按鈕。
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <!-- 有效角色（由群組帶入） -->
+            <div class="row align-items-start my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>有效角色：</strong>
+                </div>
+                <div class="col-md-10" id="effectiveRolesContainer">
+                    @* 這裡放伺服器初始渲染 (原來那段 if/else)，作為初始畫面 *@
+                    @if (Model.EffectiveRoles == null || Model.EffectiveRoles.Count == 0)
+                    {
+                        <div class="text-muted">(無)</div>
+                    }
+                    else
+                    {
+                        <ul class="list-group">
+                            @foreach (var r in Model.EffectiveRoles)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>@r.RoleGroup - @r.RoleName</span>
+                                    <span class="badge bg-primary">
+                                        @string.Join("、",
+                                        r.FromUserGroupIds
+                                        .Join(Model.AllUserGroups, id => id.ToString(), g => g.Value, (id, g) => g.Text))
+                            </span>
+                        </li>
+                                                }
+                        </ul>
+                    }
+                </div>
+            </div>
+
+            <!-- 有效權限（Resource × Action） -->
+            <div class="row align-items-start my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>有效權限：</strong>
+                </div>
+                <div class="col-md-10" id="effectivePermissionsContainer">
+                    @* 同樣，這裡保留原本初始渲染 *@
+                    @if (Model.EffectivePermissions == null || Model.EffectivePermissions.Count == 0)
+                    {
+                        <div class="text-muted">(無)</div>
+                    }
+                    else
+                    {
+                        var byRes = Model.EffectivePermissions
+                        .GroupBy(p => new { p.ResourceId, p.ResourceDisplayName, p.ResourceKey })
+                        .OrderBy(g => g.Key.ResourceDisplayName);
+
+                        foreach (var g in byRes)
+                        {
+                            <div class="mb-3">
+                                <h6 class="mb-1">
+                                    @g.Key.ResourceDisplayName
+                                </h6>
+                                <div>
+                                    @foreach (var p in g)
+                                    {
+                                        <span class="badge bg-success me-1 mb-1"
+                                              title="動作：@p.AppActionName">
+                                            @p.AppActionDisplayName
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+
+        </div>
+    </form>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        (function () {
+            editRoleEventListener();
+        })();
+    </script>
+}

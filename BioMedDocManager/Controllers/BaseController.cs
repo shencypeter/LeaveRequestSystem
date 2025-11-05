@@ -1,21 +1,25 @@
-﻿using Aspose.Cells;
-using Aspose.Words;
+﻿using Aspose.Words;
+using BioMedDocManager.Extensions;
+using BioMedDocManager.Helpers;
+using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
+using ClosedXML.Excel;
 using Dapper;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
-using A = DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;// HeaderUtilities
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
-
+using A = DocumentFormat.OpenXml.Drawing;
 
 namespace BioMedDocManager.Controllers
 {
@@ -38,11 +42,6 @@ namespace BioMedDocManager.Controllers
         private CompareInfo comparer = CultureInfo.GetCultureInfo("zh-TW").CompareInfo;
 
         /// <summary>
-        /// 合法的上傳檔案屬性
-        /// </summary>
-        private static readonly string[] AllowedExtensions = [".docx", ".xlsx", ".pptx"];
-
-        /// <summary>
         /// 資料庫物件
         /// </summary>
         protected readonly DocControlContext _context = context;
@@ -58,28 +57,23 @@ namespace BioMedDocManager.Controllers
         protected readonly IWebHostEnvironment _hostingEnvironment = hostingEnvironment;
 
         /// <summary>
-        /// Word範本檔案清單
-        /// </summary>
-        public static readonly Dictionary<string, (string TemplateFile, string FileTitle)> WordTemplates =
-        new Dictionary<string, (string, string)>
-        {
-            { "Purchase", ("請購單4.0_套版.docx", "請購單(V4.0)") },
-            { "Acceptance", ("收貨驗收單4.0_套版.docx", "收貨驗收單(V4.0)") },
-            { "FirstAssess", ("初次供應商評核表6.0_套版.docx", "初次供應商評核表(V6.0)") },
-            { "SupplierEval", ("供應商評核表6.0_套版.docx", "供應商評核表(V6.0)") },
-            { "DocumentManageList", ("品質紀錄領用入庫紀錄表4.0_套版.docx", "品質紀錄領用入庫紀錄表(V4.0)") }
-        };
-
-        /// <summary>
         /// View使用的SessionKey(預設使用)
         /// </summary>
         public virtual string SessionKey =>
             $"{ControllerContext.ActionDescriptor.ControllerName}:QueryModel";
+
+        /// <summary>
+        /// 包裝RowNum用
+        /// </summary>
+        public enum KeyMode { DisplayName, PropertyName }
+
+
         #endregion
 
 
 
         #region 方法
+
         /// <summary>
         /// 在每個Action前的動作
         /// 1、在每個 Action 執行前，將 CSP nonce 存入 ViewBag，以便在視圖中使用。
@@ -104,32 +98,32 @@ namespace BioMedDocManager.Controllers
             // *** MENU 與 頁面權限 ***
             // 1) 使用者資訊
             var user = context.HttpContext.User;
-            var userName = user.FindFirst("FullName")?.Value ?? "訪客";
+            var userFullName = user.FindFirst("FullName")?.Value ?? "訪客";
 
             // 2) 權限
-            var hasDoc = HasRoleGroup(user, "文管");
-            var hasPur = HasRoleGroup(user, "採購");
-            var hasAdmin = HasRoleGroup(user, "系統");
+            var HasDoc = HasRoleGroup(user, "文管");
+            var HasPur = HasRoleGroup(user, "採購");
+            var HasAdmin = HasRoleGroup(user, "系統");
 
             // 3) 控制器與目前頁
             var effectiveController = GetEffectiveController();
 
             // 合併所有頁面
-            var allPages = AccountPages
-                .Concat(DocControlPages)
-                .Concat(PurchasingPages);
+            var allPages = AppSettings.AccountPages
+                .Concat(AppSettings.DocControlPages)
+                .Concat(AppSettings.PurchasingPages);
 
             // 目前所在頁面
-            var currentPage = allPages.FirstOrDefault(p => Norm(p.Controller) == effectiveController);
+            var currentPage = allPages.FirstOrDefault(p => Utilities.Norm(p.Controller) == effectiveController);
 
             // 目前所在頁面標籤
             var controllerLabel = currentPage?.Label ?? string.Empty;
 
             // 4) 系統選單（預設 systemPages，依權限過濾）
-            var sysFilter = SystemPages
+            var sysFilter = AppSettings.SystemPages
                 .Where(s =>
-                    (hasPur || s.Label != "電子採購") &&
-                    (hasDoc || s.Label != "文件管理"))
+                    (HasPur || s.Label != "電子採購") &&
+                    (HasDoc || s.Label != "文件管理"))
                 .ToArray();
 
             PageLink[] navPages = sysFilter;
@@ -137,15 +131,15 @@ namespace BioMedDocManager.Controllers
 
             // 符合文管/採購控制器 → 用模組頁面 + 設定 pageMode
             if (effectiveController == "control" ||
-                DocControlPages.Any(p => Norm(p.Controller) == effectiveController))
+                AppSettings.DocControlPages.Any(p => Utilities.Norm(p.Controller) == effectiveController))
             {
-                navPages = GetAvailablePages(user, DocControlPages);
+                navPages = GetAvailablePages(user, AppSettings.DocControlPages);
                 pageMode = "Document";
             }
             else if (effectiveController == "purchase" ||
-                     PurchasingPages.Any(p => Norm(p.Controller) == effectiveController))
+                     AppSettings.PurchasingPages.Any(p => Utilities.Norm(p.Controller) == effectiveController))
             {
-                navPages = GetAvailablePages(user, PurchasingPages);
+                navPages = GetAvailablePages(user, AppSettings.PurchasingPages);
                 pageMode = "Purchase";
             }
 
@@ -161,10 +155,10 @@ namespace BioMedDocManager.Controllers
             var greeting = GreetingByHour(DateTime.Now.Hour);
 
             // 6) 統一丟到 ViewData（layout 讀取）
-            ViewData["UserName"] = userName;
-            ViewData["HasAdmin"] = hasAdmin;
-            ViewData["hasDoc"] = hasDoc;
-            ViewData["hasPur"] = hasPur;
+            ViewData["UserFullName"] = userFullName;
+            ViewData["HasAdmin"] = HasAdmin;
+            ViewData["HasDoc"] = HasDoc;
+            ViewData["HasPur"] = HasPur;
 
             ViewData["EffectiveController"] = effectiveController;
             ViewData["ControllerLabel"] = controllerLabel;
@@ -177,13 +171,6 @@ namespace BioMedDocManager.Controllers
 
             base.OnActionExecuting(context);
         }
-
-        /// <summary>
-        /// 取得小寫文字
-        /// </summary>
-        /// <param name="s">文字</param>
-        /// <returns>小寫文字</returns>
-        protected static string Norm(string? s) => (s ?? string.Empty).Trim().ToLowerInvariant();
 
         /// <summary>
         /// 比對屬於哪個權限群組
@@ -213,12 +200,12 @@ namespace BioMedDocManager.Controllers
             var path = HttpContext?.Request?.Path.ToString() ?? string.Empty; // e.g. "/CDocumentClaim/Index"
             var segs = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
             var ctl = segs.Length >= 1 ? segs[0] : string.Empty;
-            var nctl = Norm(ctl);
+            var nctl = Utilities.Norm(ctl);
 
             if (nctl == "home")
             {
                 var refCtl = GetRefController();
-                return Norm(refCtl);
+                return Utilities.Norm(refCtl);
             }
             return nctl;
         }
@@ -233,12 +220,37 @@ namespace BioMedDocManager.Controllers
 
 
         /// <summary>
+        /// 取得登入者實體
+        /// </summary>
+        /// <returns>登入者ID</returns>
+        public User? GetLoginUser()
+        {
+            var claimValue = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; ;
+
+            if (int.TryParse(claimValue, out int userId))
+            {
+                return context.Users.FirstOrDefault(u => u.UserId == userId);
+            }
+
+            // 找不到或格式不對，回傳 null
+            return null;
+        }
+
+
+        /// <summary>
         /// 取得登入者ID
         /// </summary>
         /// <returns>登入者ID</returns>
-        public string GetLoginUserId()
+        public int? GetLoginUserId()
         {
-            return User.FindFirst(ClaimTypes.Name)?.Value;
+            var claimValue = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; ;
+
+            if (int.TryParse(claimValue, out int userId))
+            {
+                return userId;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -264,6 +276,25 @@ namespace BioMedDocManager.Controllers
 
 
             return [.. result];
+        }
+
+        /// <summary>
+        /// 寫入資料庫：使用者的最後登入時間及IP
+        /// </summary>
+        protected async Task SetUserLoginAuditAsync(User user, CancellationToken ct = default)
+        {
+            // 取 IP
+            var ip = Utilities.GetClientIpAddress(HttpContext.Request);
+
+            if (user is null)
+            {
+                return;
+            }
+
+            user.UserLastLoginAt = DateTime.Now;
+            user.UserLastLoginIp = ip;
+
+            await context.SaveChangesAsync(ct);
         }
 
         /// <summary>
@@ -351,8 +382,8 @@ namespace BioMedDocManager.Controllers
                 ? sourcefilePath_REAL
                 : sourcefilePath_default;
 
-            Workbook workbook = new Workbook(finalSourcePath);
-            Worksheet worksheet = workbook.Worksheets["2020"];
+            Aspose.Cells.Workbook workbook = new Aspose.Cells.Workbook(finalSourcePath);
+            Aspose.Cells.Worksheet worksheet = workbook.Worksheets["2020"];
             Aspose.Cells.PageSetup pageSetup = worksheet.PageSetup;
 
             // Replace header placeholders
@@ -462,9 +493,6 @@ namespace BioMedDocManager.Controllers
             return ms.ToArray();
         }
 
-        // 將像素轉 EMU（Open XML 使用的單位）；1px(96dpi)=9525 EMU
-        private static long PxToEmu(int px) => px * 9525L;
-
         private static void AddTextBoxToSlide(SlidePart slidePart, string text, int xPx, int yPx, int wPx, int hPx)
         {
             var slide = slidePart.Slide;
@@ -490,10 +518,10 @@ namespace BioMedDocManager.Controllers
                 new ApplicationNonVisualDrawingProperties());
 
             // 位置與大小（Transform2D）
-            var x = PxToEmu(xPx);
-            var y = PxToEmu(yPx);
-            var w = PxToEmu(wPx);
-            var h = PxToEmu(hPx);
+            var x = Utilities.PxToEmu(xPx);
+            var y = Utilities.PxToEmu(yPx);
+            var w = Utilities.PxToEmu(wPx);
+            var h = Utilities.PxToEmu(hPx);
 
             shape.ShapeProperties = new ShapeProperties(
                 new A.Transform2D(
@@ -641,60 +669,6 @@ namespace BioMedDocManager.Controllers
             return (docNoA, docNoB); // 不改順序
         }
 
-        /// <summary>
-        /// 交換日期；若date1>date2則交換
-        /// </summary>
-        /// <param name="date1">日期1</param>
-        /// <param name="date2">日期2</param>
-        protected static (DateTime? Start, DateTime? End) GetOrderedDates(DateTime? date1, DateTime? date2)
-        {
-            if (date1 != null && date2 != null)
-            {
-                if (date1 > date2)
-                {
-                    return (date2, date1);
-                }
-                return (date1, date2);
-            }
-
-            return (date1, date2);
-        }
-
-        /// <summary>
-        /// 交換數字；若 num1 > num2 則交換
-        /// </summary>
-        /// <typeparam name="T">可比較的數值型別（如 int、decimal、double）</typeparam>
-        /// <param name="num1">數字1</param>
-        /// <param name="num2">數字2</param>
-        /// <returns>回傳 (較小, 較大)</returns>
-        protected static (T? Min, T? Max) GetOrderedNumbers<T>(T? num1, T? num2) where T : struct, IComparable<T>
-        {
-            if (num1.HasValue && num2.HasValue)
-            {
-                if (num1.Value.CompareTo(num2.Value) > 0)
-                {
-                    return (num2, num1);
-                }
-                return (num1, num2);
-            }
-
-            return (num1, num2);
-        }
-
-        /// <summary>
-        /// 判斷日期A是否大於日期B（支援nullable）
-        /// </summary>
-        /// <param name="a">日期A</param>
-        /// <param name="b">日期B</param>
-        /// <returns>true：A大於B，false：A小於B</returns>
-        public static bool IsDateAGreaterOrEqualThanB(DateTime? a, DateTime? b)
-        {
-            if (!a.HasValue || !b.HasValue)
-                return false;
-
-            return a.Value >= b.Value;
-        }
-
         protected void FilterOrderBy<T>(T queryModel, Dictionary<string, string> TableHeaders, string InitSort) where T : Pagination
         {
             // 允許清單（大小寫不敏感）
@@ -722,38 +696,40 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 匯出查詢結果Excel
+        /// 將查詢後的 rows（List&lt;Dictionary&lt;string,object&gt;&gt;）依 TableHeaders 的順序輸出成 Excel。
+        /// Key = 屬性名/RowNum，Value = 顯示名稱。
         /// </summary>
-        /// <param name="queryModel">查詢model</param>
-        /// <param name="sqlDef">SQL查詢</param>
-        /// <param name="parameters">SQL查詢參數</param>
-        /// <param name="TableHeaders">表頭</param>
-        /// <param name="sheetName">檔名</param>
-        /// <returns>查詢結果Excel檔</returns>
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        // TODO Rename to GetExcelFileAsync?
-        public async Task<IActionResult> GetExcelFile<T>(T queryModel, string sqlDef, DynamicParameters parameters, Dictionary<string, string> TableHeaders, string InitSort, string sheetName) where T : Pagination
+        protected FileContentResult GetExcelFile(
+            List<Dictionary<string, object>> rows,
+            Dictionary<string, string> tableHeaders,
+            string initSort,
+            string sheetName)
         {
-            try
+            if (rows == null || rows.Count == 0)
             {
-
-                FilterOrderBy<T>(queryModel, TableHeaders, InitSort);
-
-                var queryOrderBy = $"{queryModel.OrderBy} {queryModel.SortDir ?? "desc"}".Trim();
-
-                var excelQuery = await _context.ExportToExcelAsync($" {sqlDef}  ORDER BY {queryOrderBy} ", headers: TableHeaders, parameters, sheetName);
-
-                // 設定匯出檔名
-                return File(excelQuery, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{sheetName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
-
-            }
-            catch (FileNotFoundException)
-            {
-                // 查無結果 不提供檔案
-                return NotFound();
+                throw new FileNotFoundException("No data to export");
             }
 
+            var headerKeys = tableHeaders.Keys.ToList();   // 屬性名/RowNum
+            var headerTexts = tableHeaders.Values.ToList(); // 顯示名
+
+            using var wb = new XLWorkbook();
+            var ws = wb.Worksheets.Add(sheetName);
+
+            var dataTable = Utilities.ToDataTable(rows, tableHeaders);
+            ws.Cell(1, 1).InsertTable(dataTable);
+
+            // Auto-adjust column widths
+            ws.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            wb.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"{sheetName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            return File(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
         }
 
         /// <summary>
@@ -913,10 +889,10 @@ namespace BioMedDocManager.Controllers
         {
             return new User
             {
-                UserName = model.Username,
-                FullName = model.FullName,
-                Password = HashPassword(model, model.Password),
-                IsActive = model.IsActive,
+                UserAccount = model.UserAccount,
+                UserFullName = model.UserFullName,
+                UserPasswordHash = HashPassword(model, model.UserPasswordHash),
+                UserIsActive = model.UserIsActive,
                 CreatedAt = model.CreatedAt
             };
         }
@@ -945,18 +921,6 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 檢查檔名副檔名是否合法(大小寫不敏感)
-        /// </summary>
-        public static bool IsValidFileExtension(string fileName)
-        {
-            if (string.IsNullOrEmpty(fileName))
-                return false;
-
-            string extension = Path.GetExtension(fileName).ToLowerInvariant();
-            return AllowedExtensions.Contains(extension);
-        }
-
-        /// <summary>
         /// 匯出Word樣板檔案
         /// </summary>
         /// <param name="code">樣板檔案代號</param>
@@ -965,7 +929,7 @@ namespace BioMedDocManager.Controllers
         protected IActionResult ExportWordFileSingleData(string code, Dictionary<string, object> data)
         {
             // 驗證樣板是否存在
-            if (!WordTemplates.TryGetValue(code, out var config))
+            if (!AppSettings.WordTemplates.TryGetValue(code, out var config))
             {
                 return DismissModal("找不到對應的Word樣板設定（code: " + code + "）");
             }
@@ -1024,7 +988,7 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 匯出日期小工具
+        /// 匯出日期
         /// </summary>
         /// <param name="start">匯出起始日期</param>
         /// <param name="end">匯出結束日期</param>
@@ -1061,7 +1025,7 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         protected IActionResult ExportWordFileListData(string code, string DateRange, List<Dictionary<string, object>> BRowData, List<Dictionary<string, object>> ERowData)
         {
-            if (!WordTemplates.TryGetValue(code, out var config))
+            if (!AppSettings.WordTemplates.TryGetValue(code, out var config))
             {
                 return DismissModal("找不到對應的Word樣板設定（code: " + code + "）");
             }
@@ -1200,92 +1164,6 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// Object轉換成Dictionary格式
-        /// </summary>
-        /// <typeparam name="T">型態</typeparam>
-        /// <param name="obj">Object物件</param>
-        /// <returns>Dictionary格式資料</returns>
-        public static Dictionary<string, object?> ToDictionary<T>(T obj)
-        {
-            var result = new Dictionary<string, object?>();
-
-            var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                                 .Where(p => p.CanRead);
-
-            foreach (var prop in props)
-            {
-                var value = prop.GetValue(obj);
-
-                if (value is DateTime dt)
-                {
-                    result[prop.Name] = dt.ToString("yyyy-MM-dd");
-                }
-                else if (value is DateTime?)
-                {
-                    var nullable = (DateTime?)value;
-                    result[prop.Name] = nullable.HasValue ? nullable.Value.ToString("yyyy-MM-dd") : null;
-                }
-                else
-                {
-                    result[prop.Name] = value;
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        ///  標記小工具：滿足條件回傳 V ，否則回傳空字串
-        /// </summary>
-        /// <param name="condition">條件式</param>
-        /// <returns></returns>
-        private static string MarkCheck(bool condition) => condition ? "✔" : "　";
-
-        /// <summary>
-        /// 標記小工具：滿足條件回傳 ■ ，否則回傳 □
-        /// </summary>
-        /// <param name="condition">條件式</param>
-        /// <returns></returns>
-        private static string MarkCheckRadio(bool condition) => condition ? "■" : "□";
-
-        /// <summary>
-        /// 數值是否與選項內容相同（大小寫不敏感）
-        /// </summary>
-        /// <param name="value">數值</param>
-        /// <param name="candidates">選項陣列</param>
-        /// <returns></returns>
-        private static bool EqualsAny(string? value, params string[] candidates)
-        {
-            if (value is null) return false;
-            foreach (var c in candidates)
-            {
-                if (string.Equals(value.Trim(), c, StringComparison.OrdinalIgnoreCase))
-                    return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 將「單一分數欄位」展開成「多個 V/空白 欄位」並寫入 dict options 代表該欄位所有可能的固定分數（按你規則固定，不需檢查範圍）
-        /// </summary>
-        /// <param name="dict">資料</param>
-        /// <param name="baseName">欄位名</param>
-        /// <param name="value">數值</param>
-        /// <param name="options">數值中的選項</param>
-        private static void FillScoreFlags(IDictionary<string, object> dict, string baseName, int? value, params int[] options)
-        {
-            foreach (var score in options)
-            {
-                var key = $"{baseName}{score}";
-                dict[key] = MarkCheck(value == score);
-            }
-
-            // 移除原本的單值欄位，避免干擾
-            if (dict.ContainsKey(baseName))
-                dict.Remove(baseName);
-        }
-
-        /// <summary>
         /// 關閉Modal並回傳訊息給父視窗
         /// </summary>
         /// <param name="alertMsg">訊息</param>
@@ -1309,13 +1187,66 @@ namespace BioMedDocManager.Controllers
             return Content(html, "text/html; charset=utf-8");
         }
 
+        /// <summary>
+        /// 包裝RowNum用，依 TableHeaders 將實體列表轉為 List<Dictionary<string, object>>，
+        /// 可自動加入 RowNum（#），並可選擇使用「顯示名或屬性名」當輸出鍵。
+        /// </summary>
+        public static List<Dictionary<string, object>> BuildRows<T>(
+            IEnumerable<T> entities,
+            IReadOnlyDictionary<string, string> tableHeaders, // Key=屬性名, Value=顯示文字；含 "RowNum" => "#"
+            int pageNumber,
+            int pageSize,
+            KeyMode keyMode = KeyMode.DisplayName,
+            bool includeRowNum = true,
+            IEnumerable<string>? payloadProps = null // 額外要放進 row 的隱藏鍵（例如 UserId）
+        )
+        {
+            var list = entities as IList<T> ?? entities.ToList();
+            var baseNo = Math.Max(0, (pageNumber - 1)) * Math.Max(0, pageSize);
 
+            var rows = new List<Dictionary<string, object>>(list.Count);
+            foreach (var row in list.Select((entity, i) => new { entity, i }))
+            {
+                var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
+                // 1) 先處理可見欄位（依 headers 決定顯示與順序）
+                foreach (var kv in tableHeaders)
+                {
+                    var propName = kv.Key;
+                    var header = kv.Value;
 
+                    if (propName.Equals("RowNum", StringComparison.OrdinalIgnoreCase))
+                        continue;
 
+                    var val = Utilities.GetProp(row.entity!, propName) ?? "";
+                    var outKey = keyMode == KeyMode.DisplayName ? header : propName;
+                    dict[outKey] = val;
+                }
 
+                // 2) RowNum
+                if (includeRowNum && tableHeaders.TryGetValue("RowNum", out var rowNumDisplay))
+                {
+                    var outKey = keyMode == KeyMode.DisplayName ? rowNumDisplay : "RowNum";
+                    dict[outKey] = baseNo + row.i + 1;
+                }
 
+                // 3) ★ 額外塞 payload（不影響可見欄位與順序；用屬性名當 key）
+                if (payloadProps != null)
+                {
+                    foreach (var p in payloadProps)
+                    {
+                        // 用屬性名存，避免被 DisplayName 模式吃掉
+                        if (!string.IsNullOrWhiteSpace(p) && !dict.ContainsKey(p))
+                        {
+                            dict[p] = Utilities.GetProp(row.entity!, p) ?? "";
+                        }
+                    }
+                }
 
+                rows.Add(dict);
+            }
+            return rows;
+        }
 
 
         #endregion
@@ -1326,91 +1257,74 @@ namespace BioMedDocManager.Controllers
 
 
         #region 變數
-        
-        public static class AdminRoleStrings
+
+        /// <summary>
+        /// 取得「上層部門」用的下拉選單
+        /// </summary>
+        /// <param name="onlyActive">只取啟用</param>
+        /// <param name="excludeId">排除自己（防止自我參照）</param>
+        /// <param name="withInactiveSuffix">停用部門是否加註 (停用)</param>
+        public SelectOption[] DepartmentParentOptions(
+            bool onlyActive = true,
+            int? excludeId = null,
+            bool withInactiveSuffix = true)
         {
-            public const string 系統管理者 = "系統管理者";
+            var query = _context.Departments.AsQueryable();
+
+            if (onlyActive)
+            {
+                query = query.Where(d => d.DepartmentIsActive);
+            }
+            if (excludeId.HasValue)
+            {
+                query = query.Where(d => d.DepartmentId != excludeId.Value);
+            }
+
+            var items = query
+                .Select(d => new
+                {
+                    d.DepartmentId,
+                    d.DepartmentName,
+                    d.DepartmentIsActive
+                })
+                .AsEnumerable() // EF Core 不支援 Culture-aware OrderBy
+                .Select(d => new SelectOption
+                {
+                    OptionValue = d.DepartmentId.ToString(),
+                    OptionText = d.DepartmentName + (withInactiveSuffix && !d.DepartmentIsActive ? " (停用)" : "")
+                })
+                .OrderBy(x => x.OptionText, Comparer<string>.Create((a, b) =>
+                    comparer.Compare(a, b, CompareOptions.StringSort)))
+                .ToArray();
+
+            return items;
         }
 
-        public static class DocRoleStrings
+        /// <summary>
+        /// 若你想把「部門名稱」本身也做成下拉（只能選既有部門）
+        /// </summary>
+        public SelectOption[] DepartmentNameOptions(bool onlyActive = true, bool withInactiveSuffix = false)
         {
-            public const string 領用人 = "領用人";
-            public const string 負責人 = "負責人";
+            var query = _context.Departments.AsQueryable();
+            if (onlyActive)
+                query = query.Where(d => d.DepartmentIsActive);
 
-            public const string Anyone = $"{領用人},{負責人}";
+            var items = query
+                .Select(d => new { d.DepartmentName, d.DepartmentIsActive })
+                .Distinct() // 名稱如有重複可保留一筆
+                .AsEnumerable()
+                .Select(d => new SelectOption
+                {
+                    OptionValue = d.DepartmentName,
+                    OptionText = d.DepartmentName + (withInactiveSuffix && !d.DepartmentIsActive ? " (停用)" : "")
+                })
+                .OrderBy(x => x.OptionText, Comparer<string>.Create((a, b) =>
+                    comparer.Compare(a, b, CompareOptions.StringSort)))
+                .ToArray();
+
+            return items;
         }
 
-        public static class PurchaseRoleStrings
-        {
-            // 定義：本廠內任何需求人員皆可進行請購作業。
-            public const string 請購人 = "請購人";
-
-            // 定義：本廠內行政部人員皆可進行採購作業。
-            public const string 採購人 = "採購人";
-
-            // 定義：需具備新版醫療器材品質管理系統(QMS)或ISO 13485品質系統相關訓練證明，並依「人力資源管理作業程序書(BMP-QP04)」程序進行專業人員任命作業。
-            public const string 評核人 = "評核人";
-
-            /// <summary>
-            /// 僅限特殊畫面使用
-            /// </summary>
-            public const string Anyone = $"{請購人},{採購人},{評核人}";
-        }
-
-        /// <summary>
-        /// 系統初始選單
-        /// </summary>
-        public static readonly PageLink[] SystemPages =
-        [
-            new PageLink { Controller = "Purchase", Label = "電子採購" , Roles = [PurchaseRoleStrings.Anyone] },
-            new PageLink { Controller = "Control",  Label = "文件管理" , Roles = [DocRoleStrings.Anyone] },
-        ];
-
-        /// <summary>
-        /// 帳號管理頁面選單
-        /// </summary>
-        public static readonly PageLink[] AccountPages =
-        [
-            new PageLink { Controller = "AccountSettings", Label = "帳號設定", Roles = [AdminRoleStrings.系統管理者] }
-        ];
-
-        /// <summary>
-        /// 文管系統-各頁面選單
-        /// </summary>
-        public static readonly PageLink[] DocControlPages =
-        [
-            
-            // new PageLink { Controller = "CDocumentClaim", Label = "文件領用", Roles = [DocRoleStrings.領用人] },
-            new PageLink { Controller = "CFileQuery", Label = "文件查詢", Roles = [DocRoleStrings.領用人] },
-            /*
-            new PageLink { Controller = "CDocumentCancel", Label = "文件註銷", Roles = [DocRoleStrings.領用人] },
-            new PageLink { Controller = "COldDocCtrlMaintables", Label = "2020年前表單查詢", Roles = [DocRoleStrings.領用人] },
-            new PageLink { Controller = "CFormQuery", Label = "表單查詢", Roles = [DocRoleStrings.領用人] },
-            new PageLink { Controller = "CDocumentClaimReserve", Label = "保留號文件領用", Roles = [DocRoleStrings.負責人] },
-            new PageLink { Controller = "CIssueTables", Label = "表單發行", Roles = [DocRoleStrings.負責人] },
-            new PageLink { Controller = "CDocumentManage", Label = "文件管制", Roles = [DocRoleStrings.負責人] },
-            new PageLink { Controller = "CBatchStorage", Label = "批量入庫", Roles = [DocRoleStrings.負責人] },
-            new PageLink { Controller = "CManagementSettings", Label = "管理設定", Roles = [DocRoleStrings.負責人] }
-            */
-        ];
-
-        /// <summary>
-        /// 電子採購系統-各頁面選單
-        /// </summary>
-        public static readonly PageLink[] PurchasingPages =
-        [
-            /*
-            new PageLink { Controller = "PSupplier1stAssess", Label = "初供評核", Roles = [PurchaseRoleStrings.評核人] },// 任何人請購人都可初供評核
-            new PageLink { Controller = "PProductClass", Label = "品項選單維護",  Roles = [PurchaseRoleStrings.評核人]},// 限評核人才能維護品項選單
-            new PageLink { Controller = "PPurchaseTables", Label = "請購", Roles = [PurchaseRoleStrings.Anyone] },// 任何人都可請購
-            new PageLink { Controller = "PAcceptance", Label = "驗收", Roles = [PurchaseRoleStrings.Anyone] },// 任何人都可驗收
-            new PageLink { Controller = "PAssessment", Label = "評核與其他紀錄", Roles = [PurchaseRoleStrings.評核人] },// 限評核人才能評核
-            new PageLink { Controller = "PAssessmentResult", Label = "評核結果查詢", Roles = [PurchaseRoleStrings.Anyone] },// 任何人都可看評核結果
-            new PageLink { Controller = "PPurchaseRecords", Label = "請購分析",  Roles = [PurchaseRoleStrings.Anyone]},// 任何人都可看請購分析
-            new PageLink { Controller = "PQualifiedSuppliers", Label = "供應商清冊", Roles = [PurchaseRoleStrings.Anyone] },// 任何人都可查看供應商清冊、新增供應商
-            new PageLink { Controller = "PSupplierReassessments", Label = "再評估",  Roles = [PurchaseRoleStrings.評核人] },// 限評核人才能再評估
-            */
-        ];
 
         /// <summary>
         /// 文管系統-領用人 select
@@ -1425,8 +1339,8 @@ namespace BioMedDocManager.Controllers
                 .Select(
                 user => new SelectOption
                 {
-                    OptionValue = user.UserName,// 工號
-                    OptionText = user.FullName + (user.IsActive ? "" : " (停用)")
+                    OptionValue = user.UserAccount,// 工號
+                    OptionText = user.UserFullName + (user.UserIsActive ? "" : " (停用)")
                 })
                 .AsEnumerable() // 將查詢從 DB 拉到記憶體中（因 EF Core 不支援 Culture-aware OrderBy）
                 .OrderBy(u => u.OptionText, Comparer<string>.Create((x, y) => comparer.Compare(x, y, CompareOptions.StringSort)))
@@ -1443,12 +1357,12 @@ namespace BioMedDocManager.Controllers
         {
             // 資料表要加入「請購人」資訊
             var users = _context.Users
-                .Where(user => (!IsEnabled || user.IsActive))
+                .Where(user => (!IsEnabled || user.UserIsActive))
                 .Select(
                 user => new SelectOption
                 {
-                    OptionValue = user.UserName,// 工號
-                    OptionText = user.FullName + (user.IsActive ? "" : " (停用)")
+                    OptionValue = user.UserAccount,// 工號
+                    OptionText = user.UserFullName + (user.UserIsActive ? "" : " (停用)")
                 })
                 .AsEnumerable() // 將查詢從 DB 拉到記憶體中（因 EF Core 不支援 Culture-aware OrderBy）
                 .OrderBy(u => u.OptionText, Comparer<string>.Create((x, y) => comparer.Compare(x, y, CompareOptions.StringSort)))
@@ -1466,12 +1380,12 @@ namespace BioMedDocManager.Controllers
             var users = _context.Users
                 .Where(user => user.UserRoles.Any(ur =>
                     ur.Role.RoleGroup == "採購" &&
-                    (ur.Role.RoleName == "採購人" || ur.Role.RoleName == "評核人")) && (!IsEnabled || user.IsActive))
+                    (ur.Role.RoleName == "採購人" || ur.Role.RoleName == "評核人")) && (!IsEnabled || user.UserIsActive))
                 .Select(
                 user => new SelectOption
                 {
-                    OptionValue = user.UserName,// 工號
-                    OptionText = user.FullName + (user.IsActive ? "" : " (停用)")
+                    OptionValue = user.UserAccount,// 工號
+                    OptionText = user.UserFullName + (user.UserIsActive ? "" : " (停用)")
                 })
                 .AsEnumerable() // 將查詢從 DB 拉到記憶體中（因 EF Core 不支援 Culture-aware OrderBy）
                 .OrderBy(u => u.OptionText, Comparer<string>.Create((x, y) => comparer.Compare(x, y, CompareOptions.StringSort)))
@@ -1487,12 +1401,12 @@ namespace BioMedDocManager.Controllers
         public SelectOption[] ReceivePerson(bool IsEnabled = false)
         {
             var users = _context.Users
-                .Where(user => (!IsEnabled || user.IsActive))
+                .Where(user => (!IsEnabled || user.UserIsActive))
                 .Select(
                 user => new SelectOption
                 {
-                    OptionValue = user.UserName,// 工號
-                    OptionText = user.FullName + (user.IsActive ? "" : " (停用)")
+                    OptionValue = user.UserAccount,// 工號
+                    OptionText = user.UserFullName + (user.UserIsActive ? "" : " (停用)")
                 })
                 .AsEnumerable() // 將查詢從 DB 拉到記憶體中（因 EF Core 不支援 Culture-aware OrderBy）
                 .OrderBy(u => u.OptionText, Comparer<string>.Create((x, y) => comparer.Compare(x, y, CompareOptions.StringSort)))
@@ -1508,12 +1422,12 @@ namespace BioMedDocManager.Controllers
         public SelectOption[] VerifyPerson(bool IsEnabled = false)
         {
             var users = _context.Users
-                .Where(user => (!IsEnabled || user.IsActive))
+                .Where(user => (!IsEnabled || user.UserIsActive))
                 .Select(
                 user => new SelectOption
                 {
-                    OptionValue = user.UserName,// 工號
-                    OptionText = user.FullName + (user.IsActive ? "" : " (停用)")
+                    OptionValue = user.UserAccount,// 工號
+                    OptionText = user.UserFullName + (user.UserIsActive ? "" : " (停用)")
                 })
                 .AsEnumerable() // 將查詢從 DB 拉到記憶體中（因 EF Core 不支援 Culture-aware OrderBy）
                 .OrderBy(u => u.OptionText, Comparer<string>.Create((x, y) => comparer.Compare(x, y, CompareOptions.StringSort)))

@@ -1,4 +1,5 @@
-﻿using BioMedDocManager.Models;
+﻿using BioMedDocManager.Helpers;
+using BioMedDocManager.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -62,7 +63,7 @@ namespace BioMedDocManager.Controllers
 
             foreach (var user in users)
             {
-                user.Password = HashPassword(user, "Abcd" + user.UserName);
+                user.UserPasswordHash = HashPassword(user, "Abcd" + user.UserAccount);
             }
 
             await context.SaveChangesAsync();
@@ -72,114 +73,207 @@ namespace BioMedDocManager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
         /// <summary>
         /// 登入功能
         /// </summary>
-        /// <param name="username">帳號</param>
+        /// <param name="userAccount">帳號</param>
         /// <param name="password">密碼</param>
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string username, string password, string? captcha, string? returnUrl)
+        public async Task<IActionResult> Login(string userAccount, string password, string? captcha, string? returnUrl)
         {
-#if RELEASE
-                //只有佈署出去要卡驗證碼
-                var storedCaptcha = httpAccessor.HttpContext.Session.GetString("CaptchaCode");
+            try
+            {
 
-                if (string.IsNullOrEmpty(captcha) || !string.Equals(captcha, storedCaptcha, StringComparison.OrdinalIgnoreCase))
-                {
-                    TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
-                    return RedirectToAction(nameof(Index));
-                }
+#if RELEASE
+    var storedCaptcha = httpAccessor.HttpContext.Session.GetString("CaptchaCode");
+    if (string.IsNullOrEmpty(captcha) || !string.Equals(captcha, storedCaptcha, StringComparison.OrdinalIgnoreCase))
+    {
+        TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
+        return RedirectToAction(nameof(Index));
+    }
 #endif
 
-            //記住前一次的 login ID
-            httpAccessor.HttpContext.Session.SetString("try_login", username);
+                httpAccessor.HttpContext.Session.SetString("try_login", userAccount);
 
+                // 取得使用者
+                var user = await context.Users
+                    .FirstOrDefaultAsync(u => u.UserAccount == userAccount);
 
-            // 取得使用者資料
-            var user = context.Users.
-                    FirstOrDefault(u => u.UserName == username && u.IsActive);
+                // 不存在或未啟用（訊息仍給通用字樣）
+                if (user is null || !user.UserIsActive)
+                {
+                    TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";
+                    return RedirectToAction(nameof(Index));
+                }
 
-            // 使用者不存在
-            if (user == null)
-            {
-                TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";// 錯誤訊息不可以寫「使用者不存在」
-                return RedirectToAction(nameof(Index));
-            }
+                // 讀取設定
+                var failedLimit = AppSettings.LoginFailedLimit;   // 例如 3 次
+                var lockMinutes = AppSettings.LoginLockTime;      // 例如 15（分鐘）
+                var now = DateTime.Now;
 
-            var hasher = new PasswordHasher<User>();
-            var result = PasswordVerificationResult.Failed;
-            //DB 密碼尚未加密但通過明碼驗證
-            if (!PasswordUtil.AlreadyHashed(user.Password) && password == user.Password)
-            {
-                //登入成功, 逐次單筆升級加密 (小P本機)
-                user.Password = PasswordUtil.Hash(user.Password);
+                // 若已鎖定，檢查是否過期
+                if (user.UserIsLocked)
+                {
+                    if (user.UserLockedUntil.HasValue && user.UserLockedUntil.Value > now)
+                    {
+                        // 尚在鎖定期
+                        TempData["_JSShowAlert"] = $"帳號或密碼錯誤次數達{failedLimit}次以上，請於{lockMinutes}分鐘後重試(或洽管理者解除鎖定)";
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        // 鎖定已過期 → 自動解鎖
+                        user.UserIsLocked = false;
+                        user.UserLockedUntil = null;
+                        user.UserLoginFailedCount = 0;
+                        await context.SaveChangesAsync();
+                    }
+                }
+
+                // 驗證密碼
+                var hasher = new PasswordHasher<User>();
+                var verify = hasher.VerifyHashedPassword(user, user.UserPasswordHash, password);
+
+                if (verify != PasswordVerificationResult.Success)
+                {
+                    // 失敗：累加計數
+                    user.UserLoginFailedCount = (user.UserLoginFailedCount < int.MaxValue)
+                        ? user.UserLoginFailedCount + 1
+                        : user.UserLoginFailedCount;
+
+                    // 達門檻 → 鎖定一段時間
+                    if (user.UserLoginFailedCount >= failedLimit)
+                    {
+                        user.UserIsLocked = true;
+                        user.UserLockedUntil = now.AddMinutes(lockMinutes);
+
+                        TempData["_JSShowAlert"] = $"帳號或密碼錯誤次數達{failedLimit}次以上，請於{lockMinutes}分鐘後重試(或洽管理者解除鎖定)";
+
+                        // 重設計數
+                        user.UserLoginFailedCount = 0;
+                    }
+                    else
+                    {
+                        // 一律回通用訊息（避免洩漏是帳號還是密碼問題）
+                        TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";
+                    }
+
+                    await context.SaveChangesAsync();
+
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // 成功：清除失敗與鎖定
+                user.UserLoginFailedCount = 0;
+                user.UserIsLocked = false;
+                user.UserLockedUntil = null;
                 await context.SaveChangesAsync();
 
-                result = PasswordVerificationResult.Success;
+                // 登入稽核（時間+IP）
+                await SetUserLoginAuditAsync(user);
+
+                // ===== 1. 透過 UserGroupMember → UserGroupRole → Role 算出有效角色 =====
+
+                // 用導覽屬性的版本（有設定好 navigation 的話建議用這個）
+                var rolesFromGroups = await _context.UserGroupMembers
+                    .Where(ugm => ugm.UserId == user.UserId)
+                    .SelectMany(ugm => ugm.UserGroup!.UserGroupRoles)   // 到 UserGroupRole
+                    .Where(ugr => ugr.Role != null)
+                    .Select(ugr => ugr.Role!)
+                    .Distinct()
+                    .ToListAsync();
+
+                var allRoles = rolesFromGroups;   // 單純用群組的話，就這行就好
+
+
+                // ===== 2. 建立 Claims =====
+                var claims = new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                    new("UserFullName", user.UserFullName),
+                    new("UserAccount", user.UserAccount)
+                };
+
+                // 角色名稱 → 標準 Role Claim：之後 [Authorize(Roles = "xxx")] 會吃這個
+                foreach (var r in allRoles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, r.RoleName));
+                }
+
+                // 角色群組（自訂 ClaimType，方便你之後用來分群或顯示）
+                foreach (var g in allRoles
+                                     .Select(x => x.RoleGroup)
+                                     .Where(x => !string.IsNullOrEmpty(x))
+                                     .Distinct())
+                {
+                    claims.Add(new Claim("RoleGroup", g));
+                }
+
+                // ===== 3. SignIn 寫 Cookie =====
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+                // ===== 4. Redirect =====
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && !returnUrl.Contains("Login"))
+                {
+                    var controller = returnUrl.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
+                    return Redirect($"/{controller}");
+                }
+
+                // 建立 Claims
+                /*
+                var userRoles = await context.UserRoles
+                    .Where(ur => ur.UserId == user.UserId)
+                    .Include(ur => ur.Role)
+                    .Select(ur => new { ur.Role.RoleName, ur.Role.RoleGroup })
+                    .ToListAsync();
+                */
+
+
+                /*
+                var claims = new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                    new("UserFullName", user.UserFullName),
+                    new("UserAccount",user.UserAccount)
+                };*/
+
+
+                /*
+                foreach (var r in userRoles.Select(x => x.RoleName))
+                {
+                    claims.Add(new(ClaimTypes.Role, r));
+                }
+
+                foreach (var g in userRoles.Select(x => x.RoleGroup).Distinct())
+                {
+                    claims.Add(new("RoleGroup", g));
+                }
+                */
+
+
+                /*
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                
+
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && !returnUrl.Contains("Login"))
+                {
+                    var controller = returnUrl.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
+                    return Redirect($"/{controller}");
+                }
+                */
             }
-            else
+            catch (Exception ex)
             {
-                //雜湊登入
-                result = hasher.VerifyHashedPassword(user, hashedPassword: user.Password, providedPassword: password);
-            }
-
-            // 密碼錯誤
-            if (result != PasswordVerificationResult.Success)
-            {
-                TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";// 錯誤訊息不可以寫「密碼錯誤」
-                return RedirectToAction(nameof(Index));
-            }
-
-
-
-            // 密碼正確，開始建立Claims
-
-            // 查使用者擁有的角色與系統群組
-            var userRoles = context.UserRoles
-                .Where(ur => ur.UserId == user.Id)
-                .Include(ur => ur.Role)
-                .Select(ur => new { ur.Role.RoleName, ur.Role.RoleGroup })
-                .ToList();
-
-            // 拆分角色名稱與系統群組
-            var roleNames = userRoles.Select(r => r.RoleName).ToList();
-            var systems = userRoles.Select(r => r.RoleGroup).Distinct().ToList(); //導覽選單
-
-            // 建立Claims
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.Name, user.UserName),
-                new("FullName", user.FullName),
-                new("UserId", user.Id.ToString())
-            };
-
-            foreach (var role in roleNames)
-            {
-                claims.Add(new(ClaimTypes.Role, role)); // 加入角色
-            }
-
-            foreach (var group in systems)
-            {
-                claims.Add(new("RoleGroup", group)); // 加入所屬系統
-            }
-
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-            // 如果有returnUrl，就轉跳網址
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && !returnUrl.Contains("Login"))
-            {
-                var controller = returnUrl.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
-                return Redirect($"/{controller}"); //controller only
+                Utilities.WriteExceptionIntoLogFile("登入異常", ex, this.HttpContext);
             }
 
             return RedirectToAction("Index", "Home");
-
         }
 
         /// <summary>
@@ -193,8 +287,8 @@ namespace BioMedDocManager.Controllers
             // 產生變更密碼模型
             var model = new ChangePasswordModel
             {
-                UserName = User.Identity?.Name ?? "",
-                FullName = User.FindFirst("FullName")?.Value ?? ""
+                UserAccount = User.Identity?.Name ?? "",
+                UserFullName = User.FindFirst("UserFullName")?.Value ?? ""
             };
 
             return View(model);
@@ -217,14 +311,14 @@ namespace BioMedDocManager.Controllers
             }
 
             // 找出使用者id
-            var userId = User.FindFirst("UserId")?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; ;
             var uid = int.Parse(userId);
 
             // 找出使用者實體
             var user = await context.Users.FindAsync(uid);
 
             // 確認原密碼正確
-            var result = VerifyHashedPassword(user, user.Password, model.CurrentPassword);
+            var result = VerifyHashedPassword(user, user.UserPasswordHash, model.UserCurrentPassword);
 
             // 原密碼錯誤
             if (result != PasswordVerificationResult.Success)
@@ -234,7 +328,8 @@ namespace BioMedDocManager.Controllers
             }
 
             // 將新密碼寫入資料庫
-            user.Password = HashPassword(user, model.NewPassword);
+            user.UserPasswordHash = HashPassword(user, model.UserNewPassword);
+            user.UserPasswordChangedAt = DateTime.Now;
 
             await context.SaveChangesAsync();
 

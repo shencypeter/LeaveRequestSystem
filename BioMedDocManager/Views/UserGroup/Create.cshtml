@@ -1,0 +1,55 @@
+﻿@model BioMedDocManager.Models.UserGroup
+@{
+    ViewData["Title"] = "使用者群組-新增";
+    Layout = "_NoNavLayout";
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2"><i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]</h4>
+
+    <form id="myForm" method="post" action="@Url.Action("Create", "UserGroup")" target="_top">
+        @Html.AntiForgeryToken()
+
+        <div class="pop">
+
+            <!-- 群組名稱 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span>
+                    <strong>@Html.LabelFor(m => m.UserGroupName)：</strong>
+                </div>
+                <div class="col-md-10">
+                    @Html.TextBoxFor(m => m.UserGroupName, new { @class = "form-control", @required = "required", @maxlength = "100", placeholder = "請輸入群組名稱" })
+                    <span asp-validation-for="UserGroupName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- 群組說明 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.UserGroupDescription)：</strong>
+                </div>
+                <div class="col-md-10">
+                    @Html.TextAreaFor(m => m.UserGroupDescription, 4, 50, new { @class = "form-control", @maxlength = "255", placeholder = "群組用途說明（選填）" })
+                    <span asp-validation-for="UserGroupDescription" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- 按鈕列 -->
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap justify-content-center">
+                    <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-check-circle"></i>&ensp;儲存
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+
+    </script>
+}

@@ -1,9 +1,9 @@
-using System.Diagnostics;
 using BioMedDocManager.Models;
 using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace BioMedDocManager.Controllers;
 
@@ -45,7 +45,7 @@ public class HomeController(ILogger<HomeController> logger, DocControlContext co
     [Route("/Purchase")]
     [Route("/Control/Index")]
     [Route("/Purchase/Index")]
-    [Authorize(Roles = DocRoleStrings.Anyone + "," + PurchaseRoleStrings.Anyone)]
+    [Authorize(Roles = AppSettings.CombinedRoles.DocAndPurchase)]
     public IActionResult SystemIndex()
     {
         var path = HttpContext.Request.Path.Value?.ToLowerInvariant();

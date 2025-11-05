@@ -1,0 +1,20 @@
+﻿@model string
+@using BioMedDocManager.Models <!-- 確保能找到 SelectOption -->
+
+@{
+    var options   = ViewData["Options"] as SelectOption[] ?? Array.Empty<SelectOption>();
+    var isRequired = ViewData["IsRequired"] as bool? ?? false;   // 欄位是否必填
+    var fieldName  = ViewData["FieldName"] as string ?? "Id";    // name/id 預設 Id
+    var labelText  = ViewData["LabelText"] as string ?? "請選擇"; // 預設顯示文字
+}
+
+<select id="@fieldName" name="@fieldName" class="form-select" @(isRequired ? "required" : "")>
+    <option value="">@labelText</option>
+    @foreach (var opt in options)
+    {
+        <option value="@opt.OptionValue"
+                selected="@(opt.OptionValue == Model?.Trim() ? "selected" : null)">
+            @opt.OptionText
+        </option>
+    }
+</select>

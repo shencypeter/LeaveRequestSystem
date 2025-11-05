@@ -1,4 +1,5 @@
 ﻿@using System.Text.Json
+@using BioMedDocManager.Extensions
 @model List<Dictionary<string, object>>
 @{
     ViewData["Title"] = "文件查詢";
@@ -9,10 +10,10 @@
     queryModel.OrderBy ??= "date_time";
     queryModel.SortDir ??= "asc";
 
-    var UserName = User.FindFirst("UserName")?.Value;
+    var UserAccount = User.FindFirst("UserAccount")?.Value;
     var FullName = User.FindFirst("FullName")?.Value;
 
-    queryModel.Id = queryModel.Id ?? UserName;
+    queryModel.Id = queryModel.Id ?? UserAccount;
 
     var headers = ViewData["tableHeaders"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
@@ -374,29 +375,33 @@
                     <td colspan="@(headers.Count + 1)">查無資料</td>
                 </tr>
             }
-
-            @foreach (var row in Model)
+            else
             {
-                var keys = row.Keys;
-                <tr>
-                    @foreach (var key in keys)
-                    {
-                        if (!headers.ContainsKey(key)){
-                            continue;
+                @foreach (var row in Model)
+                {
+                    <tr>
+                        @foreach (var key in headers.Keys)  @* 依表頭順序取值 *@
+                        {
+                            if (!row.TryGetValue(key, out var cell)) { cell = ""; }
+
+                            string value = TableHelper.FormatValue(cell);
+
+                            <td class="@(value == "(無)" ? "none-data" : "") @((key.Equals("RowNum", StringComparison.OrdinalIgnoreCase)) ? "text-nowrap" : "")">
+                                @Html.Raw(value)
+                            </td>
                         }
 
-                        string value = TableHelper.FormatValue(row[key]);
-
-                        <td class="@(value == "(無)" ? "none-data" : "") @((key == "RowNum") ? "text-nowrap" : "")">
-                            @Html.Raw(value)
+                        <td class="col-actions">
+                            <a class="btn btn-sm btn-outline-secondary detail"
+                               href="@Url.Action("Details", "CFileQuery", new { IdNo = row.TryGetValue("IdNo", out var v) ? v : null })">
+                                檢視
+                            </a>
                         </td>
-                    }
-                    <td class="col-actions">
-                        <a class="btn btn-sm btn-outline-secondary detail" href="@Url.Action("Details", "CFileQuery", new { IdNo = row["id_no"] })">檢視</a>
-                    </td>
-                </tr>
+                    </tr>
+                }
             }
         </tbody>
+
     </table>
 </div>
 

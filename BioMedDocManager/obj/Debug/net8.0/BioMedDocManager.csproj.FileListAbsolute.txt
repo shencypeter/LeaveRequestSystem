@@ -361,9 +361,6 @@ D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDocManager.RazorAssemblyInfo.cache
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDocManager.RazorAssemblyInfo.cs
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDocManager.sourcelink.json
-D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDocManager.dll
-D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\refint\BioMedDocManager.dll
-D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDocManager.pdb
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\bin\Debug\net8.0\appsettings.Development.json
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\bin\Debug\net8.0\appsettings.json
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\bin\Debug\net8.0\BioMedDocManager.staticwebassets.runtime.json
@@ -687,5 +684,9 @@ D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\staticwebassets.build.endpoints.json
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDo.49AF6AF0.Up2Date
+D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDocManager.dll
+D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\refint\BioMedDocManager.dll
+D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDocManager.pdb
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDocManager.genruntimeconfig.cache
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\ref\BioMedDocManager.dll
+D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\scopedcss\Views\Shared\_DepartmentSelect.cshtml.rz.scp.css

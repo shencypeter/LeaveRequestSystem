@@ -1,4 +1,5 @@
-using BioMedDocManager.Enum;
+using BioMedDocManager.Enums;
+using BioMedDocManager.Interface;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,147 +8,150 @@ namespace BioMedDocManager.Models;
 /// <summary>
 /// 使用者
 /// </summary>
-public class User
+public class User : ISoftDelete, IAccount
 {
     /// <summary>
     /// 使用者編號
     /// </summary>
     [Key]
-    [Column("id")]
     [Display(Name = "使用者編號")]
     [DisplayFormat(NullDisplayText = "無")]
-    public int Id { get; set; }
+    public int UserId { get; set; }
 
     /// <summary>
     /// 帳號(工號)
-    /// </summary>    
-    [Column("username")]
+    /// </summary>
     [Display(Name = "帳號(工號)")]
     [DisplayFormat(NullDisplayText = "無")]
     [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
-    public string UserName { get; set; } = null!;
+    public string UserAccount { get; set; } = null!;
 
     /// <summary>
     /// 密碼
-    /// </summary>    
-    [Column("password")]
+    /// </summary>
     [Display(Name = "密碼")]
     [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
-    public string Password { get; set; } = null!;
+    public string UserPasswordHash { get; set; } = null!;
 
     /// <summary>
     /// 姓名
-    /// </summary>    
-    [Column("full_name")]
+    /// </summary>
     [Display(Name = "姓名")]
     [DisplayFormat(NullDisplayText = "無")]
     [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
-    public string FullName { get; set; } = null!;
+    public string UserFullName { get; set; } = null!;
 
     /// <summary>
     /// 職稱
     /// </summary>
-    [Column("job_title")]
     [Display(Name = "職稱")]
     [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
-    public string? JobTitle { get; set; }
-
-    /// <summary>
-    /// 部門名稱
-    /// </summary>
-    [Column("department_name")]
-    [Display(Name = "部門名稱")]
-    [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
-    public string? DepartmentName { get; set; }
+    public string? UserJobTitle { get; set; }
 
     /// <summary>
     /// 電子郵件
     /// </summary>
-    [Column("email")]
     [Display(Name = "電子郵件")]
     [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
-    public string Email { get; set; } = null!;
+    public string UserEmail { get; set; } = null!;
 
     /// <summary>
     /// 聯絡電話
     /// </summary>
-    [Column("phone")]
     [Display(Name = "聯絡電話")]
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
-    public string? Phone { get; set; }
+    public string? UserPhone { get; set; }
 
     /// <summary>
     /// 手機
     /// </summary>
-    [Column("mobile")]
     [Display(Name = "手機")]
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
-    public string? Mobile { get; set; }
+    public string? UserMobile { get; set; }
 
     /// <summary>
     /// 是否啟用
-    /// </summary>    
-    [Column("is_active")]
+    /// </summary>
     [Display(Name = "是否啟用")]
-    public bool IsActive { get; set; } = true;
+    public bool UserIsActive { get; set; } = true;
+
+    /// <summary>
+    /// 是否啟用 文字
+    /// </summary>
+    [NotMapped]
+    [Display(Name = "是否啟用")]
+    public string UserIsActiveText => UserIsActive ? "啟用" : "停用";
 
     /// <summary>
     /// 是否鎖定
     /// </summary>
-    [Column("is_locked")]
     [Display(Name = "是否鎖定")]
-    public bool IsLocked { get; set; } = false;
+    public bool UserIsLocked { get; set; } = false;
+
+    /// <summary>
+    /// 是否鎖定 文字
+    /// </summary>
+    [NotMapped]
+    [Display(Name = "是否鎖定")]
+    public string UserIsLockedText => UserIsLocked ? "已鎖定" : "未鎖定";
+
+    /// <summary>
+    /// 鎖定解除時間
+    /// </summary>
+    [Display(Name = "鎖定解除時間")]
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm:ss}", NullDisplayText = "無")]
+    public DateTime? UserLockedUntil { get; set; }
 
     /// <summary>
     /// 登入失敗次數
     /// </summary>
-    [Column("login_failed_count")]
     [Display(Name = "登入失敗次數")]
-    public int LoginFailedCount { get; set; } = 0;
+    public int UserLoginFailedCount { get; set; } = 0;
 
     /// <summary>
     /// 最後登入時間
     /// </summary>
-    [Column("last_login_at")]
     [Display(Name = "最後登入時間")]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm:ss}", NullDisplayText = "無")]
-    public DateTime? LastLoginAt { get; set; }
+    public DateTime? UserLastLoginAt { get; set; }
 
     /// <summary>
     /// 最後登入 IP
     /// </summary>
-    [Column("last_login_ip")]
     [Display(Name = "最後登入 IP")]
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
-    public string? LastLoginIp { get; set; }
+    public string? UserLastLoginIp { get; set; }
 
     /// <summary>
     /// 密碼最後修改時間
     /// </summary>
-    [Column("password_changed_at")]
     [Display(Name = "密碼最後修改時間")]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm:ss}", NullDisplayText = "無")]
-    public DateTime? PasswordChangedAt { get; set; }
+    public DateTime? UserPasswordChangedAt { get; set; }
 
     /// <summary>
     /// 狀態
     /// </summary>
-    [Column("status")]
     [Display(Name = "帳號狀態")]
-    public AccountStatus Status { get; set; } = AccountStatus.Active;
+    public AccountStatus? UserStatus { get; set; } = AccountStatus.Active;
 
     /// <summary>
     /// 備註
     /// </summary>
-    [Column("remarks")]
     [Display(Name = "備註")]
     [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
-    public string? Remarks { get; set; }
+    public string? UserRemarks { get; set; }
+
+    /// <summary>
+    /// 部門
+    /// </summary>
+    [Display(Name = "部門")]
+    public int? DepartmentId { get; set; }
 
     /// <summary>
     /// 建立時間
     /// </summary>
-    [Column("created_at")]
+    /// </summary>
     [Display(Name = "建立時間")]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm:ss}", NullDisplayText = "無")]
     public DateTime? CreatedAt { get; set; }
@@ -155,14 +159,12 @@ public class User
     /// <summary>
     /// 建立人
     /// </summary>
-    [Column("created_by")]
     [Display(Name = "建立人")]
     public int? CreatedBy { get; set; }
 
     /// <summary>
     /// 更新時間
     /// </summary>
-    [Column("updated_at")]
     [Display(Name = "更新時間")]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm:ss}", NullDisplayText = "無")]
     public DateTime? UpdatedAt { get; set; }
@@ -170,14 +172,12 @@ public class User
     /// <summary>
     /// 更新人
     /// </summary>
-    [Column("updated_by")]
     [Display(Name = "更新人")]
     public int? UpdatedBy { get; set; }
 
     /// <summary>
     /// 刪除時間
     /// </summary>
-    [Column("deleted_at")]
     [Display(Name = "刪除時間")]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm:ss}", NullDisplayText = "無")]
     public DateTime? DeletedAt { get; set; }
@@ -185,12 +185,113 @@ public class User
     /// <summary>
     /// 刪除人
     /// </summary>
-    [Column("deleted_by")]
     [Display(Name = "刪除人")]
     public int? DeletedBy { get; set; }
 
+
     /// <summary>
-    /// 使用者角色清單
+    /// 直連UserRoles-系統角色List
+    /// </summary>
+    [NotMapped]
+    public List<string> RoleName =>
+        UserRoles
+            .Where(ur => ur.Role != null)
+            .Select(ur => ur.Role.RoleName)
+            .ToList();
+
+    /// <summary>
+    /// 直連UserRoles-系統角色文字串
+    /// </summary>
+    [NotMapped]
+    [Display(Name = "強制指定系統角色")]
+    public string RoleNameList =>
+        string.Join("、",
+            UserRoles
+                .Where(ur => ur.Role != null)
+                .Select(ur => $"{ur.Role.RoleGroup}-{ur.Role.RoleName}")
+                .Distinct()
+        );
+
+    /// <summary>
+    /// 使用者群組（名稱清單）
+    /// </summary>
+    [NotMapped]
+    [Display(Name = "使用者群組清單")]
+    public List<string> UserGroupList =>
+        UserGroupMembers?
+            .Where(m => m.UserGroup != null)
+            .Select(m => m.UserGroup!.UserGroupName)
+            .Distinct()
+            .ToList() ?? new();
+
+    /// <summary>
+    /// 群組權限（格式：群組名稱-權限）
+    /// </summary>
+    [NotMapped]
+    [Display(Name = "使用者群組權限清單")]
+    public List<string> UserGroupRoleList =>
+        UserGroupMembers?
+            .Where(m => m.UserGroup != null)
+            .SelectMany(m => m.UserGroup!.UserGroupRoles)
+            .Where(gr => gr.Role != null && gr.UserGroup != null)
+            .Select(gr => $"{gr.UserGroup!.UserGroupName}-{gr.Role!.RoleName}")
+            .Distinct()
+            .ToList() ?? new();
+
+
+
+
+    /// <summary>
+    /// 使用者角色清單-關聯
     /// </summary>
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+
+    /// <summary>
+    /// 使用者群組成員-關聯
+    /// </summary>
+    public ICollection<UserGroupMember> UserGroupMembers { get; set; } = new List<UserGroupMember>();
+
+    /// <summary>
+    /// 部門-關聯
+    /// </summary>
+    public Department Department { get; set; } = new Department();
+
+
+    //  ===== IAccount 介面實作 =====
+    /// <summary>
+    /// IAccount 介面實作-取得帳號類型
+    /// </summary>
+    /// <returns></returns>
+    public AccountType GetAccountType()
+    {
+        return AccountType.Admin;
+    }
+
+    /// <summary>
+    /// IAccount 介面實作-取得使用者ID
+    /// </summary>
+    /// <returns></returns>
+    public int GetUId()
+    {
+        return this.UserId;
+    }
+
+    /// <summary>
+    /// IAccount 介面實作-取得加密後的密碼
+    /// </summary>
+    /// <returns></returns>
+    public string GetEncryptedPassword()
+    {
+        return this.UserPasswordHash;
+    }
+
+    /// <summary>
+    /// IAccount 介面實作-取得使用者帳號
+    /// </summary>
+    /// <returns></returns>
+    public string GetAccount()
+    {
+        return this.UserAccount;
+    }
+
 }

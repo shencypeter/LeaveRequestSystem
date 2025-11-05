@@ -1,9 +1,9 @@
 ﻿@{
-    var userName = ViewData["UserName"]?.ToString() ?? "訪客";
+    var UserFullName = ViewData["UserFullName"]?.ToString() ?? "訪客";
     var greeting = ViewData["Greeting"]?.ToString() ?? "";
-    var hasAdmin = ViewData["HasAdmin"] as bool? ?? false;
-    var hasDoc = ViewData["hasDoc"] as bool? ?? false;
-    var hasPur = ViewData["hasPur"] as bool? ?? false;
+    var HasAdmin = ViewData["HasAdmin"] as bool? ?? false;
+    var HasDoc = ViewData["HasDoc"] as bool? ?? false;
+    var HasPur = ViewData["HasPur"] as bool? ?? false;
 }
 
 <nav class="navbar sticky-top navbar-dark text-light">
@@ -19,9 +19,9 @@
 
         <div class="justify-content-end user-nav">
             <i class="fa-solid fa-user"></i>
-            <span class="ps-1" id="memberNo">@userName</span>
+            <span class="ps-1" id="memberNo">@UserFullName</span>
             <span>，@greeting！&ensp;&ensp;</span>
-            @if (userName == "訪客")
+            @if (UserFullName == "訪客")
             {
                 <a class="btn btn-link px-1 me-3 py-1 logout" href="~/Login">登入</a>
             }
@@ -37,33 +37,33 @@
             <div class="offcanvas-header justify-content-center mt-4">
                 <span class="offcanvas-title fw-bolder align-middle fs-5" id="offcanvasNavbarLabel">
                     <i class="fa-solid fa-user"></i>
-                    <span class="ps-1" id="memberNo">@userName</span>
+                    <span class="ps-1" id="memberNo">@UserFullName</span>
                     <span>，@greeting！&ensp;&ensp;</span>
                 </span>
             </div>
             <hr class="my-0 bg-white w-100" />
             <div class="offcanvas-body">
                 <ul class="navbar-nav justify-content-start flex-grow-1 fw-bold fs-5">
-                    @if (hasDoc)
+                    @if (HasDoc)
                     {
                         <li class="nav-item py-1 px-5">
                             <a class="nav-link active text-decoration" href="~/Control">文管系統</a>
                         </li>
                     }
-                    @if (hasPur)
+                    @if (HasPur)
                     {
                         <li class="nav-item py-1 px-5">
                             <a class="nav-link active text-decoration" href="~/Purchase">電子採購</a>
                         </li>
                     }
-                    @if (hasAdmin)
+                    @if (HasAdmin)
                     {
                         <li class="nav-item py-1 px-5">
                             <a class="nav-link active text-decoration" href="@Url.Action("Index", "AccountSettings")">帳號設定</a>
                         </li>
                     }
 
-                    @if (userName == "訪客")
+                    @if (UserFullName == "訪客")
                     {
                         <li class="nav-item py-1 px-5">
                             <a class="nav-link active text-decoration" href="~/Login">登入</a>

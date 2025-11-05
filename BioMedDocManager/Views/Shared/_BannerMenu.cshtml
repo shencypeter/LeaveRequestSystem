@@ -1,8 +1,8 @@
 ﻿@using System.Linq
 @using System.Collections.Generic
 @{
-    var hasDoc = ViewData["hasDoc"] as bool? ?? false;
-    var hasPur = ViewData["hasPur"] as bool? ?? false;
+    var HasDoc = ViewData["HasDoc"] as bool? ?? false;
+    var HasPur = ViewData["HasPur"] as bool? ?? false;
     var pageMode = ViewData["PageMode"]?.ToString() ?? "";
     var controllerLabel = ViewData["ControllerLabel"]?.ToString() ?? "";
 
@@ -16,7 +16,7 @@
 
     <div class="banner-menu" id="scrollableMenu">
         @* 雙系統切換 *@
-        @if (!string.IsNullOrEmpty(pageMode) && hasDoc && hasPur)
+        @if (!string.IsNullOrEmpty(pageMode) && HasDoc && HasPur)
         {
             var otherSystemLink = pageMode == "Document" ? "/Purchase" : "/Control";
             var otherSystemLabel = pageMode == "Document" ? "往採購系統" : "往文管系統";

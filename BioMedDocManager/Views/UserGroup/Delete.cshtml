@@ -1,0 +1,225 @@
+﻿@model BioMedDocManager.Models.UserGroup
+@{
+    ViewData["Title"] = "使用者群組-刪除";
+    Layout = "_NoNavLayout";
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <form id="myForm"
+          method="post"
+          action="@Url.Action("Delete", "UserGroup", new { userGroupId = Model.UserGroupId })"
+          target="_top">
+        @Html.AntiForgeryToken()
+
+        <div class="pop">
+
+            <!-- 基本資料 -->
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.DisplayNameFor(m => m.UserGroupId)：</strong>
+                </div>
+                <div class="col-md-10">
+                    <div class="form-control-plaintext">
+                        @Model.UserGroupId
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.DisplayNameFor(m => m.UserGroupName)：</strong>
+                </div>
+                <div class="col-md-10">
+                    <div class="form-control-plaintext">
+                        @Model.UserGroupName
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.DisplayNameFor(m => m.UserGroupDescription)：</strong>
+                </div>
+                <div class="col-md-10">
+                    <div class="form-control-plaintext">
+                        @(string.IsNullOrWhiteSpace(Model.UserGroupDescription) ? "(無)" : Model.UserGroupDescription)
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.DisplayNameFor(m => m.CreatedAt)：</strong>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-control-plaintext">
+                        @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "(無)")
+                    </div>
+                </div>
+
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.DisplayNameFor(m => m.UpdatedAt)：</strong>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-control-plaintext">
+                        @(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "(無)")
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+
+            <!-- 成員清冊 -->
+            <div class="my-3">
+                <h5 class="mb-2">
+                    <i class="bi bi-people-fill me-1"></i>群組成員清冊
+                    @if (Model.UserGroupMembers.Any())
+                    {
+                        <span class="badge bg-secondary ms-2">@Model.UserGroupMembers.Count 人</span>
+                    }
+                </h5>
+
+                @if (!Model.UserGroupMembers.Any())
+                {
+                    <div class="text-muted">(無成員)</div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>@Html.DisplayNameFor(m => m.UserGroupMembers.FirstOrDefault().UserId)</th>
+                                    <th>@Html.DisplayNameFor(m => m.UserGroupMembers.FirstOrDefault().User.UserAccount)</th>
+                                    <th>@Html.DisplayNameFor(m => m.UserGroupMembers.FirstOrDefault().User.UserFullName)</th>
+                                    <th>@Html.DisplayNameFor(m => m.UserGroupMembers.FirstOrDefault().User.Department.DepartmentName)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var member in Model.UserGroupMembers)
+                                {
+                                    <tr>
+                                        <td>@member.UserId</td>
+                                        <td>@member.User?.UserAccount</td>
+                                        <td>@member.User?.UserFullName</td>
+                                        <td>
+                                            @(string.IsNullOrEmpty(member.User?.Department?.DepartmentName)
+                                                                                ? "(無)"
+                                                                                : member.User.Department.DepartmentName)
+                                </td>
+                            </tr>
+                                                        }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+            <hr />
+
+            <!-- 角色清冊 -->
+            <div class="my-3">
+                <h5 class="mb-2">
+                    <i class="bi bi-shield-lock-fill me-1"></i>群組角色清冊
+                    @if (Model.UserGroupRoles.Any())
+                    {
+                        <span class="badge bg-secondary ms-2">
+                            有 @Model.UserGroupRoles.Count 個角色使用該群組
+                        </span>
+                    }
+                </h5>
+
+                @if (!Model.UserGroupRoles.Any())
+                {
+                    <div class="text-muted">(無角色)</div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>@Html.DisplayNameFor(m => m.UserGroupRoles.FirstOrDefault().RoleId)</th>
+                                    <th>@Html.DisplayNameFor(m => m.UserGroupRoles.FirstOrDefault().Role.RoleGroup)</th>
+                                    <th>@Html.DisplayNameFor(m => m.UserGroupRoles.FirstOrDefault().Role.RoleName)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in Model.UserGroupRoles)
+                                {
+                                    <tr>
+                                        <td>@r.RoleId</td>
+                                        <td>@r.Role?.RoleGroup</td>
+                                        <td>@r.Role?.RoleName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+            <hr />
+
+            <!-- 刪除警示與按鈕 -->
+            <div class="my-3">
+                @if (Model.UserGroupMembers.Any())
+                {
+                    <!-- 有成員：不能刪 -->
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-circle-fill me-1"></i>
+                        此群組目前仍有成員，無法刪除。請先移除所有群組成員後再刪除群組。
+                    </div>
+                }
+                else
+                {
+                    <!-- 無成員：可刪除 -->
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        確定要刪除這個使用者群組嗎？本動作將無法復原。
+                    </div>
+                }
+            </div>
+
+            <!-- 按鈕列 -->
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap justify-content-center gap-2">
+                    <a href="@Url.Action("Index", "UserGroup")"
+                       class="btn2 btn-outline-secondary mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-arrow-left"></i>&ensp;返回清單
+                    </a>
+
+                    @if (!Model.UserGroupMembers.Any())
+                    {
+                        <!-- 無成員：允許刪除 -->
+                        <button type="submit"
+                                class="btn2 btn-danger mt-2 col-6 col-md-3 mx-1"
+                                onclick="return confirm('確定要刪除此使用者群組嗎？');">
+                            <i class="fas fa-trash-alt"></i>&ensp;確認刪除
+                        </button>
+                    }
+                    else
+                    {
+                        <!-- 有成員：禁用刪除按鈕 -->
+                        <button type="button"
+                                class="btn2 btn-danger mt-2 col-6 col-md-3 mx-1"
+                                disabled="disabled">
+                            <i class="fas fa-trash-alt"></i>&ensp;無法刪除（該群組仍有成員）
+                        </button>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+
+    </script>
+}

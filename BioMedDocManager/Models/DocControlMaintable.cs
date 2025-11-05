@@ -42,7 +42,12 @@ public partial class DocControlMaintable
     [Display(Name = "領用人")]
     [DisplayFormat(NullDisplayText = "無")]
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
-    public string? PersonName { get; set; }
+    public string? PersonName0 { get; set; }
+
+    [NotMapped]
+    [Display(Name = "領用人")]
+    public string PersonName => Person?.UserFullName ?? "無";
+
 
     /// <summary>
     /// 領用人-關聯User
@@ -149,12 +154,29 @@ public partial class DocControlMaintable
     public bool? IsConfidential { get; set; }
 
     /// <summary>
+    /// 是否機密 文字
+    /// </summary>
+    [NotMapped]
+    [Display(Name = "是否機密")]
+    public string IsConfidentialText =>
+        !IsConfidential.HasValue ? "無" : (IsConfidential.Value ? "是" : "否");
+
+    /// <summary>
     /// 是否機敏
     /// </summary>
     [Column("is_sensitive")]
     [Display(Name = "是否機敏")]
     [DisplayFormat(NullDisplayText = "無")]
     public bool? IsSensitive { get; set; }
+
+    /// <summary>
+    /// 是否機敏 文字
+    /// </summary>
+    [NotMapped]
+    [Display(Name = "是否機敏")]
+    public string IsSensitiveText =>
+        !IsSensitive.HasValue ? "無" : (IsSensitive.Value ? "是" : "否");
+
 
     /// <summary>
     /// 檔案的 MIME 類型（Content-Type）
@@ -267,7 +289,7 @@ public partial class DocControlMaintable
     /// 註銷處理人員
     /// </summary>
     [Column("unuse_time_modify_by")]
-    [Display(Name = "註銷處理人員")]    
+    [Display(Name = "註銷處理人員")]
     [DisplayFormat(NullDisplayText = "無")]
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
     public string? UnuseTimeModifyBy { get; set; }
