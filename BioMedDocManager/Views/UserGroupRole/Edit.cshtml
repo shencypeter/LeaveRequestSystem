@@ -1,0 +1,127 @@
+﻿@model BioMedDocManager.Models.UserGroupRoleEditViewModel
+@{
+    ViewData["Title"] = "使用者群組管理";
+    Layout = "_NoNavLayout";
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <form id="myForm" method="post" action="@Url.Action("Edit", "UserGroupRole", new { userGroupId = Model.UserGroupId })" target="_top">
+        @Html.AntiForgeryToken()
+
+        <div class="pop">
+
+            <input type="hidden" asp-for="UserGroupId" />
+
+            @* 顯示群組名稱 *@
+            <div class="row align-items-center my-3">
+                <label class="col-md-2 col-form-label text-md-end">
+                    群組名稱
+                </label>
+                <div class="col-md-10">
+                    <p class="form-control-plaintext">
+                        @Model.UserGroupName
+                    </p>
+                </div>
+            </div>
+
+            @* 角色勾選區 *@
+            <div class="row align-items-center my-3">
+                <label class="col-md-2 col-form-label text-md-end">
+                    角色清單
+                </label>
+                <div class="col-md-10">
+                    @if (Model.AllRoles != null && Model.AllRoles.Any())
+                    {
+                        <div class="row row-cols-1 row-cols-md-2 g-2">
+                            @foreach (var role in Model.AllRoles)
+                            {
+                                var checkboxId = $"role_{role.RoleId}";
+                                var isChecked = Model.SelectedRoleIds != null
+                                && Model.SelectedRoleIds.Contains(role.RoleId);
+
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               name="SelectedRoleIds"
+                                               id="@checkboxId"
+                                               value="@role.RoleId"
+                                               @(isChecked ? "checked=\"checked\"" : "") />
+                                        <label class="form-check-label" for="@checkboxId">
+                                            @role.RoleName
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning mb-0">
+                            目前尚未建立任何角色。
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* 有效權限（Resource × Action） *@
+            <div class="row align-items-start my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    有效權限
+                </div>
+                <div class="col-md-10" id="effectivePermissionsContainer">
+                    @if (Model.EffectivePermissions == null || Model.EffectivePermissions.Count == 0)
+                    {
+                        <div class="text-muted">(無)</div>
+                    }
+                    else
+                    {
+                        var byRes = Model.EffectivePermissions
+                        .GroupBy(p => new { p.ResourceId, p.ResourceDisplayName, p.ResourceKey })
+                        .OrderBy(g => g.Key.ResourceDisplayName);
+
+                        foreach (var g in byRes)
+                        {
+                            <div class="mb-3">
+                                <h6 class="mb-1">
+                                    @g.Key.ResourceDisplayName
+                                </h6>
+                                <div>
+                                    @foreach (var p in g)
+                                    {
+                                        <span class="badge bg-success me-1 mb-1"
+                                              title="動作：@p.AppActionName">
+                                            @p.AppActionDisplayName
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- 按鈕列 -->
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap justify-content-center">
+                    <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-check-circle"></i>&ensp;儲存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        (function () {
+            editGroupRoleEventListener();
+        })()
+    </script>
+}

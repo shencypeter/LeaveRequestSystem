@@ -365,14 +365,13 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 顯示編輯權限頁面 GET: /EditRole/5  或  /EditRole/5?groupIds=1&groupIds=2&preview=true
+        /// 顯示編輯權限頁面 GET: /EditGroup/5
         /// </summary>
         /// <param name="UserId">使用者Id</param>
         /// <param name="groupIds">群組Ids</param>
-        /// <param name="preview">是否預覽</param>
         /// <returns></returns>
-        [HttpGet("EditRole/{userId:int}")]
-        public async Task<IActionResult> EditRole([FromRoute] int? UserId, [FromQuery] int[]? groupIds, bool preview = false)
+        [HttpGet("EditGroup/{userId:int}")]
+        public async Task<IActionResult> EditGroup([FromRoute] int? UserId, [FromQuery] int[]? groupIds)
         {
             if (UserId.GetValueOrDefault() <= 0)
             {
@@ -401,22 +400,17 @@ namespace BioMedDocManager.Controllers
                 .Select(m => m.UserGroupId)
                 .ToListAsync();
 
-            // 本次要預覽/顯示用的群組集合（若 querystring 有帶 groupIds 且 preview=true，就用它；否則用DB現況）
-            var workingGroupIds = (preview && groupIds is { Length: > 0 })
-                ? groupIds!.Distinct().ToList()
-                : currentGroupIds;
-
-            var vm = new EditUserGroupsViewModel
+            var vm = new UserGroupsEditViewModel
             {
                 UserId = user.UserId,
                 UserAccount = user.UserAccount,
                 UserFullName = user.UserFullName,
-                SelectedUserGroupIds = workingGroupIds,
+                SelectedUserGroupIds = currentGroupIds,
                 AllUserGroups = allGroups.Select(g => new SelectListItem
                 {
                     Value = g.UserGroupId.ToString(),
                     Text = g.UserGroupName,
-                    Selected = workingGroupIds.Contains(g.UserGroupId)
+                    Selected = currentGroupIds.Contains(g.UserGroupId)
                 }).ToList()
             };
 
@@ -429,14 +423,14 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 編輯權限頁面儲存 POST: /EditRole/5
+        /// 編輯權限頁面儲存 POST: /EditGroup/5
         /// </summary>
         /// <param name="form">表單物件</param>
         /// <param name="command">命令(save/preview)</param>
         /// <returns></returns>
-        [HttpPost("EditRole/{userId:int}")]
+        [HttpPost("EditGroup/{userId:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditRole([FromRoute] int? UserId, EditUserGroupsPostModel PostedUser, string command)
+        public async Task<IActionResult> EditGroup([FromRoute] int? UserId, UserGroupsEditPostModel PostedUser, string command)
         {
             if (PostedUser == null || UserId.GetValueOrDefault() <= 0 || UserId != PostedUser.UserId)
             {
@@ -644,7 +638,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 計算「有效角色」與「有效權限」並放入 ViewModel
         /// </summary>
-        private async Task ComputePreviewAsync(EditUserGroupsViewModel vm)
+        private async Task ComputePreviewAsync(UserGroupsEditViewModel vm)
         {
             var selected = vm.SelectedUserGroupIds?.Distinct().ToList() ?? new();
 
@@ -664,7 +658,7 @@ namespace BioMedDocManager.Controllers
                     g => g.Select(x => x.UserGroupId).Distinct().ToList()
                 );
 
-            // 3) 角色先整包查回（僅資料列），再在記憶體組 EffectiveRoleVm
+            // 3) 角色先整包查回（僅資料列），再在記憶體組 EffectiveRoleViewModel
             var roles = await context.Roles
                 .Where(r => roleIds.Contains(r.RoleId))
                 .AsNoTracking()
@@ -672,7 +666,7 @@ namespace BioMedDocManager.Controllers
                 .ThenBy(r => r.RoleName)
                 .ToListAsync();
 
-            vm.EffectiveRoles = roles.Select(r => new EffectiveRoleVm
+            vm.EffectiveRoles = roles.Select(r => new EffectiveRoleViewModel
             {
                 RoleId = r.RoleId,
                 RoleName = r.RoleName,
@@ -707,7 +701,7 @@ namespace BioMedDocManager.Controllers
 
             var permGroups = rawPerms
                 .GroupBy(p => new { p.ResourceId, p.ResourceKey, p.ResourceDisplayName, p.AppActionId, p.AppActionName, p.AppActionDisplayName })
-                .Select(g => new EffectivePermissionVm
+                .Select(g => new EffectivePermissionViewModel
                 {
                     ResourceId = g.Key.ResourceId,
                     ResourceKey = g.Key.ResourceKey,

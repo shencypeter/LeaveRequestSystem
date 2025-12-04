@@ -254,7 +254,7 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 使用者群組編輯畫面
     /// </summary>
-    public class EditUserGroupsViewModel
+    public class UserGroupsEditViewModel
     {
         /// <summary>
         /// 使用者Id
@@ -287,18 +287,18 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 預覽區：有效角色
         /// </summary>
-        public List<EffectiveRoleVm> EffectiveRoles { get; set; } = new();
+        public List<EffectiveRoleViewModel> EffectiveRoles { get; set; } = new();
 
         /// <summary>
         /// 預覽區：有效權限（平面，View 端用 Resource 分組）
         /// </summary>
-        public List<EffectivePermissionVm> EffectivePermissions { get; set; } = new();
+        public List<EffectivePermissionViewModel> EffectivePermissions { get; set; } = new();
     }
 
     /// <summary>
     /// 使用者群組編輯儲存模型
     /// </summary>
-    public class EditUserGroupsPostModel
+    public class UserGroupsEditPostModel
     {
         /// <summary>
         /// 使用者Id
@@ -310,12 +310,13 @@ namespace BioMedDocManager.Models
         /// 被選擇到的使用者群組
         /// </summary>
         public List<int>? SelectedUserGroupIds { get; set; }
+
     }
 
     /// <summary>
     /// 有效角色
     /// </summary>
-    public class EffectiveRoleVm
+    public class EffectiveRoleViewModel
     {
         public int RoleId { get; set; }
         public string RoleName { get; set; } = "";
@@ -326,7 +327,7 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 有效權限
     /// </summary>
-    public class EffectivePermissionVm
+    public class EffectivePermissionViewModel
     {
         public int ResourceId { get; set; }
         public string ResourceKey { get; set; } = "";
@@ -337,6 +338,37 @@ namespace BioMedDocManager.Models
         public List<int> FromRoleIds { get; set; } = new();
     }
 
+    /// <summary>
+    /// 群組角色設定用 ViewModel
+    /// </summary>
+    public class UserGroupRoleEditViewModel
+    {
+        /// <summary>
+        /// 群組 Id
+        /// </summary>
+        public int UserGroupId { get; set; }
+
+        /// <summary>
+        /// 群組名稱（顯示用）
+        /// </summary>
+        public string? UserGroupName { get; set; }
+
+        /// <summary>
+        /// 使用者選取的角色 Id 清單
+        /// </summary>
+        public List<int> SelectedRoleIds { get; set; } = new();
+
+        /// <summary>
+        /// 所有可選角色清單（之後 View 可做 checkbox / multi-select）
+        /// </summary>
+        public List<Role> AllRoles { get; set; } = new();
+
+
+        /// <summary>
+        /// 預覽區：有效權限（平面，View 端用 Resource 分組）
+        /// </summary>
+        public List<PreviewPermissionDto> EffectivePermissions { get; set; } = new();
+    }
 
     /// <summary>
     /// 錯誤畫面
@@ -541,6 +573,16 @@ namespace BioMedDocManager.Models
         public bool IsNew { get; set; }
 
         public List<PreviewRoleSourceGroupDto> FromGroups { get; set; } = new();
+    }
+
+    /// <summary>
+    /// 角色預覽權限DTO
+    /// </summary>
+    public class PreviewGroupPermissionsDto
+    {
+        public int UserGroupId { get; set; }
+
+        public List<int>? SelectedRoleIds { get; set; }
     }
 
     /// <summary>

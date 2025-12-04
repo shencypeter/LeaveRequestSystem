@@ -132,13 +132,17 @@
                         <div class="col-12 d-flex justify-content-center flex-wrap gap-2">
 
                             <button type="submit" class="btn2 btn-primary mt-2 search_btn">
-                                <i class="fas fa-search"></i>&ensp;查詢帳號
+                                <i class="fas fa-search"></i>&ensp;查詢
                             </button>
 
                             <a id="create_btn" href="@Url.Action("Create")"
                                class="btn2 btn-success mt-2">
-                                <i class="fas fa-user-plus"></i>&ensp;建立帳號
+                                <i class="fas fa-user-plus"></i>&ensp;建立
                             </a>
+
+                            <button type="button" class="btn2 btn-secondary mt-2 clear_btn" data-form="myForm">
+                                <i class="fas fa-eraser"></i> 清除
+                            </button>
 
                         </div>
                     </div>
@@ -207,7 +211,7 @@
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item detail" href="@Url.Action("Edit", "AccountSettings", new { UserId = row["UserId"] })">編輯</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("EditRole", "AccountSettings", new { UserId = row["UserId"] })">編輯權限</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("EditGroup", "AccountSettings", new { UserId = row["UserId"] })">編輯群組</a></li>
                                     <li><a class="dropdown-item detail" href="@Url.Action("ResetPassword", "AccountSettings", new { UserId = row["UserId"] })">密碼重設</a></li>
 
                                 </ul>

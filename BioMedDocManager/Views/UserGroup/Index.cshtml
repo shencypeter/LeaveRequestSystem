@@ -65,13 +65,17 @@
                         <div class="col-12 d-flex justify-content-center flex-wrap gap-2">
 
                             <button type="submit" class="btn2 btn-primary mt-2 search_btn">
-                                <i class="fas fa-search"></i>&ensp;查詢群組
+                                <i class="fas fa-search"></i>&ensp;查詢
                             </button>
 
                             <a id="create_btn" href="@Url.Action("Create", "UserGroup")"
                                class="btn2 btn-success mt-2">
-                                <i class="fas fa-plus-circle"></i>&ensp;建立群組
+                                <i class="fas fa-plus-circle"></i>&ensp;建立
                             </a>
+
+                            <button type="button" class="btn2 btn-secondary mt-2 clear_btn" data-form="myForm">
+                                <i class="fas fa-eraser"></i> 清除
+                            </button>
 
                         </div>
                     </div>
@@ -144,19 +148,25 @@
                                     <li>
                                         <a class="dropdown-item detail"
                                            href="@Url.Action("Details", "UserGroup", new { userGroupId = row["UserGroupId"] })">
-                                            詳細資料
+                                            查看群組資料
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item detail"
                                            href="@Url.Action("Edit", "UserGroup", new { userGroupId = row["UserGroupId"] })">
-                                            編輯群組
+                                            編輯群組資料
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item detail"
+                                           href="@Url.Action("Edit", "UserGroupRole", new { userGroupId = row["UserGroupId"] })">
+                                            編輯群組【角色】
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item detail"
                                            href="@Url.Action("Delete", "UserGroup", new { userGroupId = row["UserGroupId"] })">
-                                            刪除群組
+                                            刪除群組資料
                                         </a>
                                     </li>
                                     @* 之後如果要做「編輯群組成員」、「編輯群組角色」，可以在這裡再加 *@

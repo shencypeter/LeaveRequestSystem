@@ -684,7 +684,7 @@ function formClearInputListener() {
 // 表格清除輸入資料
 function FormClearInput(form) {
     $('#' + form)
-        .find('input[type="radio"]:not([readonly]):not([disabled]), input[type="text"]:not([readonly]):not([disabled]), input[type="number"]:not([readonly]):not([disabled]), input[type="date"]:not([readonly]):not([disabled]),input[type="file"]:not([readonly]):not([disabled]), textarea:not([readonly]):not([disabled]), select:not([readonly]):not([disabled])')
+        .find('input[type="radio"]:not([readonly]):not([disabled]), input[type="text"]:not([readonly]):not([disabled]), input[type="number"]:not([readonly]):not([disabled]), input[type="date"]:not([readonly]):not([disabled]),input[type="file"]:not([readonly]):not([disabled]),input[type="checkbox"]:not([readonly]):not([disabled]), textarea:not([readonly]):not([disabled]), select:not([readonly]):not([disabled])')
         .val('')
         .prop('checked', false);
 
@@ -1222,43 +1222,6 @@ async function getDocumentClaimNumber(urlType = "") {
     }
 }
 
-// ajax載入供應商資訊
-function loadQualifiedSuppliers(supplierName) {
-    if (!supplierName) {
-        showAlert("請先輸入或選擇供應商名稱", "warning", 4000);
-        return;
-    }
-
-    const token = getCSRFToken();
-
-    $.ajax({
-        url: "/PSupplier1stAssess/LoadQualifiedSuppliers",
-        type: "POST",
-        data: { supplierName: supplierName },
-        headers: {
-            "RequestVerificationToken": token
-        },
-        dataType: "json",
-        success: function (data) {
-
-            $("#qualifiedSupplier_SupplierNo").val(data.supplierNo ?? "");
-            $("#SupplierClass").val(data.supplierClass ?? "");
-            $("#qualifiedSupplier_Tele").val(data.tele ?? "");
-            //$("#ProductClass").val(data.productClass ?? "");
-            $("#qualifiedSupplier_Tele2").val(data.tele2 ?? "");
-            $("#qualifiedSupplier_Remarks").val(data.remarks ?? "");
-            $("#qualifiedSupplier_Fax").val(data.fax ?? "");
-            $("#qualifiedSupplier_Address").val(data.address ?? "");
-            $("#qualifiedSupplier_SupplierInfo").val(data.supplierInfo ?? "");
-
-            hideAlert();
-
-        },
-        error: function (xhr, status, err) {
-            showAlert("警告：" + xhr.responseJSON.message + "。可於上方欄位輸入資料，以新增全新的供應商。", "warning");
-        }
-    });
-}
 
 // 可設定自動隱藏毫秒數 timeoutMs，0 = 不自動隱藏
 function showAlert(message, type = "info", timeoutMs = 0) {
@@ -1334,8 +1297,93 @@ function refreshCaptcha(img) {
     img.src = base + '?t=' + Date.now(); // 防快取
 }
 
-// 編輯權限頁面事件監聽器
-function editRoleEventListener() {
+function renderRoles(roles) {
+
+    const rolesContainer = document.getElementById('effectiveRolesContainer');
+
+    if (!roles.length) {
+        rolesContainer.innerHTML = '<div class="text-muted">(無)</div>';
+        return;
+    }
+
+    let html = '<ul class="list-group">';
+    for (const r of roles) {
+        const previewTag = r.isNew
+            ? '<span class="badge bg-warning text-dark ms-2">(預覽)</span>'
+            : '';
+
+        const groupsText = (r.fromGroups && r.fromGroups.length)
+            ? r.fromGroups.map(g => escapeHtml(g.userGroupName)).join('、')
+            : '（無）';
+
+        html += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>${escapeHtml(r.roleGroup)} - ${escapeHtml(r.roleName)} ${previewTag}</span>
+                  <span class="badge bg-primary">
+                    ${groupsText}
+                  </span>
+                </li>`;
+    }
+    html += '</ul>';
+    rolesContainer.innerHTML = html;
+}
+
+
+function renderPermissions(perms) {
+
+    const permsContainer = document.getElementById('effectivePermissionsContainer');
+
+    if (!perms.length) {
+        permsContainer.innerHTML = '<div class="text-muted">(無)</div>';
+        return;
+    }
+
+    // group by Resource
+    const groups = {};
+    for (const p of perms) {
+        const key = p.resourceId + '|' + p.resourceKey;
+        if (!groups[key]) {
+            groups[key] = {
+                resourceId: p.resourceId,
+                resourceKey: p.resourceKey,
+                resourceDisplayName: p.resourceDisplayName,
+                items: []
+            };
+        }
+        groups[key].items.push(p);
+    }
+
+    let html = '';
+    Object.values(groups).forEach(g => {
+        html += `
+                <div class="mb-3">
+                  <h6 class="mb-1">
+                    ${escapeHtml(g.resourceDisplayName)}
+                  </h6>
+                  <div>
+                `;
+        g.items.forEach(p => {
+            const previewTag = p.isNew ? ' (預覽)' : '';
+            const badgeClass = p.isNew
+                ? 'badge bg-warning text-dark me-1 mb-1'
+                : 'badge bg-success me-1 mb-1';
+
+            html += `
+                    <span class="badge ${badgeClass} me-1 mb-1" title="動作：${escapeHtml(p.appActionName)}">
+                      ${escapeHtml(p.appActionDisplayName)}${previewTag}
+                    </span>`;
+        });
+
+        html += `
+              </div>
+            </div>`;
+    });
+
+    permsContainer.innerHTML = html;
+}
+
+// 編輯群組頁面事件監聽器
+function editGroupEventListener() {
     const all = document.getElementById('allGroups');
     const selected = document.getElementById('selectedGroups');
     const btnAddSelected = document.getElementById('btnAddSelected');
@@ -1349,7 +1397,7 @@ function editRoleEventListener() {
     const rolesContainer = document.getElementById('effectiveRolesContainer');
     const permsContainer = document.getElementById('effectivePermissionsContainer');
 
-    function editRoleMoveOptions(src, dest, onlySelected) {
+    function editGroupMoveOptions(src, dest, onlySelected) {
         const options = Array.from(src.options);
         options.forEach(opt => {
             if (!onlySelected || opt.selected) {
@@ -1361,19 +1409,19 @@ function editRoleEventListener() {
     }
 
     btnAddSelected.addEventListener('click', function () {
-        editRoleMoveOptions(all, selected, true);
+        editGroupMoveOptions(all, selected, true);
     });
 
     btnAddAll.addEventListener('click', function () {
-        editRoleMoveOptions(all, selected, false);
+        editGroupMoveOptions(all, selected, false);
     });
 
     btnRemoveSelected.addEventListener('click', function () {
-        editRoleMoveOptions(selected, all, true);
+        editGroupMoveOptions(selected, all, true);
     });
 
     btnRemoveAll.addEventListener('click', function () {
-        editRoleMoveOptions(selected, all, false);
+        editGroupMoveOptions(selected, all, false);
     });
 
     // 儲存時：確保右側全部選取（這部分你原本就有）
@@ -1431,86 +1479,82 @@ function editRoleEventListener() {
             });
     });
 
-    function renderRoles(roles) {
-        if (!roles.length) {
-            rolesContainer.innerHTML = '<div class="text-muted">(無)</div>';
-            return;
-        }
+}
 
-        let html = '<ul class="list-group">';
-        for (const r of roles) {
-            const previewTag = r.isNew
-                ? '<span class="badge bg-warning text-dark ms-2">(預覽)</span>'
-                : '';
 
-            const groupsText = (r.fromGroups && r.fromGroups.length)
-                ? r.fromGroups.map(g => escapeHtml(g.userGroupName)).join('、')
-                : '（無）';
 
-            html += `
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span>${escapeHtml(r.roleGroup)} - ${escapeHtml(r.roleName)} ${previewTag}</span>
-                  <span class="badge bg-primary">
-                    ${groupsText}
-                  </span>
-                </li>`;
-        }
-        html += '</ul>';
-        rolesContainer.innerHTML = html;
+// 編輯群組角色頁面事件監聽器
+function editGroupRoleEventListener() {
+
+    const form = document.getElementById('myForm');
+    if (!form) {
+        return;
     }
 
+    const userGroupIdInput = form.querySelector('input[name="UserGroupId"]');
+    if (!userGroupIdInput) {
+        return;
+    }
 
-    function renderPermissions(perms) {
-        if (!perms.length) {
-            permsContainer.innerHTML = '<div class="text-muted">(無)</div>';
-            return;
-        }
+    const userGroupId = userGroupIdInput ? userGroupIdInput.value : '';
 
-        // group by Resource
-        const groups = {};
-        for (const p of perms) {
-            const key = p.resourceId + '|' + p.resourceKey;
-            if (!groups[key]) {
-                groups[key] = {
-                    resourceId: p.resourceId,
-                    resourceKey: p.resourceKey,
-                    resourceDisplayName: p.resourceDisplayName,
-                    items: []
-                };
+    const permsContainer = document.getElementById('effectivePermissionsContainer');
+    if (!permsContainer) {
+        return;
+    }
+
+    const checkboxes = form.querySelectorAll('input[type="checkbox"][name="SelectedRoleIds"]');
+    const tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
+    const csrfToken = tokenInput ? tokenInput.value : '';
+
+    // 後端預覽 API
+    const previewUrl = '/UserGroupRole/PreviewGroupPermissions';
+
+    // 打 API 預覽目前 checkbox 勾選後的有效權限
+    function previewPermissions() {
+        const selected = [];
+        checkboxes.forEach(function (cb) {
+            if (cb.checked) {
+                selected.push(parseInt(cb.value, 10));
             }
-            groups[key].items.push(p);
-        }
-
-        let html = '';
-        Object.values(groups).forEach(g => {
-            html += `
-                <div class="mb-3">
-                  <h6 class="mb-1">
-                    ${escapeHtml(g.resourceDisplayName)}
-                  </h6>
-                  <div>
-                `;
-            g.items.forEach(p => {
-                const previewTag = p.isNew ? ' (預覽)' : '';
-                const badgeClass = p.isNew
-                    ? 'badge bg-warning text-dark me-1 mb-1'
-                    : 'badge bg-success me-1 mb-1';
-
-                html += `
-                    <span class="badge ${badgeClass} me-1 mb-1" title="動作：${escapeHtml(p.appActionName)}">
-                      ${escapeHtml(p.appActionDisplayName)}${previewTag}
-                    </span>`;
-            });
-
-            html += `
-              </div>
-            </div>`;
         });
 
-        permsContainer.innerHTML = html;
+        const payload = {
+            userGroupId: userGroupId,
+            selectedRoleIds: selected
+        };
+
+        permsContainer.innerHTML = '<div class="text-muted">計算中...</div>';
+
+        fetch(previewUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(function (r) {
+                if (!r.ok) {
+                    throw new Error('預覽失敗');
+                }
+                return r.json();
+            })
+            .then(function (data) {
+                renderPermissions(data.permissions || []);
+            })
+            .catch(function (err) {
+                console.error(err);
+                permsContainer.innerHTML = '<div class="text-danger">預覽失敗</div>';
+            });
     }
 
-
+    // checkbox 變動就重新預覽
+    checkboxes.forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            previewPermissions();
+        });
+    });
 
 }
 
@@ -1527,7 +1571,7 @@ function escapeHtml(str) {
 }
 
 
-function editRoleeditRoleMoveOptions(src, dest, onlySelected) {
+function editGroupeditGroupMoveOptions(src, dest, onlySelected) {
     const options = Array.from(src.options);
     options.forEach(opt => {
         if (!onlySelected || opt.selected) {
