@@ -54,7 +54,7 @@ namespace BioMedDocManager.Helpers
         }
 
         public async Task NewActionAsync(
-            User loginAccount,
+            User? loginAccount,
             string functionName,
             string actionName,
             string description = "",
@@ -62,6 +62,13 @@ namespace BioMedDocManager.Helpers
         {
             try
             {
+                if (loginAccount == null)
+                {
+                    Exception ex = new Exception("新增操作紀錄時，登入帳號為null");
+                    Utilities.WriteExceptionIntoLogFile("NewActionAsync，loginAccount為null", ex);
+                    throw ex;
+                }
+
                 var log = GenerateBaseAccessLog(AccessLogType.ActionLog, functionName, actionName);
                 log.AccountType = (int)loginAccount.GetAccountType();
                 log.AccountNum = loginAccount.GetAccount();
