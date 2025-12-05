@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BioMedDocManager")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed7eabebcdd9c6d06562b4c30a551d5fb210b09d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+191381337952cf266eab94b722f0435ab01e9bad")]
 [assembly: System.Reflection.AssemblyProductAttribute("BioMedDocManager")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BioMedDocManager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

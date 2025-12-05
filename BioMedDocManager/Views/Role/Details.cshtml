@@ -1,0 +1,89 @@
+﻿@model BioMedDocManager.Models.Role
+@{
+    ViewData["Title"] = "角色管理-詳細資料";
+    Layout = "_NoNavLayout";
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-search me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <div class="pop">
+
+        <div class="row align-items-center my-2">
+            <label asp-for="RoleGroup" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.RoleGroup</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="RoleName" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.RoleName</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="CreatedAt" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">
+                    @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")
+                </p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="UpdatedAt" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">
+                    @(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")
+                </p>
+            </div>
+        </div>
+
+        @{
+            var grouped = ViewBag.GroupPerms as Dictionary<string, List<RolePermission>> ?? new Dictionary<string, List<RolePermission>>();
+        }
+
+        <div class="row align-items-start my-3">
+            <label class="col-md-2 col-form-label text-md-end">
+                有效權限
+            </label>
+            <div class="col-md-10" id="effectivePermissionsContainer">
+
+                @if (!grouped.Any())
+                {
+                    <div class="text-muted">(沒有任何啟用中的資源權限)</div>
+                }
+                else
+                {
+                    foreach (var kv in grouped)
+                    {
+                        var resourceName = kv.Key;
+                        var perms = kv.Value;
+
+                        <div class="mb-3">
+                            <h6 class="mb-1">@resourceName</h6>
+                            <div>
+                                @foreach (var p in perms)
+                                {
+                                    <span class="badge bg-success me-1 mb-1"
+                                          title="動作：@p.AppAction!.AppActionName">
+                                        @p.AppAction!.AppActionDisplayName
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+
+            </div>
+        </div>
+
+
+
+
+    </div>
+</div>

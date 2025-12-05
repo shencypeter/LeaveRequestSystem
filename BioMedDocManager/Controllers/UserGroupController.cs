@@ -3,7 +3,6 @@ using BioMedDocManager.Factory;
 using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
-using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -46,7 +45,7 @@ namespace BioMedDocManager.Controllers
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             // 從 Session 抓查詢 model
-            var queryModel = GetSessionQueryModel<UserGroupQueryModel>();
+            var queryModel = GetSessionQueryModel<UserGroupQueryViewModel>();
 
             // QueryString 有 page 參數就覆蓋
             if (PageSize.HasValue)
@@ -74,7 +73,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index(UserGroupQueryModel queryModel)
+        public async Task<IActionResult> Index(UserGroupQueryViewModel queryModel)
         {
             // 過濾字串
             QueryableExtensions.TrimStringProperties(queryModel);
@@ -321,7 +320,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 建立使用者群組清單查詢 EF
         /// </summary>
-        public async Task<IActionResult> BuildQueryUserGroup(UserGroupQueryModel queryModel, CancellationToken ct)
+        public async Task<IActionResult> BuildQueryUserGroup(UserGroupQueryViewModel queryModel, CancellationToken ct)
         {
             ViewData["pageNumber"] = queryModel.PageNumber.ToString();
 

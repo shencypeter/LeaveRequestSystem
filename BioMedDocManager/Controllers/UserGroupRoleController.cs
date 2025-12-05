@@ -75,8 +75,9 @@ namespace BioMedDocManager.Controllers
                         j.res.ResourceKey,
                         j.res.ResourceDisplayName,
                         act.AppActionName,
-                        act.AppActionDisplayName
-                    })
+                        act.AppActionDisplayName,
+                        act.AppActionOrder,
+                    })                
                 .ToListAsync();
 
             // 合併同一 Resource + Action（多角色的權限只要「有」就好）
@@ -88,9 +89,10 @@ namespace BioMedDocManager.Controllers
                     p.ResourceDisplayName,
                     p.AppActionId,
                     p.AppActionName,
-                    p.AppActionDisplayName
+                    p.AppActionDisplayName,
+                    p.AppActionOrder,
                 })
-                .Select(g => new PreviewPermissionDto
+                .Select(g => new PreviewPermissionViewModel
                 {
                     ResourceId = g.Key.ResourceId,
                     ResourceKey = g.Key.ResourceKey,
@@ -98,11 +100,12 @@ namespace BioMedDocManager.Controllers
                     AppActionId = g.Key.AppActionId,
                     AppActionName = g.Key.AppActionName,
                     AppActionDisplayName = g.Key.AppActionDisplayName,
+                    AppActionOrder = g.Key.AppActionOrder,
                     // 在群組頁這裡不用比較「是不是新」，統一視為目前有效權限
                     IsNew = false
                 })
                 .OrderBy(p => p.ResourceDisplayName)
-                .ThenBy(p => p.AppActionName)
+                .ThenBy(p => p.AppActionOrder)
                 .ToList();
 
 
@@ -223,7 +226,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         [HttpPost("PreviewGroupPermissions")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PreviewGroupPermissions([FromBody] PreviewGroupPermissionsDto req)
+        public async Task<IActionResult> PreviewGroupPermissions([FromBody] PreviewGroupPermissionsViewModel req)
         {
             if (req == null || req.UserGroupId <= 0)
             {
@@ -271,7 +274,8 @@ namespace BioMedDocManager.Controllers
                         j.res.ResourceKey,
                         j.res.ResourceDisplayName,
                         act.AppActionName,
-                        act.AppActionDisplayName
+                        act.AppActionDisplayName,
+                        act.AppActionOrder,
                     })
                 .ToListAsync();
 
@@ -284,9 +288,10 @@ namespace BioMedDocManager.Controllers
                     p.ResourceDisplayName,
                     p.AppActionId,
                     p.AppActionName,
-                    p.AppActionDisplayName
+                    p.AppActionDisplayName,
+                    p.AppActionOrder,
                 })
-                .Select(g => new PreviewPermissionDto
+                .Select(g => new PreviewPermissionViewModel
                 {
                     ResourceId = g.Key.ResourceId,
                     ResourceKey = g.Key.ResourceKey,
@@ -294,10 +299,11 @@ namespace BioMedDocManager.Controllers
                     AppActionId = g.Key.AppActionId,
                     AppActionName = g.Key.AppActionName,
                     AppActionDisplayName = g.Key.AppActionDisplayName,
+                    AppActionOrder = g.Key.AppActionOrder,
                     IsNew = !currentPermSet.Contains((g.Key.ResourceId, g.Key.AppActionId))
                 })
                 .OrderBy(p => p.ResourceDisplayName)
-                .ThenBy(p => p.AppActionName)
+                .ThenBy(p => p.AppActionOrder)
                 .ToList();
 
             return Json(new

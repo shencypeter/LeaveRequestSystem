@@ -1,0 +1,145 @@
+﻿@model BioMedDocManager.Models.Resource
+@using BioMedDocManager.Models
+
+@{
+    ViewData["Title"] = "系統資源管理-詳細資料";
+    Layout = "_NoNavLayout";
+
+    var groupUsage = ViewBag.ResourceGroupUsageList as List<ResourceGroupUsageViewModel> ?? new();
+    int groupCount = groupUsage.Count;
+
+    bool hasAnyRolePermission = ViewBag.HasAnyRolePermission ?? false;
+    int rolePermCount = ViewBag.RolePermissionCount ?? 0;
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-search me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <div class="pop">
+
+        <!-- 原本的基本資訊區塊 -->
+
+        <div class="row align-items-center my-2">
+            <label asp-for="ResourceType" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.ResourceType</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="ResourceKey" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.ResourceKey</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="ResourceDisplayName" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.ResourceDisplayName</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="ResourceIsActive" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">
+                    @Model.ResourceIsActiveText
+                </p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="CreatedAt" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">
+                    @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")
+                </p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="UpdatedAt" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">
+                    @(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")
+                </p>
+            </div>
+        </div>
+
+        <!-- 角色權限使用狀況 -->
+        <div class="row align-items-start my-2">
+            <label class="col-md-2 col-form-label text-md-end">
+                角色權限使用狀況
+            </label>
+            <div class="col-md-10">
+                @if (!hasAnyRolePermission)
+                {
+                    <div class="text-muted">
+                        目前尚未有任何角色設定此資源的權限。
+                    </div>
+                }
+                else
+                {
+                    <p class="mb-2">
+                        此資源目前被 <strong>@rolePermCount</strong> 個角色設定權限。
+                    </p>
+
+                    @if (groupCount > 0)
+                    {
+
+                        // 依 Role 分組，然後把群組名稱串成一行
+                        var roleGroups = groupUsage
+                        .GroupBy(g => new { g.RoleId, g.RoleGroup, g.RoleName })
+                        .OrderBy(g => g.Key.RoleGroup)
+                        .ThenBy(g => g.Key.RoleName);
+
+
+                        <div class="mb-2">
+                            <h6>使用此資源的角色／群組：</h6>
+                            <ol class="mb-0">
+                                @foreach (var roleGroup in roleGroups)
+                                {
+                                    var key = roleGroup.Key;
+
+                                    // 有群組的項目
+                                    var groupsForRole = roleGroup
+                                    .Where(x => x.HasGroup && !string.IsNullOrWhiteSpace(x.UserGroupName))
+                                    .ToList();
+
+                                    if (!groupsForRole.Any())
+                                    {
+                                        // 完全沒有指定群組
+                                        <li>
+                                            【@key.RoleGroup】@key.RoleName ：
+                                            <span class="text-muted">未指定群組</span>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        // 把所有群組名稱用「、」串起來
+                                        var names = string.Join("、", groupsForRole.Select(x => x.UserGroupName));
+
+                                        <li>
+                                            【@key.RoleGroup】@key.RoleName ：@names
+                                        </li>
+                                    }
+                                }
+                            </ol>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted">
+                            目前已由部分角色設定權限，但尚未指定任何使用者群組。
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+
+    </div>
+</div>

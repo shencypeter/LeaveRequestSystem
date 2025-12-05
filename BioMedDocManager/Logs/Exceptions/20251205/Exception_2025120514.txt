@@ -1,0 +1,1782 @@
+﻿### 紀錄開始 ###
+[2025/12/05 14:00:35]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:00:35]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:00:59]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:00:59]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:04]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:04]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:18]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:19]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:19]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:19]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:27]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:27]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:47]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:47]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:51]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:01:51]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:03]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:03]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:03]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:03]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:09]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:09]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:18]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:18]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:18]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:18]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:24]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:24]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:42]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:42]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:42]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:42]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:48]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:48]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:58]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:02:58]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:01]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:02]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:02]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:02]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:30]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:30]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:33]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:34]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:34]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:34]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:41]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:41]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:43]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:43]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:43]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:43]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:51]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:51]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:51]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:51]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:55]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:55]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:59]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:59]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:59]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:03:59]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:05]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:05]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:11]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:11]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:14]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:14]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:14]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:14]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:19]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:19]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:19]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:19]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:25]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:25]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:30]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:30]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:34]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:34]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:34]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:34]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:38]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:04:38]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:08:07]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:08:07]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:08:10]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:08:10]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:10:38]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:10:38]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:10:42]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:10:42]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:10:49]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:10:49]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:12:45]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:12:45]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:15:38]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:15:39]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:16:55]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:16:55]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:16:58]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:16:58]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:21]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:21]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:25]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:25]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:27]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:27]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:34]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:34]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:38]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:38]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:41]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:17:41]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:18:02]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:18:02]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:18:06]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:18:06]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:18:08]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:18:08]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:41:23]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:41:23]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:41:30]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:41:30]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:43:30]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:43:30]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:45:16]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:45:16]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:45:19]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:45:19]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:45:21]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:45:21]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:47:57]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:47:57]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:48:15]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:48:15]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:48:18]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:48:18]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:48:23]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:48:23]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:48:29]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:48:29]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:33]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:34]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:41]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:41]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:43]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:43]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:45]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:45]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:48]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:48]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:51]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:54:51]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:55:43]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:55:43]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:55:50]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:55:50]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:55:56]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:55:56]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:55:59]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/05 14:55:59]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 69
+
+### 紀錄結束 ###
+
+

@@ -7,7 +7,7 @@ namespace BioMedDocManager.Models;
 /// <summary>
 /// 角色資源動作權限
 /// </summary>
-public class RolePermission : ISoftDelete
+public class RolePermission/* : ISoftDelete*/
 {
     /// <summary>
     /// 角色編號
@@ -27,6 +27,7 @@ public class RolePermission : ISoftDelete
     [Display(Name = "動作編號")]
     public int AppActionId { get; set; }
 
+    /*
     /// <summary>
     /// 建立時間
     /// </summary>
@@ -65,7 +66,7 @@ public class RolePermission : ISoftDelete
     /// </summary>
     [Display(Name = "刪除人")]
     public int? DeletedBy { get; set; }
-
+    */
     /// <summary>
     /// 角色
     /// </summary>

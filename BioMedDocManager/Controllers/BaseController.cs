@@ -885,7 +885,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        protected static User ToUserEntity(CreateUser model)
+        protected static User ToUserEntity(CreateUserViewModel model)
         {
             return new User
             {

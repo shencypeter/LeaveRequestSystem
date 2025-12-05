@@ -14,7 +14,7 @@
     var rightRoles = allRoles.Skip(half).ToList();
     int roleIndex = 0;
 
-    var queryModel = QueryableExtensions.GetSessionQueryModel<AccountModel>(Context);
+    var queryModel = QueryableExtensions.GetSessionQueryModel<AccountViewModel>(Context);
     queryModel.OrderBy ??= "id";
     queryModel.SortDir ??= "asc";
 
@@ -25,7 +25,7 @@
     @Html.AntiForgeryToken()
 
     <div class="accordion" id="queryAccordion">
-        <!-- ✅ 使用者帳號設定 -->
+        <!-- 使用者帳號設定 -->
         <div class="accordion-item border border-secondary-subtle bg-light">
             <h2 class="accordion-header" id="userHeading">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -48,7 +48,7 @@
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text" class="form-control" id="UserName"
-                                           name="@nameof(AccountModel.UserAccount)"
+                                           name="@nameof(AccountViewModel.UserAccount)"
                                            value="@queryModel.UserAccount" placeholder="請輸入工號" />
                                 </div>
                             </div>
@@ -62,7 +62,7 @@
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text" class="form-control" id="FullName"
-                                           name="@nameof(AccountModel.UserFullName)"
+                                           name="@nameof(AccountViewModel.UserFullName)"
                                            value="@queryModel.UserFullName" placeholder="請輸入姓名" />
                                 </div>
                             </div>
@@ -210,10 +210,10 @@
                                     功能
                                 </button>
                                 <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "AccountSettings", new { UserId = row["UserId"] })">檢視</a></li>
                                     <li><a class="dropdown-item detail" href="@Url.Action("Edit", "AccountSettings", new { UserId = row["UserId"] })">編輯</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("EditGroup", "AccountSettings", new { UserId = row["UserId"] })">編輯群組</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("ResetPassword", "AccountSettings", new { UserId = row["UserId"] })">密碼重設</a></li>
-
+                                    <li><a class="dropdown-item detail" href="@Url.Action("EditGroup", "AccountSettings", new { UserId = row["UserId"] })">編輯【群組】</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("ResetPassword", "AccountSettings", new { UserId = row["UserId"] })">重設密碼</a></li>
                                 </ul>
                             </div>
                         </td>

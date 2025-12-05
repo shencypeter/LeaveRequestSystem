@@ -285,7 +285,7 @@ namespace BioMedDocManager.Controllers
         public IActionResult ChangePassword()
         {
             // 產生變更密碼模型
-            var model = new ChangePasswordModel
+            var model = new ChangePasswordViewModel
             {
                 UserAccount = User.Identity?.Name ?? "",
                 UserFullName = User.FindFirst("UserFullName")?.Value ?? ""
@@ -302,7 +302,7 @@ namespace BioMedDocManager.Controllers
         [HttpPost]
         [Route("/ChangePassword")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangePassword(ChangePasswordModel model)
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
 
             if (!ModelState.IsValid)

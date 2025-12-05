@@ -1,0 +1,150 @@
+﻿@model BioMedDocManager.Models.RolePermissionEditViewModel
+@using BioMedDocManager.Models
+@using System.Collections.Generic
+
+@{
+    ViewData["Title"] = "角色管理-權限設定";
+    Layout = "_NoNavLayout";
+
+    var resources = Model.Resources ?? new List<Resource>();
+    var actions = Model.AppActions ?? new List<AppAction>();
+
+    // 方便檢查是否已勾選
+    var selectedKeySet = new HashSet<string>(Model.SelectedPermissionKeys ?? new List<string>());
+
+    bool hasResource = resources.Count > 0;
+    bool hasAction = actions.Count > 0;
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-shield-lock me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <form asp-action="EditPermission"
+          asp-route-roleId="@Model.RoleId"
+          method="post"
+          id="myForm"
+          target="_top">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="RoleId" />
+
+        <div class="pop">
+
+            <!-- 角色基本資訊 -->
+            <div class="row align-items-center my-2">
+                <label class="col-md-2 col-form-label text-md-end">
+                    角色名稱
+                </label>
+                <div class="col-md-10">
+                    <p class="form-control-plaintext">
+                        @Model.RoleName
+                    </p>
+                </div>
+            </div>
+
+            <!-- 權限矩陣：Resource × AppAction -->
+            <div class="row align-items-start my-3">
+                <label class="col-md-2 col-form-label text-md-end">
+                    權限設定
+                </label>
+                <div class="col-md-10">
+
+                    @if (!hasResource || !hasAction)
+                    {
+                        <div class="alert alert-warning mb-0">
+                            @if (!hasResource)
+                            {
+                                <div>目前尚無任何啟用中的資源可設定。</div>
+                            }
+                            @if (!hasAction)
+                            {
+                                <div>目前尚無任何動作(AppAction)可設定。</div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered align-middle text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-start align-middle">
+                                            資源名稱
+                                        </th>
+                                        @foreach (var act in actions)
+                                        {
+                                            <th>
+                                                <div class="fw-semibold" title="@act.AppActionName">
+                                                    @act.AppActionDisplayName
+                                                </div>
+                                                <div class="text-muted small">
+                                                    @act.AppActionName
+                                                </div>
+                                            </th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var res in resources)
+                                    {
+                                        <tr>
+                                            <!-- 資源資訊 -->
+                                            <td class="text-start">
+                                                <div class="fw-semibold">
+                                                    @res.ResourceDisplayName
+                                                </div>
+                                                <div class="text-muted small">
+                                                    @res.ResourceType @("(")@res.ResourceKey@(")")
+                                                </div>
+                                            </td>
+
+                                            <!-- 每一個動作的 checkbox -->
+                                            @foreach (var act in actions)
+                                            {
+                                                var key = $"{res.ResourceId}:{act.AppActionId}";
+                                                var isChecked = selectedKeySet.Contains(key);
+
+                                                <td>
+                                                    <div class="form-check d-flex justify-content-center">
+                                                        <input class="form-check-input"
+                                                               type="checkbox"
+                                                               name="SelectedPermissionKeys"
+                                                               id="perm_@(res.ResourceId)_@(act.AppActionId)"
+                                                               value="@key"
+                                                               @(isChecked ? "checked=\"checked\"" : null) />
+                                                    </div>
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    <div class="text-muted small mt-2">
+                        說明：勾選代表此角色對應資源擁有該動作權限；取消勾選將刪除原有的權限設定。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 按鈕列 -->
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap justify-content-center">
+                    <button type="submit"
+                            class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-check-circle"></i>&ensp;儲存權限
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        
+    </script>
+}

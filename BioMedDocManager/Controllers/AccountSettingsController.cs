@@ -47,7 +47,7 @@ namespace BioMedDocManager.Controllers
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             // 從Session抓queryModel查詢物件
-            var queryModel = GetSessionQueryModel<AccountModel>();
+            var queryModel = GetSessionQueryModel<AccountViewModel>();
 
             // 如果query string有page參數，才使用；否則保留Session中的值
             if (PageSize.HasValue)
@@ -83,7 +83,7 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index(AccountModel queryModel)
+        public async Task<IActionResult> Index(AccountViewModel queryModel)
         {
             // 儲存查詢model到session中
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
@@ -101,7 +101,7 @@ namespace BioMedDocManager.Controllers
         [HttpGet("Create")]
         public async Task<IActionResult> Create()
         {
-            var accountModel = new CreateUser
+            var AccountViewModel = new CreateUserViewModel
             {
                 CreatedAt = DateTime.Now,
             };
@@ -111,7 +111,7 @@ namespace BioMedDocManager.Controllers
 
             await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "顯示新增頁");
 
-            return View(accountModel);
+            return View(AccountViewModel);
 
         }
 
@@ -122,7 +122,7 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         [HttpPost("Create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateUser PostedUser)
+        public async Task<IActionResult> Create(CreateUserViewModel PostedUser)
         {
             if (PostedUser == null)
             {
@@ -187,7 +187,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var accountModel = new AccountModel
+            var AccountViewModel = new AccountViewModel
             {
                 UserAccount = user.UserAccount,
                 UserFullName = user.UserFullName,
@@ -206,7 +206,7 @@ namespace BioMedDocManager.Controllers
 
             await accessLog.NewActionAsync(GetLoginUser(), "帳號設定", "顯示編輯頁");
 
-            return View(accountModel);
+            return View(AccountViewModel);
         }
 
         /// <summary>
@@ -217,7 +217,7 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         [HttpPost("Edit/{userId:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? UserId, AccountModel user)
+        public async Task<IActionResult> Edit([FromRoute] int? UserId, AccountViewModel user)
         {
             if (user == null || UserId.GetValueOrDefault() <= 0 || UserId != user.UserId)
             {
@@ -293,7 +293,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 產生變更密碼模型
-            var model = new ChangePasswordModel
+            var model = new ChangePasswordViewModel
             {
                 UserAccount = user.UserAccount,
                 UserFullName = user.UserFullName,
@@ -313,7 +313,7 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         [HttpPost("ResetPassword/{userId:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword([FromRoute] int? UserId, ChangePasswordModel PostedUser)
+        public async Task<IActionResult> ResetPassword([FromRoute] int? UserId, ChangePasswordViewModel PostedUser)
         {
             if (PostedUser == null || UserId.GetValueOrDefault() <= 0 || UserId != PostedUser.UserId)
             {
@@ -430,7 +430,7 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         [HttpPost("EditGroup/{userId:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditGroup([FromRoute] int? UserId, UserGroupsEditPostModel PostedUser, string command)
+        public async Task<IActionResult> EditGroup([FromRoute] int? UserId, UserGroupsEditPostViewModel PostedUser, string command)
         {
             if (PostedUser == null || UserId.GetValueOrDefault() <= 0 || UserId != PostedUser.UserId)
             {
@@ -509,7 +509,7 @@ namespace BioMedDocManager.Controllers
         /// <returns>使用者權限預覽結果</returns>
         [HttpPost("PreviewUserPermissions")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PreviewUserPermissions([FromBody] PreviewUserPermissionsRequest req)
+        public async Task<IActionResult> PreviewUserPermissions([FromBody] PreviewUserPermissionsRequestViewModel req)
         {
             var userId = req.UserId;
             var newGroupIds = (req.SelectedUserGroupIds ?? new()).Distinct().ToList();
@@ -561,7 +561,7 @@ namespace BioMedDocManager.Controllers
                 .ToListAsync();
 
             var roleDtos = roles
-                .Select(r => new PreviewRoleDto
+                .Select(r => new PreviewRoleViewModel
                 {
                     RoleId = r.RoleId,
                     RoleName = r.RoleName,
@@ -569,7 +569,7 @@ namespace BioMedDocManager.Controllers
                     IsNew = !currentRoleIds.Contains(r.RoleId),   // 這裡沿用原本「是不是新角色」
                     FromGroups = roleFromGroups
                         .Where(x => x.RoleId == r.RoleId)
-                        .Select(x => new PreviewRoleSourceGroupDto
+                        .Select(x => new PreviewRoleSourceGroupViewModel
                         {
                             UserGroupId = x.UserGroupId,
                             UserGroupName = x.UserGroupName
@@ -599,7 +599,8 @@ namespace BioMedDocManager.Controllers
                         j.res.ResourceKey,
                         j.res.ResourceDisplayName,
                         act.AppActionName,
-                        act.AppActionDisplayName
+                        act.AppActionDisplayName,
+                        act.AppActionOrder,
                     })
                 .ToListAsync();
 
@@ -612,9 +613,10 @@ namespace BioMedDocManager.Controllers
                     p.ResourceDisplayName,
                     p.AppActionId,
                     p.AppActionName,
-                    p.AppActionDisplayName
+                    p.AppActionDisplayName,
+                    p.AppActionOrder,
                 })
-                .Select(g => new PreviewPermissionDto
+                .Select(g => new PreviewPermissionViewModel
                 {
                     ResourceId = g.Key.ResourceId,
                     ResourceKey = g.Key.ResourceKey,
@@ -622,10 +624,11 @@ namespace BioMedDocManager.Controllers
                     AppActionId = g.Key.AppActionId,
                     AppActionName = g.Key.AppActionName,
                     AppActionDisplayName = g.Key.AppActionDisplayName,
+                    AppActionOrder = g.Key.AppActionOrder,
                     IsNew = !currentPermSet.Contains((g.Key.ResourceId, g.Key.AppActionId)) // 原本沒有 → 預覽
                 })
                 .OrderBy(p => p.ResourceDisplayName)
-                .ThenBy(p => p.AppActionName)
+                .ThenBy(p => p.AppActionOrder)
                 .ToList();
 
             return Json(new
@@ -725,7 +728,7 @@ namespace BioMedDocManager.Controllers
         /// <param name="queryModel">查詢model</param>
         /// <param name="ct">取消token</param>
         /// <returns>查詢結果ViewResult</returns>
-        public async Task<IActionResult> BuildQueryAccountSettings(AccountModel queryModel, CancellationToken ct)
+        public async Task<IActionResult> BuildQueryAccountSettings(AccountViewModel queryModel, CancellationToken ct)
         {
             ViewData["pageNumber"] = queryModel.PageNumber.ToString();
 

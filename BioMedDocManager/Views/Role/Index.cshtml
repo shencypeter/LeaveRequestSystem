@@ -1,12 +1,13 @@
 ﻿@using BioMedDocManager.Extensions
-@model IEnumerable<Dictionary<string,object>>
+@using BioMedDocManager.Models
+@model IEnumerable<Dictionary<string, object>>
 
 @{
-    ViewData["Title"] = "使用者群組管理";
+    ViewData["Title"] = "角色管理";
     Layout = "_AssetLayout";
 
-    var queryModel = QueryableExtensions.GetSessionQueryModel<UserGroupQueryViewModel>(Context);
-    queryModel.OrderBy ??= "UserGroupName";
+    var queryModel = QueryableExtensions.GetSessionQueryModel<RoleQueryViewModel>(Context);
+    queryModel.OrderBy ??= "RoleGroup";
     queryModel.SortDir ??= "asc";
 
     var headers = ViewData["tableHeaders"] as Dictionary<string, string> ?? new Dictionary<string, string>();
@@ -16,75 +17,91 @@
     @Html.AntiForgeryToken()
 
     <div class="accordion" id="queryAccordion">
-        <!-- 使用者群組查詢 -->
+        <!-- ✅ 角色查詢條件 -->
         <div class="accordion-item border border-secondary-subtle bg-light">
-            <h2 class="accordion-header" id="groupHeading">
+            <h2 class="accordion-header" id="roleHeading">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#groupCollapse" aria-expanded="false" aria-controls="groupCollapse">
-                    <i class="fa fa-users me-2"></i> 使用者群組查詢
+                        data-bs-target="#roleCollapse" aria-expanded="false" aria-controls="roleCollapse">
+                    <i class="fa fa-id-badge me-2"></i> 角色查詢條件
                 </button>
             </h2>
-            <div id="groupCollapse" class="accordion-collapse collapse show" aria-labelledby="groupHeading"
+            <div id="roleCollapse" class="accordion-collapse collapse show" aria-labelledby="roleHeading"
                  data-bs-parent="#queryAccordion">
                 <div class="accordion-body mx-3">
 
-                    <!-- Row 1: 群組名稱 / 群組說明 -->
+                    <!-- Row 1: 角色群組 / 角色名稱  -->
                     <div class="row mb-3 g-3 row-cols-1 row-cols-md-2 align-items-center">
-
-                        <!-- 群組名稱 -->
+                        <!-- 角色群組 -->
                         <div class="col">
                             <div class="row g-2 align-items-center">
-                                <label for="UserGroupName" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    群組名稱：
+                                <label for="RoleGroup" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    角色群組：
                                 </label>
                                 <div class="col-12 col-sm-8">
-                                    <input type="text" class="form-control" id="UserGroupName"
-                                           name="@nameof(UserGroupQueryViewModel.UserGroupName)"
-                                           value="@queryModel.UserGroupName" placeholder="請輸入群組名稱" />
+                                    <input type="text"
+                                           class="form-control"
+                                           id="RoleGroup"
+                                           name="@nameof(RoleQueryViewModel.RoleGroup)"
+                                           value="@queryModel.RoleGroup"
+                                           placeholder="請輸入角色群組" />
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 群組說明 -->
+                        <!-- 角色名稱 -->
                         <div class="col">
                             <div class="row g-2 align-items-center">
-                                <label for="UserGroupDescription" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    群組說明：
+                                <label for="RoleName" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    角色名稱：
                                 </label>
                                 <div class="col-12 col-sm-8">
-                                    <input type="text" class="form-control" id="UserGroupDescription"
-                                           name="@nameof(UserGroupQueryViewModel.UserGroupDescription)"
-                                           value="@queryModel.UserGroupDescription" placeholder="請輸入群組說明" />
+                                    <input type="text"
+                                           class="form-control"
+                                           id="RoleName"
+                                           name="@nameof(RoleQueryViewModel.RoleName)"
+                                           value="@queryModel.RoleName"
+                                           placeholder="請輸入角色名稱" />
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                     <!-- 按鈕排 -->
                     <div class="row mb-3">
                         <div class="col-12 d-flex justify-content-center flex-wrap gap-2">
-
                             <button type="submit" class="btn2 btn-primary mt-2 search_btn">
                                 <i class="fas fa-search"></i>&ensp;查詢
                             </button>
 
-                            <a id="create_btn" href="@Url.Action("Create", "UserGroup")"
+                            <a id="create_btn" href="@Url.Action("Create", "Role")"
                                class="btn2 btn-success mt-2">
-                                <i class="fas fa-plus-circle"></i>&ensp;建立
+                                <i class="fas fa-plus-circle"></i>&ensp;新增角色
                             </a>
 
                             <button type="button" class="btn2 btn-secondary mt-2 clear_btn" data-form="myForm">
                                 <i class="fas fa-eraser"></i> 清除
                             </button>
-
                         </div>
                     </div>
 
                     <!-- Hidden fields -->
-                    <input type="hidden" id="@(nameof(queryModel.OrderBy))" name="@nameof(queryModel.OrderBy)" value="@queryModel.OrderBy" />
-                    <input type="hidden" id="@(nameof(queryModel.SortDir))" name="@nameof(queryModel.SortDir)" value="@queryModel.SortDir" />
-                    <input type="hidden" id="@nameof(queryModel.PageSize)" name="@nameof(queryModel.PageSize)" value="@queryModel.PageSize" />
-                    <input type="hidden" id="@nameof(queryModel.PageNumber)" name="@nameof(queryModel.PageNumber)" value="@queryModel.PageNumber" />
+                    <input type="hidden"
+                           id="@nameof(queryModel.OrderBy)"
+                           name="@nameof(queryModel.OrderBy)"
+                           value="@queryModel.OrderBy" />
+                    <input type="hidden"
+                           id="@nameof(queryModel.SortDir)"
+                           name="@nameof(queryModel.SortDir)"
+                           value="@queryModel.SortDir" />
+                    <input type="hidden"
+                           id="@nameof(queryModel.PageSize)"
+                           name="@nameof(queryModel.PageSize)"
+                           value="@queryModel.PageSize" />
+                    <input type="hidden"
+                           id="@nameof(queryModel.PageNumber)"
+                           name="@nameof(queryModel.PageNumber)"
+                           value="@queryModel.PageNumber" />
                 </div>
             </div>
         </div>
@@ -98,16 +115,16 @@
                 @foreach (var item in headers)
                 {
                     <th data-id="@item.Key">
-                        @if (item.Key != "RowNum")
+                        @if (!string.Equals(item.Key, "RowNum", StringComparison.OrdinalIgnoreCase))
                         {
-                            <a href="#" title="點選「@(item.Value)」欄位進行排序"> @item.Value </a>
+                            <a href="#" title="點選「@(item.Value)」欄位進行排序">@item.Value</a>
                         }
                         else
                         {
                             @item.Value
                         }
                     <span class="order-index">
-                        @(queryModel.OrderBy.EndsWith(item.Key)
+                        @(queryModel.OrderBy?.EndsWith(item.Key) == true
                                                 ? (queryModel.SortDir == "asc" ? "▲" : "▼")
                                                 : "")
                     </span>
@@ -145,12 +162,10 @@
                                     功能
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "UserGroup", new { userGroupId = row["UserGroupId"] })"> 檢視 </a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "UserGroup", new { userGroupId = row["UserGroupId"] })">編輯</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "UserGroupRole", new { userGroupId = row["UserGroupId"] })">編輯【角色】</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "UserGroup", new { userGroupId = row["UserGroupId"] })">刪除</a></li>
-                                    @* TODO：如果要做「編輯群組成員」，在這裡再加 *@
-                                    @* <li><a class="dropdown-item detail" href="@Url.Action("EditMembers", "UserGroup", new { userGroupId = row["UserGroupId"] })">編輯【成員】</a></li> *@
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "Role", new { roleId = row["RoleId"] })">檢視</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "Role", new { roleId = row["RoleId"] })">編輯</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "RolePermission", new { roleId = row["RoleId"] })">編輯【權限】</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "Role", new { roleId = row["RoleId"] })">刪除</a></li>
                                 </ul>
                             </div>
                         </td>

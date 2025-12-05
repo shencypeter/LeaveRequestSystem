@@ -89,7 +89,7 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 新增使用者
     /// </summary>
-    public class CreateUser
+    public class CreateUserViewModel
     {
         /// <summary>
         /// 流水號
@@ -206,7 +206,7 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 變更密碼
     /// </summary>
-    public class ChangePasswordModel
+    public class ChangePasswordViewModel
     {
         /// <summary>
         /// 使用者Id
@@ -298,7 +298,7 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 使用者群組編輯儲存模型
     /// </summary>
-    public class UserGroupsEditPostModel
+    public class UserGroupsEditPostViewModel
     {
         /// <summary>
         /// 使用者Id
@@ -367,7 +367,7 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 預覽區：有效權限（平面，View 端用 Resource 分組）
         /// </summary>
-        public List<PreviewPermissionDto> EffectivePermissions { get; set; } = new();
+        public List<PreviewPermissionViewModel> EffectivePermissions { get; set; } = new();
     }
 
     /// <summary>
@@ -449,7 +449,7 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 帳號管理
     /// </summary>
-    public class AccountModel : Pagination
+    public class AccountViewModel : Pagination
     {
         /// <summary>
         /// 使用者Id
@@ -548,7 +548,7 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 使用者權限預覽請求
     /// </summary>
-    public class PreviewUserPermissionsRequest
+    public class PreviewUserPermissionsRequestViewModel
     {
         public int UserId { get; set; }
         public List<int>? SelectedUserGroupIds { get; set; }
@@ -557,7 +557,7 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 角色預覽時的來源群組
     /// </summary>
-    public class PreviewRoleSourceGroupDto
+    public class PreviewRoleSourceGroupViewModel
     {
         public int UserGroupId { get; set; }
         public string UserGroupName { get; set; } = "";
@@ -565,20 +565,20 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 角色預覽DTO
     /// </summary>
-    public class PreviewRoleDto
+    public class PreviewRoleViewModel
     {
         public int RoleId { get; set; }
         public string RoleName { get; set; } = "";
         public string RoleGroup { get; set; } = "";
         public bool IsNew { get; set; }
 
-        public List<PreviewRoleSourceGroupDto> FromGroups { get; set; } = new();
+        public List<PreviewRoleSourceGroupViewModel> FromGroups { get; set; } = new();
     }
 
     /// <summary>
     /// 角色預覽權限DTO
     /// </summary>
-    public class PreviewGroupPermissionsDto
+    public class PreviewGroupPermissionsViewModel
     {
         public int UserGroupId { get; set; }
 
@@ -588,21 +588,22 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 權限預覽DTO
     /// </summary>
-    public class PreviewPermissionDto
+    public class PreviewPermissionViewModel
     {
         public int ResourceId { get; set; }
         public string ResourceKey { get; set; } = "";
         public string ResourceDisplayName { get; set; } = "";
-        public int AppActionId { get; set; }
+        public int AppActionId { get; set; }        
         public string AppActionName { get; set; } = "";
         public string AppActionDisplayName { get; set; } = "";
         public bool IsNew { get; set; }
+        public int AppActionOrder { get; set; }
     }
 
     /// <summary>
     /// 使用者群組查詢條件 / 分頁 Model
     /// </summary>
-    public class UserGroupQueryModel: Pagination
+    public class UserGroupQueryViewModel: Pagination
     {
         /// <summary>
         /// 群組名稱（模糊查詢）
@@ -614,5 +615,133 @@ namespace BioMedDocManager.Models
         /// </summary>
         public string? UserGroupDescription { get; set; }
     }
+
+    /// <summary>
+    /// 資源查詢條件
+    /// </summary>
+    public class ResourceQueryViewModel : Pagination
+    {
+        /// <summary>
+        /// 資源類型（PAGE / API / ...）
+        /// </summary>
+        [Display(Name = "資源類型")]
+        public string? ResourceType { get; set; }
+
+        /// <summary>
+        /// 資源代號
+        /// </summary>
+        [Display(Name = "資源代號")]
+        public string? ResourceKey { get; set; }
+
+        /// <summary>
+        /// 顯示名稱
+        /// </summary>
+        [Display(Name = "顯示名稱")]
+        public string? ResourceDisplayName { get; set; }
+
+        /// <summary>
+        /// 是否啟用
+        /// null = 全部, true = 啟用, false = 停用
+        /// </summary>
+        [Display(Name = "是否啟用")]
+        public bool? ResourceIsActive { get; set; }
+
+    }
+
+    /// <summary>
+    /// 角色查詢條件
+    /// </summary>
+    public class RoleQueryViewModel : Pagination
+    {
+        /// <summary>
+        /// 角色名稱
+        /// </summary>
+        [Display(Name = "角色名稱")]
+        public string? RoleName { get; set; }
+
+        /// <summary>
+        /// 角色群組
+        /// </summary>
+        [Display(Name = "角色群組")]
+        public string? RoleGroup { get; set; }
+
+    }
+
+    public class RoleUsageUserViewModel
+    {
+        public int UserId { get; set; }
+        public string UserAccount { get; set; } = "";
+        public string UserFullName { get; set; } = "";
+    }
+
+    public class RoleUsageGroupViewModel
+    {
+        public int UserGroupId { get; set; }
+        public string UserGroupName { get; set; } = "";
+        public string? UserGroupDescription { get; set; }
+    }
+
+    /// <summary>
+    /// 用來描述一個 Role 的「權限編輯」畫面
+    /// </summary>
+    public class RolePermissionEditViewModel
+    {
+        /// <summary>
+        /// 角色編號
+        /// </summary>
+        public int RoleId { get; set; }
+
+        /// <summary>
+        /// 角色名稱（純顯示用）
+        /// </summary>
+        public string RoleName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 可選擇的資源清單（只放啟用中的 Resource）
+        /// </summary>
+        public List<Resource> Resources { get; set; } = new();
+
+        /// <summary>
+        /// 可選擇的動作清單（AppAction）
+        /// </summary>
+        public List<AppAction> AppActions { get; set; } = new();
+
+        /// <summary>
+        /// 當前這個角色已存在的 RolePermission key 清單（"resourceId:appActionId"）
+        /// 主要用來在 View 端預設打勾 & 在 POST 回傳使用。
+        /// </summary>
+        public List<string> SelectedPermissionKeys { get; set; } = new();
+    }
+
+    /// <summary>
+    /// 刪除 Resource 時，顯示「被哪些 UserGroup / Role 使用到」
+    /// </summary>
+    public class ResourceGroupUsageViewModel
+    {
+        public int UserGroupId { get; set; }
+        public string UserGroupName { get; set; } = string.Empty;
+        public string? UserGroupDescription { get; set; }
+
+        public int RoleId { get; set; }
+        public string RoleName { get; set; } = string.Empty;
+        public string RoleGroup { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 是否有指定群組 (true=有群組; false=未指定群組)
+        /// </summary>
+        public bool HasGroup { get; set; }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
