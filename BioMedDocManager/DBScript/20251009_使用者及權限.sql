@@ -159,12 +159,6 @@ UserGroupId，RoleId
 CREATE TABLE [dbo].[UserGroupRole] (
     [UserGroupId] INT NOT NULL,  -- 被[使用者群組表]參照，與PK名稱一致
     [RoleId]       INT NOT NULL,  -- 被[角色表]參照，與PK名稱一致
-    [CreatedAt]    DATETIME NOT NULL DEFAULT GETDATE(),
-    [CreatedBy]    INT NULL,
-    [UpdatedAt]    DATETIME NULL,
-    [UpdatedBy]    INT NULL,
-    [DeletedAt]    DATETIME NULL,
-    [DeletedBy]    INT NULL,
     CONSTRAINT [PKUserGroupRole] PRIMARY KEY ([UserGroupId], [RoleId]),
     CONSTRAINT [FKugrGroup]
         FOREIGN KEY ([UserGroupId])
@@ -238,12 +232,6 @@ CREATE TABLE [dbo].[RolePermission] (
     [RoleId]       INT NOT NULL,      -- 被[角色表]參照，與PK名稱一致
     [ResourceId]   INT NOT NULL,      -- 被[資源表]參照，與PK名稱一致
     [AppActionId]     INT NOT NULL,      -- 被[動作表]參照，與PK名稱一致
-    [CreatedAt]    DATETIME NOT NULL DEFAULT GETDATE(),
-    [CreatedBy]    INT NULL,
-    [UpdatedAt]    DATETIME NULL,
-    [UpdatedBy]    INT NULL,
-    [DeletedAt]    DATETIME NULL,
-    [DeletedBy]    INT NULL,
     CONSTRAINT [PKRolePermission]
         PRIMARY KEY ([RoleId], [ResourceId], [AppActionId]),
     CONSTRAINT [FKrpRole]
