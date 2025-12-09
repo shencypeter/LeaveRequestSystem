@@ -1,10 +1,14 @@
 ﻿using BioMedDocManager.Helpers;
+using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting.Internal;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Security.Claims;
@@ -20,14 +24,23 @@ namespace BioMedDocManager.Controllers
     /// <param name="httpAccessor">取得HttpContext，例如Session、Request等</param>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
-    public class LoginController(IHttpContextAccessor httpAccessor, DocControlContext context, IWebHostEnvironment hostingEnvironment) : BaseController(context, hostingEnvironment)
+    [Route("[controller]")]
+    public class LoginController(IHttpContextAccessor httpAccessor, DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
+        /// <summary>
+        /// 頁面名稱
+        /// </summary>
+        public const string PageName = "登入";
+
         /// <summary>
         /// 登入畫面
         /// </summary>
         /// <param name="returnUrl">導回原始頁面的URL</param>
         /// <returns></returns>
-        [Route("/Login")]
+        [HttpGet("")]
+        [HttpGet("Index")]
+        [HttpGet("Login")]
+        [AllowAnonymous]
         public IActionResult Index(string? returnUrl)
         {
             //密碼錯誤退回來時, 記得剛才的帳號
@@ -53,6 +66,7 @@ namespace BioMedDocManager.Controllers
         /// 初次遷移用：將所有明碼密碼轉換成hash密碼
         /// </summary>
         /// <returns></returns>
+        [HttpGet("Migrate")]
         public async Task<IActionResult> Migrate()
         {
 
@@ -79,8 +93,9 @@ namespace BioMedDocManager.Controllers
         /// <param name="userAccount">帳號</param>
         /// <param name="password">密碼</param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("Login")]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(string userAccount, string password, string? captcha, string? returnUrl)
         {
             try
@@ -280,8 +295,7 @@ namespace BioMedDocManager.Controllers
         /// 變更密碼頁面
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
-        [Route("/ChangePassword")]
+        [HttpGet("ChangePassword")]
         public IActionResult ChangePassword()
         {
             // 產生變更密碼模型
@@ -299,8 +313,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="model">資料</param>
         /// <returns></returns>
-        [HttpPost]
-        [Route("/ChangePassword")]
+        [HttpPost("ChangePassword")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
@@ -344,8 +357,7 @@ namespace BioMedDocManager.Controllers
         /// 登出
         /// </summary>
         /// <returns></returns>
-        [Route("/Logout")]
-        [HttpGet]
+        [HttpGet("Logout")]
         public async Task<IActionResult> Logout()
         {
             httpAccessor.HttpContext.Session.SetString("try_login", "");
@@ -354,10 +366,7 @@ namespace BioMedDocManager.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-
-
-
-        [HttpGet]
+        [HttpGet("GetCaptcha")]
         public IActionResult GetCaptcha()
         {
             string code = GenerateRandomCode(5); // e.g., "A3X9B"
@@ -367,6 +376,7 @@ namespace BioMedDocManager.Controllers
             return File(imageBytes, "image/png");
         }
 
+        [NonAction]
         private string GenerateRandomCode(int length)
         {
             //字母數字 已排除常混淆的
@@ -409,6 +419,7 @@ namespace BioMedDocManager.Controllers
 
         }
 
+        [NonAction]
         private byte[] GenerateCaptchaImage(string code)
         {
             int width = 120;

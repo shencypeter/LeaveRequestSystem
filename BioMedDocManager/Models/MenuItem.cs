@@ -19,7 +19,7 @@ public class MenuItem : ISoftDelete
     /// <summary>
     /// 上層選單編號
     /// </summary>
-    [Display(Name = "上層選單編號")]
+    [Display(Name = "上層選單")]
     public int? MenuItemParentId { get; set; }
 
     /// <summary>
@@ -36,12 +36,27 @@ public class MenuItem : ISoftDelete
     [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
     public string? MenuItemIcon { get; set; }
 
+    /*  停用 => 改成用關連Resource.ResourceKey
     /// <summary>
     /// 連結
     /// </summary>
     [Display(Name = "連結")]
     [StringLength(300, ErrorMessage = "{0}最多{1}字元")]
     public string? MenuItemUrl { get; set; }
+    */
+
+    /// <summary>
+    /// 資源代號（顯示用）
+    /// </summary>
+    [NotMapped]
+    [Display(Name = "連結")]
+    public string? ResourceKey
+    {
+        get
+        {
+            return Resource?.ResourceKey;
+        }
+    }
 
     /// <summary>
     /// 顯示順序
@@ -56,9 +71,16 @@ public class MenuItem : ISoftDelete
     public bool MenuItemIsActive { get; set; } = true;
 
     /// <summary>
-    /// 資源編號
+    /// 是否啟用 文字
     /// </summary>
-    [Display(Name = "資源編號")]
+    [NotMapped]
+    [Display(Name = "是否啟用")]
+    public string MenuItemIsActiveText => MenuItemIsActive ? "啟用" : "停用";
+
+    /// <summary>
+    /// 資源編號(連結)
+    /// </summary>
+    [Display(Name = "連結")]
     public int? ResourceId { get; set; }
 
     /// <summary>

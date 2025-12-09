@@ -1,4 +1,5 @@
-﻿using BioMedDocManager.Models;
+﻿using BioMedDocManager.Interface;
+using BioMedDocManager.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +11,14 @@ namespace BioMedDocManager.Controllers;
 /// </summary>
 /// <param name="context">資料庫查詢物件</param>
 /// <param name="hostingEnvironment">網站環境變數</param>
-public class FileController(DocControlContext context, IWebHostEnvironment hostingEnvironment) : BaseController(context, hostingEnvironment)
+[Route("[controller]")]
+public class FileController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
 {
+
+    /// <summary>
+    /// 頁面名稱
+    /// </summary>
+    public const string PageName = "檔案";
 
     /// <summary>
     /// 首頁(用不到)
@@ -27,7 +34,7 @@ public class FileController(DocControlContext context, IWebHostEnvironment hosti
     /// </summary>
     /// <param name="IdNo">文件編號</param>
     /// <returns>檔案</returns>
-    [HttpGet("File/GetClaimFile/{IdNo}")]
+    [HttpGet("GetClaimFile/{IdNo}")]
     [Authorize(Roles = "領用人")]
     public async Task<IActionResult> GetClaimFile(string IdNo)
     {
@@ -45,6 +52,8 @@ public class FileController(DocControlContext context, IWebHostEnvironment hosti
             return NotFound();
         }
 
+        await accessLog.NewActionAsync(GetLoginUser(), PageName, "檔案下載-取得先前領用過的檔案");
+
         //回傳文件檔案blob
         return GetDocument(model);
 
@@ -55,7 +64,7 @@ public class FileController(DocControlContext context, IWebHostEnvironment hosti
     /// </summary>
     /// <param name="IdNo">文件編號</param>
     /// <returns>檔案</returns>
-    [HttpGet("File/GetClaimFileByAdmin/{IdNo}")]
+    [HttpGet("GetClaimFileByAdmin/{IdNo}")]
     [Authorize(Roles = "負責人")]
     public async Task<IActionResult> GetClaimFileByAdmin(string IdNo)
     {
@@ -66,6 +75,8 @@ public class FileController(DocControlContext context, IWebHostEnvironment hosti
         {
             return NotFound();
         }
+
+        await accessLog.NewActionAsync(GetLoginUser(), PageName, "檔案下載-取得先前領用過的檔案(負責人)");
 
         //回傳文件檔案blob
         return GetDocument(model);

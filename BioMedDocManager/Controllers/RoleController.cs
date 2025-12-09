@@ -12,12 +12,13 @@ namespace BioMedDocManager.Controllers
     /// 角色管理
     /// </summary>
     [Route("[controller]")]
-    public class RoleController(
-        DocControlContext context,
-        IWebHostEnvironment hostingEnvironment,
-        IAccessLogService accessLog
-    ) : BaseController(context, hostingEnvironment)
+    public class RoleController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
+        /// <summary>
+        /// 角色管理
+        /// </summary>
+        public const string PageName = "資源管理";
+
         /// <summary>
         /// 預設排序依據
         /// </summary>
@@ -39,7 +40,7 @@ namespace BioMedDocManager.Controllers
 
         // ======================= Index =======================
 
-        [HttpGet]
+        [HttpGet("")]
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             var queryModel = GetSessionQueryModel<RoleQueryViewModel>();
@@ -57,19 +58,19 @@ namespace BioMedDocManager.Controllers
             QueryableExtensions.TrimStringProperties(queryModel);
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "顯示清單頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
 
             return await BuildQueryRole(queryModel, ct);
         }
 
-        [HttpPost]
+        [HttpPost("")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(RoleQueryViewModel queryModel)
         {
             QueryableExtensions.TrimStringProperties(queryModel);
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "清單頁送出查詢");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
 
             return RedirectToAction(nameof(Index));
         }
@@ -84,7 +85,7 @@ namespace BioMedDocManager.Controllers
                 CreatedAt = DateTime.Now
             };
 
-            await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "顯示新增頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
 
             return View(model);
         }
@@ -116,12 +117,12 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "新增【失敗】", msg, true);
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"角色-{posted.RoleName} 新增成功!";
-            await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "新增成功");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -138,11 +139,12 @@ namespace BioMedDocManager.Controllers
 
             var entity = await context.Roles.FirstOrDefaultAsync(r => r.RoleId == roleId);
 
-            if (entity == null) { 
+            if (entity == null)
+            {
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "顯示編輯頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
 
             return View(entity);
         }
@@ -179,12 +181,12 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "更新【失敗】", msg, true);
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "更新【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"角色-{dbEntity.RoleName} 更新成功!";
-            await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "編輯成功");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -246,7 +248,7 @@ namespace BioMedDocManager.Controllers
                 SelectedPermissionKeys = selectedKeys
             };
 
-            await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "顯示權限編輯頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示權限編輯頁");
 
             return View(vm);
         }
@@ -337,13 +339,7 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(
-                    GetLoginUser(),
-                    "角色管理",
-                    "權限設定更新【失敗】",
-                    msg,
-                    true
-                );
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "權限設定更新【失敗】", msg, true);
 
                 // 失敗就回到 Details 或 Index 都可以，這邊回 Details
                 return RedirectToAction(nameof(Details), new { roleId = role.RoleId });
@@ -359,7 +355,7 @@ namespace BioMedDocManager.Controllers
                 successMsg
             );
 
-            
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -390,7 +386,8 @@ namespace BioMedDocManager.Controllers
 
             // 丟給 ViewBag
             ViewBag.GroupPerms = perms
-                .GroupBy(p => new {
+                .GroupBy(p => new
+                {
                     p.Resource!.ResourceId,
                     p.Resource.ResourceDisplayName
                 })
@@ -398,6 +395,8 @@ namespace BioMedDocManager.Controllers
                     g => g.Key.ResourceDisplayName,
                     g => g.ToList()
                 );
+
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁");
 
             return View(entity);
         }
@@ -461,7 +460,7 @@ namespace BioMedDocManager.Controllers
             // 不在 Controller 先 Group，讓 View 自己分組
             ViewBag.RolePermissions = perms;
 
-            await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "顯示刪除確認頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除確認頁");
 
             return View(role);
         }
@@ -492,7 +491,7 @@ namespace BioMedDocManager.Controllers
                 {
                     var msg = $"角色-{entity.RoleName} 目前仍被使用者或群組使用，無法刪除。";
                     TempData["_JSShowAlert"] = msg;
-                    await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "刪除【失敗-角色已被使用】", msg, true);
+                    await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗-角色已被使用】", msg, true);
 
                     return RedirectToAction(nameof(Index));
                 }
@@ -517,19 +516,19 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "刪除【失敗】", msg, true);
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"角色-{entity.RoleName} 已刪除!";
-            await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "刪除成功");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));
         }
 
 
         // ======================= 查詢邏輯 =======================
-
+        [NonAction]
         public async Task<IActionResult> BuildQueryRole(RoleQueryViewModel queryModel, CancellationToken ct)
         {
             ViewData["pageNumber"] = queryModel.PageNumber.ToString();

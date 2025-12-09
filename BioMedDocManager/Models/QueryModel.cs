@@ -1,10 +1,167 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BioMedDocManager.Models
 {
     public class QueryModel
     {
     }
+
+    /// <summary>
+    /// 使用者群組查詢條件 / 分頁 Model
+    /// </summary>
+    public class UserGroupQueryViewModel : Pagination
+    {
+        /// <summary>
+        /// 群組名稱（模糊查詢）
+        /// </summary>
+        public string? UserGroupName { get; set; }
+
+        /// <summary>
+        /// 群組說明（模糊查詢）
+        /// </summary>
+        public string? UserGroupDescription { get; set; }
+    }
+
+    /// <summary>
+    /// 資源查詢條件
+    /// </summary>
+    public class ResourceQueryViewModel : Pagination
+    {
+        /// <summary>
+        /// 資源類型（PAGE / API / ...）
+        /// </summary>
+        [Display(Name = "資源類型")]
+        public string? ResourceType { get; set; }
+
+        /// <summary>
+        /// 資源代號
+        /// </summary>
+        [Display(Name = "資源代號")]
+        public string? ResourceKey { get; set; }
+
+        /// <summary>
+        /// 顯示名稱
+        /// </summary>
+        [Display(Name = "顯示名稱")]
+        public string? ResourceDisplayName { get; set; }
+
+        /// <summary>
+        /// 是否啟用
+        /// null = 全部, true = 啟用, false = 停用
+        /// </summary>
+        [Display(Name = "是否啟用")]
+        public bool? ResourceIsActive { get; set; }
+
+    }
+
+    /// <summary>
+    /// 角色查詢條件
+    /// </summary>
+    public class RoleQueryViewModel : Pagination
+    {
+        /// <summary>
+        /// 角色名稱
+        /// </summary>
+        [Display(Name = "角色名稱")]
+        public string? RoleName { get; set; }
+
+        /// <summary>
+        /// 角色群組
+        /// </summary>
+        [Display(Name = "角色群組")]
+        public string? RoleGroup { get; set; }
+
+    }
+
+    /// <summary>
+    /// AppAction 清單查詢條件
+    /// </summary>
+    public class AppActionQueryViewModel : Pagination
+    {
+        /// <summary>
+        /// 動作名稱（模糊查詢）
+        /// </summary>
+        [Display(Name = "動作名稱")]
+        public string? AppActionName { get; set; }
+
+        /// <summary>
+        /// 顯示名稱（模糊查詢）
+        /// </summary>
+        [Display(Name = "顯示名稱")]
+        public string? AppActionDisplayName { get; set; }
+
+    }
+
+    /// <summary>
+    /// 選單項目查詢條件
+    /// </summary>
+    public class MenuItemQueryViewModel : Pagination
+    {
+        /// <summary>
+        /// 選單標題（模糊查詢）
+        /// </summary>
+        [Display(Name = "選單標題")]
+        public string? MenuItemTitle { get; set; }
+
+        /// <summary>
+        /// 上層選單編號（精確查詢）
+        /// </summary>
+        [Display(Name = "上層選單編號")]
+        public int? MenuItemParentId { get; set; }
+
+        /// <summary>
+        /// Resource.ResourceKey 關鍵字查詢
+        /// </summary>
+        public string? ResourceKey { get; set; }
+
+        /// <summary>
+        /// 資源編號（精確查詢）
+        /// </summary>
+        [Display(Name = "資源編號")]
+        public int? ResourceId { get; set; }
+
+        /// <summary>
+        /// 是否啟用
+        /// null = 全部；true = 啟用；false = 停用
+        /// </summary>
+        [Display(Name = "是否啟用")]
+        public bool? MenuItemIsActive { get; set; }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // ===== 以下是範例QueryModel =====
 
     /// <summary>
     /// 供應商清冊 model
@@ -138,12 +295,6 @@ namespace BioMedDocManager.Models
 
         public string? SupplierNo { get; set; }
 
-        //{
-        //  public string? RequestNo { get; set; }
-        //  public string? ProductId { get; set; }
-        //    public string? StartDate { get; set; }
-        //    public string? EndDate { get; set; }
-        //    public string? IdNo { get; set; }
     }
 
     public class AssessmentsQueryModel : PurchaseRecordsQueryModel
@@ -169,16 +320,6 @@ namespace BioMedDocManager.Models
         public int? GradeMin { get; set; }
         public int? GradeMax { get; set; }
 
-        //    public DateTime? StartDate { get; set; }
-        //    public DateTime? EndDate { get; set; } = DateTime.Today;
-        //    public string? ProductClass { get; set; }
-
-        //{
-        //  public string? RequestNo { get; set; }
-        //  public string? ProductId { get; set; }
-        //    public string? StartDate { get; set; }
-        //    public string? EndDate { get; set; }
-        //    public string? IdNo { get; set; }
     }
 
 

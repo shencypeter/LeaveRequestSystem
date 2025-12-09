@@ -1,0 +1,60 @@
+﻿@model BioMedDocManager.Models.AppAction
+@{
+    ViewData["Title"] = "系統動作管理-編輯";
+    Layout = "_NoNavLayout";
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <form asp-action="Edit"
+          asp-route-appActionId="@Model.AppActionId"
+          method="post"
+          id="myForm"
+          target="_top">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="AppActionId" />
+
+        <div class="pop">
+
+            <div class="row align-items-center my-3">
+                <label asp-for="AppActionName" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <input asp-for="AppActionName" class="form-control" />
+                    <span asp-validation-for="AppActionName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <label asp-for="AppActionDisplayName" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <input asp-for="AppActionDisplayName" class="form-control" />
+                    <span asp-validation-for="AppActionDisplayName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <label asp-for="AppActionOrder" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <input asp-for="AppActionOrder" class="form-control" type="number" />
+                    <span asp-validation-for="AppActionOrder" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap justify-content-center">
+                    <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-check-circle"></i>&ensp;儲存
+                    </button>                    
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+    </script>
+}

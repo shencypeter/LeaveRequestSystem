@@ -1,0 +1,259 @@
+﻿@model BioMedDocManager.Models.UserDetailsViewModel
+
+@{
+    ViewData["Title"] = "帳號設定-使用者明細";
+    Layout = "_NoNavLayout";
+}
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-person-vcard me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <div class="pop">
+
+        <!-- ===================== 一、使用者基本資料 ===================== -->
+        <h5 class="mb-3">一、使用者基本資料</h5>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserAccount)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @Model.User.UserAccount
+            </div>
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserFullName)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @Model.User.UserFullName
+            </div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserJobTitle)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @if (string.IsNullOrWhiteSpace(Model.User.UserJobTitle))
+                {
+                    <span class="text-muted">(無)</span>
+                }
+                else
+                {
+                    @Model.User.UserJobTitle
+                }
+            </div>
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>部門：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @(Model.User.Department?.DepartmentName ?? "(無)")
+            </div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserEmail)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @Model.User.UserEmail
+            </div>
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserPhone)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @if (string.IsNullOrWhiteSpace(Model.User.UserPhone))
+                {
+                    <span class="text-muted">(無)</span>
+                }
+                else
+                {
+                    @Model.User.UserPhone
+                }
+            </div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserMobile)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @if (string.IsNullOrWhiteSpace(Model.User.UserMobile))
+                {
+                    <span class="text-muted">(無)</span>
+                }
+                else
+                {
+                    @Model.User.UserMobile
+                }
+            </div>
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserIsActive)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @Model.User.UserIsActiveText
+            </div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserIsLocked)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @Model.User.UserIsLockedText
+            </div>
+
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserLockedUntil)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @{
+                    var lockedText = Model.User.UserLockedUntil?.ToString("yyyy-MM-dd HH:mm:ss") ?? "(無)";
+                }
+                @lockedText
+            </div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserLastLoginAt)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @{
+                    var lastLogin = Model.User.UserLastLoginAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "(無)";
+                }
+                @lastLogin
+            </div>
+
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserLastLoginIp)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @if (string.IsNullOrWhiteSpace(Model.User.UserLastLoginIp))
+                {
+                    <span class="text-muted">(無)</span>
+                }
+                else
+                {
+                    @Model.User.UserLastLoginIp
+                }
+            </div>
+        </div>
+
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserPasswordChangedAt)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @{
+                    var pwdChanged = Model.User.UserPasswordChangedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "(無)";
+                }
+                @pwdChanged
+            </div>
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>@Html.DisplayNameFor(m => m.User.UserRemarks)：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @if (string.IsNullOrWhiteSpace(Model.User.UserRemarks))
+                {
+                    <span class="text-muted">(無)</span>
+                }
+                else
+                {
+                    @Model.User.UserRemarks
+                }
+            </div>
+        </div>
+
+        <hr class="my-4" />
+
+        <!-- ===================== 二、使用者群組、角色與權限 ===================== -->
+        <h5 class="mb-3">二、使用者群組、角色與權限</h5>
+
+        <!-- 使用者群組 -->
+        <div class="row align-items-start my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                使用者群組
+            </div>
+            <div class="col-md-10">
+                @if (Model.UserGroups == null || !Model.UserGroups.Any())
+                {
+                    <div class="text-muted">(無)</div>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var g in Model.UserGroups)
+                        {
+                            <li class="list-group-item px-0">@g</li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+        <!-- 有效角色（沿用 EffectiveRoles） -->
+        <div class="row align-items-start my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                有效角色
+            </div>
+            <div class="col-md-10">
+                @if (Model.EffectiveRoles == null || Model.EffectiveRoles.Count == 0)
+                {
+                    <div class="text-muted">(無)</div>
+                }
+                else
+                {
+                    <ul class="list-group">
+                        @foreach (var r in Model.EffectiveRoles)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@r.RoleGroup - @r.RoleName</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+        <!-- 有效權限（Resource × Action）- 完全可以把你 EditGroup 的那段搬過來 -->
+        <div class="row align-items-start my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                有效權限
+            </div>
+            <div class="col-md-10">
+                @if (Model.EffectivePermissions == null || Model.EffectivePermissions.Count == 0)
+                {
+                    <div class="text-muted">(無)</div>
+                }
+                else
+                {
+                    var byRes = Model.EffectivePermissions
+                    .GroupBy(p => new { p.ResourceId, p.ResourceDisplayName, p.ResourceKey })
+                    .OrderBy(g => g.Key.ResourceDisplayName);
+
+                    foreach (var g in byRes)
+                    {
+                        <div class="mb-3">
+                            <h6 class="mb-1">
+                                @g.Key.ResourceDisplayName
+                                <span class="text-muted small ms-2">(@g.Key.ResourceKey)</span>
+                            </h6>
+                            <div>
+                                @foreach (var p in g)
+                                {
+                                    <span class="badge bg-success me-1 mb-1"
+                                          title="動作：@p.AppActionName">
+                                        @p.AppActionDisplayName
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+
+    </div>
+</div>

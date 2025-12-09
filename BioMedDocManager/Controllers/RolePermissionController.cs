@@ -9,15 +9,15 @@ using Microsoft.EntityFrameworkCore;
 namespace BioMedDocManager.Controllers
 {
     /// <summary>
-    /// 角色管理
+    /// 角色權限管理
     /// </summary>
     [Route("[controller]")]
-    public class RolePermissionController(
-        DocControlContext context,
-        IWebHostEnvironment hostingEnvironment,
-        IAccessLogService accessLog
-    ) : BaseController(context, hostingEnvironment)
+    public class RolePermissionController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
+        /// <summary>
+        /// 角色管理
+        /// </summary>
+        public const string PageName = "角色權限管理";
 
         [HttpGet("Edit/{roleId:int}")]
         public async Task<IActionResult> Edit([FromRoute] int? roleId)
@@ -74,7 +74,7 @@ namespace BioMedDocManager.Controllers
                 SelectedPermissionKeys = selectedKeys
             };
 
-            await accessLog.NewActionAsync(GetLoginUser(), "角色管理", "顯示權限編輯頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示權限編輯頁");
 
             return View(vm);
         }
@@ -165,13 +165,7 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(
-                    GetLoginUser(),
-                    "角色管理",
-                    "權限設定更新【失敗】",
-                    msg,
-                    true
-                );
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "權限設定更新【失敗】", msg, true);
 
                 return RedirectToAction(nameof(Index), "Role");
             }
@@ -179,13 +173,7 @@ namespace BioMedDocManager.Controllers
             var successMsg = $"角色-{role.RoleName} 權限設定已更新!";
             TempData["_JSShowSuccess"] = successMsg;
 
-            await accessLog.NewActionAsync(
-                GetLoginUser(),
-                "角色管理",
-                "權限設定更新成功",
-                successMsg
-            );
-
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "權限設定更新成功");
 
             return RedirectToAction(nameof(Index), "Role");
         }

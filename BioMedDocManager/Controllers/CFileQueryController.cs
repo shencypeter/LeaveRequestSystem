@@ -1,5 +1,6 @@
 ﻿using BioMedDocManager.Extensions;
 using BioMedDocManager.Factory;
+using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
 using Dapper;
@@ -14,9 +15,13 @@ namespace BioMedDocManager.Controllers
     /// </summary>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
-    [Authorize(Roles = AppSettings.DocRoleStrings.領用人)]
+    [Route("[controller]")]
     public class CFileQueryController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
+        /// <summary>
+        /// 頁面名稱
+        /// </summary>
+        public const string PageName = "文件查詢";
 
         /// <summary>
         /// 預設排序依據
@@ -38,7 +43,7 @@ namespace BioMedDocManager.Controllers
         /// <param name="PageSize">單頁顯示筆數</param>
         /// <param name="PageNumber">第幾頁</param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet("")]
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             // 從Session中找出查詢model或建立預設查詢model
@@ -67,6 +72,8 @@ namespace BioMedDocManager.Controllers
             // 領用人下拉式選單(List)
             ViewData["DocUser"] = DocAuthors();
 
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
+
             return await BuildQueryDocs(queryModel, ct);
         }
 
@@ -75,9 +82,9 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="queryModel">查詢model</param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("")]
         [ValidateAntiForgeryToken]
-        public IActionResult Index(FormQueryModel queryModel)
+        public async Task<IActionResult> Index(FormQueryModel queryModel)
         {
 
             // 交換文件編號(年月)
@@ -97,6 +104,8 @@ namespace BioMedDocManager.Controllers
             // 儲存查詢model到session中
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
+
             // 轉跳到GET方法頁面，顯示查詢內容
             return RedirectToAction(nameof(Index));
         }
@@ -106,8 +115,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="IdNo">文件編號</param>
         /// <returns></returns>
-        [HttpGet]
-        [Route("[controller]/Details/{IdNo}")]
+        [HttpGet("Details/{IdNo}")]
         public async Task<IActionResult> Details([FromRoute] string IdNo)
         {
             if (string.IsNullOrEmpty(IdNo))
@@ -126,6 +134,8 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁");
+
             return View(formDocControlMaintable);
         }
 
@@ -143,7 +153,7 @@ namespace BioMedDocManager.Controllers
         /// <param name="TableHeaders">表頭</param>
         /// <param name="sheetName">檔名</param>
         /// <returns>查詢結果Excel檔</returns>
-        [HttpPost]
+        [HttpPost("GetExcel")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetExcel(FormQueryModel queryModel, CancellationToken ct)
         {
@@ -157,9 +167,11 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "下載Excel");
+
             // 交給BaseController統一輸出Excel
             return GetExcelFile(rows, TableHeaders, InitSort, "文件查詢");
-        
+
         }
 
         /// <summary>
@@ -168,6 +180,7 @@ namespace BioMedDocManager.Controllers
         /// <param name="queryModel">查詢model</param>
         /// <param name="ct">取消token</param>
         /// <returns>查詢結果ViewResult</returns>
+        [NonAction]
         public async Task<IActionResult> BuildQueryDocs(FormQueryModel queryModel, CancellationToken ct)
         {
             ViewData["pageNumber"] = queryModel.PageNumber.ToString();

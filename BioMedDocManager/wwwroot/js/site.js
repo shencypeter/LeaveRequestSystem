@@ -1444,7 +1444,7 @@ function editGroupEventListener() {
         const userId = document.getElementById('userId');
 
         const groupIds = Array.from(selected.options).map(o => parseInt(o.value, 10));
-        const previewUrl = '/AccountSettings/PreviewUserPermissions';
+        const previewUrl = '/AccountSettings/PreviewPermissions';
         const tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
         const csrfToken = tokenInput ? tokenInput.value : '';
 
@@ -1508,7 +1508,7 @@ function editGroupRoleEventListener() {
     const csrfToken = tokenInput ? tokenInput.value : '';
 
     // 後端預覽 API
-    const previewUrl = '/UserGroupRole/PreviewGroupPermissions';
+    const previewUrl = '/UserGroupRole/PreviewPermissions';
 
     // 打 API 預覽目前 checkbox 勾選後的有效權限
     function previewPermissions() {

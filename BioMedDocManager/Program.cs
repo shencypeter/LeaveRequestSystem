@@ -1,10 +1,13 @@
-﻿using BioMedDocManager.Helpers;
+﻿using BioMedDocManager.Handler;
+using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Identity.Client;
@@ -34,7 +37,23 @@ namespace BioMedDocManager
             // 用iis執行要加這行(部屬到正式環境)
             builderWeb.WebHost.UseIISIntegration();
 
-            builderWeb.Services.AddControllersWithViews();
+            // 授權 & 自訂 PolicyProvider/Handler
+            builderWeb.Services.AddAuthorization();
+
+            builderWeb.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+            //builderWeb.Services.AddControllersWithViews();
+            builderWeb.Services.AddControllersWithViews(options =>
+            {
+                // 所有沒有 [AllowAnonymous] 的 action，都套用這個授權規則
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .AddRequirements(new PermissionRequirement())
+                    .Build();
+
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+
             builderWeb.Services.AddHttpContextAccessor();
             builderWeb.Services.AddDbContext<DocControlContext>(options =>
                 options.UseSqlServer(builderWeb.Configuration.GetConnectionString("DefaultConnection")));
@@ -77,8 +96,6 @@ namespace BioMedDocManager
                 options.AccessDeniedPath = "/Error/403"; // 未經授權者，顯示未授權頁面
             });
 
-            // 帳號權限
-            builderWeb.Services.AddAuthorization(); // 如果要用 [Authorize] 控制權限
 
             builderWeb.Services.AddDataProtection()
             .PersistKeysToFileSystem(new DirectoryInfo(@"C:\DataProtection-Keys"))

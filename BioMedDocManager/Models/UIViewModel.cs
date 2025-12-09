@@ -314,6 +314,34 @@ namespace BioMedDocManager.Models
     }
 
     /// <summary>
+    /// 使用者明細畫面用 ViewModel
+    /// </summary>
+    /// <summary>
+    /// 使用者明細頁用 ViewModel
+    ///   上半部：User 基本資料
+    ///   下半部：群組 / 角色 / 權限 (沿用 ComputePreviewAsync 結果)
+    /// </summary>
+    public class UserDetailsViewModel
+    {
+        public User User { get; set; } = null!;
+
+        /// <summary>
+        /// 使用者已屬於的群組名稱清單
+        /// </summary>
+        public List<string> UserGroups { get; set; } = new();
+
+        /// <summary>
+        /// 有效角色 (從 ComputePreviewAsync 來)
+        /// </summary>
+        public List<EffectiveRoleViewModel> EffectiveRoles { get; set; } = new();
+
+        /// <summary>
+        /// 有效權限 (從 ComputePreviewAsync 來)
+        /// </summary>
+        public List<EffectivePermissionViewModel> EffectivePermissions { get; set; } = new();
+    }
+
+    /// <summary>
     /// 有效角色
     /// </summary>
     public class EffectiveRoleViewModel
@@ -368,6 +396,20 @@ namespace BioMedDocManager.Models
         /// 預覽區：有效權限（平面，View 端用 Resource 分組）
         /// </summary>
         public List<PreviewPermissionViewModel> EffectivePermissions { get; set; } = new();
+    }
+
+    /// <summary>
+    /// AppAction 在 RolePermission 中的使用情況：Resource + Role
+    /// </summary>
+    public class AppActionRoleUsageViewModel
+    {
+        public int ResourceId { get; set; }
+        public string? ResourceKey { get; set; }
+        public string? ResourceDisplayName { get; set; }
+
+        public int RoleId { get; set; }
+        public string? RoleGroup { get; set; }
+        public string? RoleName { get; set; }
     }
 
     /// <summary>
@@ -548,7 +590,7 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 使用者權限預覽請求
     /// </summary>
-    public class PreviewUserPermissionsRequestViewModel
+    public class PreviewPermissionsRequestViewModel
     {
         public int UserId { get; set; }
         public List<int>? SelectedUserGroupIds { get; set; }
@@ -578,7 +620,7 @@ namespace BioMedDocManager.Models
     /// <summary>
     /// 角色預覽權限DTO
     /// </summary>
-    public class PreviewGroupPermissionsViewModel
+    public class PreviewPermissionsViewModel
     {
         public int UserGroupId { get; set; }
 
@@ -598,73 +640,6 @@ namespace BioMedDocManager.Models
         public string AppActionDisplayName { get; set; } = "";
         public bool IsNew { get; set; }
         public int AppActionOrder { get; set; }
-    }
-
-    /// <summary>
-    /// 使用者群組查詢條件 / 分頁 Model
-    /// </summary>
-    public class UserGroupQueryViewModel: Pagination
-    {
-        /// <summary>
-        /// 群組名稱（模糊查詢）
-        /// </summary>
-        public string? UserGroupName { get; set; }
-
-        /// <summary>
-        /// 群組說明（模糊查詢）
-        /// </summary>
-        public string? UserGroupDescription { get; set; }
-    }
-
-    /// <summary>
-    /// 資源查詢條件
-    /// </summary>
-    public class ResourceQueryViewModel : Pagination
-    {
-        /// <summary>
-        /// 資源類型（PAGE / API / ...）
-        /// </summary>
-        [Display(Name = "資源類型")]
-        public string? ResourceType { get; set; }
-
-        /// <summary>
-        /// 資源代號
-        /// </summary>
-        [Display(Name = "資源代號")]
-        public string? ResourceKey { get; set; }
-
-        /// <summary>
-        /// 顯示名稱
-        /// </summary>
-        [Display(Name = "顯示名稱")]
-        public string? ResourceDisplayName { get; set; }
-
-        /// <summary>
-        /// 是否啟用
-        /// null = 全部, true = 啟用, false = 停用
-        /// </summary>
-        [Display(Name = "是否啟用")]
-        public bool? ResourceIsActive { get; set; }
-
-    }
-
-    /// <summary>
-    /// 角色查詢條件
-    /// </summary>
-    public class RoleQueryViewModel : Pagination
-    {
-        /// <summary>
-        /// 角色名稱
-        /// </summary>
-        [Display(Name = "角色名稱")]
-        public string? RoleName { get; set; }
-
-        /// <summary>
-        /// 角色群組
-        /// </summary>
-        [Display(Name = "角色群組")]
-        public string? RoleGroup { get; set; }
-
     }
 
     public class RoleUsageUserViewModel

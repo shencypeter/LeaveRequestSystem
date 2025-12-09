@@ -223,7 +223,7 @@ namespace BioMedDocManager.Controllers
         /// 取得登入者實體
         /// </summary>
         /// <returns>登入者ID</returns>
-        public User? GetLoginUser()
+        protected User? GetLoginUser()
         {
             var claimValue = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; ;
 
@@ -241,7 +241,7 @@ namespace BioMedDocManager.Controllers
         /// 取得登入者ID
         /// </summary>
         /// <returns>登入者ID</returns>
-        public int? GetLoginUserId()
+        protected int? GetLoginUserId()
         {
             var claimValue = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; ;
 
@@ -259,7 +259,7 @@ namespace BioMedDocManager.Controllers
         /// <param name="user">登入者</param>
         /// <param name="navPages">選單頁面陣列</param>
         /// <returns></returns>
-        public static PageLink[] GetAvailablePages(ClaimsPrincipal user, PageLink[] navPages)
+        protected static PageLink[] GetAvailablePages(ClaimsPrincipal user, PageLink[] navPages)
         {
             // 取得使用者角色
             var userRoles = user.Claims
@@ -622,7 +622,7 @@ namespace BioMedDocManager.Controllers
         /// <param name="msg">訊息</param>
         /// <param name="routeValues">路徑參數</param>
         /// <returns></returns>
-        public IActionResult RedirectWithJsAlert(string actionPath, string msg = "", object routeValues = null)
+        protected IActionResult RedirectWithJsAlert(string actionPath, string msg = "", object routeValues = null)
         {
             if (!string.IsNullOrWhiteSpace(msg))
             {
@@ -993,7 +993,7 @@ namespace BioMedDocManager.Controllers
         /// <param name="start">匯出起始日期</param>
         /// <param name="end">匯出結束日期</param>
         /// <returns>匯出日期文字</returns>
-        public static string BuildExportDateRange(DateTime? start, DateTime? end)
+        protected static string BuildExportDateRange(DateTime? start, DateTime? end)
         {
             if (start.HasValue && end.HasValue)
             {
@@ -1110,7 +1110,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="rows">資料</param>
         /// <returns></returns>
-        public List<Dictionary<string, object>> FormatRowData(List<Dictionary<string, object>> rows)
+        protected List<Dictionary<string, object>> FormatRowData(List<Dictionary<string, object>> rows)
         {
             foreach (var row in rows)
             {
@@ -1191,7 +1191,7 @@ namespace BioMedDocManager.Controllers
         /// 包裝RowNum用，依 TableHeaders 將實體列表轉為 List<Dictionary<string, object>>，
         /// 可自動加入 RowNum（#），並可選擇使用「顯示名或屬性名」當輸出鍵。
         /// </summary>
-        public static List<Dictionary<string, object>> BuildRows<T>(
+        protected static List<Dictionary<string, object>> BuildRows<T>(
             IEnumerable<T> entities,
             IReadOnlyDictionary<string, string> tableHeaders, // Key=屬性名, Value=顯示文字；含 "RowNum" => "#"
             int pageNumber,
@@ -1264,7 +1264,7 @@ namespace BioMedDocManager.Controllers
         /// <param name="onlyActive">只取啟用</param>
         /// <param name="excludeId">排除自己（防止自我參照）</param>
         /// <param name="withInactiveSuffix">停用部門是否加註 (停用)</param>
-        public SelectOption[] DepartmentParentOptions(
+        protected SelectOption[] DepartmentParentOptions(
             bool onlyActive = true,
             int? excludeId = null,
             bool withInactiveSuffix = true)
@@ -1303,7 +1303,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 若你想把「部門名稱」本身也做成下拉（只能選既有部門）
         /// </summary>
-        public SelectOption[] DepartmentNameOptions(bool onlyActive = true, bool withInactiveSuffix = false)
+        protected SelectOption[] DepartmentNameOptions(bool onlyActive = true, bool withInactiveSuffix = false)
         {
             var query = _context.Departments.AsQueryable();
             if (onlyActive)
@@ -1353,7 +1353,7 @@ namespace BioMedDocManager.Controllers
         /// 電子採購系統-請購人 select
         /// </summary>
         /// <returns></returns>
-        public SelectOption[] Requesters(bool IsEnabled = false)
+        protected SelectOption[] Requesters(bool IsEnabled = false)
         {
             // 資料表要加入「請購人」資訊
             var users = _context.Users
@@ -1375,7 +1375,7 @@ namespace BioMedDocManager.Controllers
         /// 電子採購系統-採購人 select
         /// </summary>
         /// <returns></returns>
-        public SelectOption[] Purchasers(bool IsEnabled = false)
+        protected SelectOption[] Purchasers(bool IsEnabled = false)
         {
             var users = _context.Users
                 .Where(user => user.UserRoles.Any(ur =>
@@ -1398,7 +1398,7 @@ namespace BioMedDocManager.Controllers
         /// 電子採購系統-收貨人 select
         /// </summary>
         /// <returns></returns>
-        public SelectOption[] ReceivePerson(bool IsEnabled = false)
+        protected SelectOption[] ReceivePerson(bool IsEnabled = false)
         {
             var users = _context.Users
                 .Where(user => (!IsEnabled || user.UserIsActive))
@@ -1419,7 +1419,7 @@ namespace BioMedDocManager.Controllers
         /// 電子採購系統-驗收人 select
         /// </summary>
         /// <returns></returns>
-        public SelectOption[] VerifyPerson(bool IsEnabled = false)
+        protected SelectOption[] VerifyPerson(bool IsEnabled = false)
         {
             var users = _context.Users
                 .Where(user => (!IsEnabled || user.UserIsActive))

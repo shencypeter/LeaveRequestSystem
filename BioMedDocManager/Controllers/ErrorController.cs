@@ -1,4 +1,5 @@
 using BioMedDocManager.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BioMedDocManager.Controllers
@@ -9,6 +10,7 @@ namespace BioMedDocManager.Controllers
     /// </summary>
     /// <param name="logger">log紀錄器</param>
     /// <param name="context">資料庫查詢物件</param>
+    [AllowAnonymous]
     public class ErrorController(ILogger<HomeController> logger, DocControlContext context, IWebHostEnvironment hostingEnvironment) : BaseController(context, hostingEnvironment)
     {
 

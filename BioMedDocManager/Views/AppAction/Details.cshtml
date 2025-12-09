@@ -1,0 +1,115 @@
+﻿@model BioMedDocManager.Models.AppAction
+@using BioMedDocManager.Models
+
+@{
+    ViewData["Title"] = "系統動作管理-詳細資料";
+    Layout = "_NoNavLayout";
+
+    var usageList = ViewBag.ActionRoleUsageList as List<AppActionRoleUsageViewModel> ?? new();
+    bool hasAnyRolePermission = ViewBag.HasAnyRolePermission ?? false;
+    int pairCount = ViewBag.RolePermissionPairCount ?? 0;
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-search me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <div class="pop">
+
+        <!-- 基本資訊 -->
+        <div class="row align-items-center my-2">
+            <label asp-for="AppActionName" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.AppActionName</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="AppActionDisplayName" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.AppActionDisplayName</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="AppActionOrder" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.AppActionOrder</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="CreatedAt" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">
+                    @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")
+                </p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="UpdatedAt" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">
+                    @(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")
+                </p>
+            </div>
+        </div>
+
+        <!-- RolePermission 關聯狀況 (Resource + Role) -->
+        <div class="row align-items-start my-2">
+            <label class="col-md-2 col-form-label text-md-end">
+                角色權限關聯
+            </label>
+            <div class="col-md-10">
+                @if (!hasAnyRolePermission)
+                {
+                    <div class="text-muted">
+                        目前尚未有任何角色權限使用此動作。
+                    </div>
+                }
+                else
+                {
+                    <p class="mb-2">
+                        此動作目前被 <strong>@pairCount</strong> 組角色使用。
+                    </p>
+
+                    @if (usageList.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>角色群組</th>
+                                        <th>角色名稱</th>
+                                        <th>資源代號</th>
+                                        <th>資源名稱</th>                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in usageList)
+                                    {
+                                        <tr>
+                                            <td>@item.RoleGroup</td>
+                                            <td>@item.RoleName</td>
+                                            <td>@item.ResourceKey</td>
+                                            <td>@item.ResourceDisplayName</td>                                            
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted">
+                            已有角色權限使用此動作，但無法取得對應的詳細資料。
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+    </div>
+</div>

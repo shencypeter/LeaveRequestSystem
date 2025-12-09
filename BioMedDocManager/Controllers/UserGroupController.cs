@@ -20,6 +20,11 @@ namespace BioMedDocManager.Controllers
     public class UserGroupController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
         /// <summary>
+        /// 頁面名稱
+        /// </summary>
+        public const string PageName = "使用者群組管理";
+
+        /// <summary>
         /// 預設排序依據
         /// </summary>
         public const string InitSort = "UserGroupName";
@@ -41,7 +46,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示使用者群組清單（GET）
         /// </summary>
-        [HttpGet]
+        [HttpGet("")]
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             // 從 Session 抓查詢 model
@@ -63,7 +68,7 @@ namespace BioMedDocManager.Controllers
             // 存回 Session
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "顯示清單頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
 
             return await BuildQueryUserGroup(queryModel, ct);
         }
@@ -71,7 +76,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 使用者群組清單頁送出查詢（POST）
         /// </summary>
-        [HttpPost]
+        [HttpPost("")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(UserGroupQueryViewModel queryModel)
         {
@@ -81,7 +86,7 @@ namespace BioMedDocManager.Controllers
             // 儲存查詢 model 到 Session 中
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "清單頁送出查詢");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
 
             // PRG：轉跳到 GET Index
             return RedirectToAction(nameof(Index));
@@ -98,7 +103,7 @@ namespace BioMedDocManager.Controllers
                 CreatedAt = DateTime.Now
             };
 
-            await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "顯示新增頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
 
             return View(model);
         }
@@ -133,13 +138,13 @@ namespace BioMedDocManager.Controllers
                 var msg = $"使用者群組-{posted.UserGroupName} 資料新增【失敗】!";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
-                await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "資料新增【失敗】", msg, true);
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "資料新增【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"使用者群組-{posted.UserGroupName} 資料新增成功!";
 
-            await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "新增頁資料新增成功");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁資料新增成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -163,7 +168,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "顯示編輯頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
 
             return View(group);
         }
@@ -204,14 +209,14 @@ namespace BioMedDocManager.Controllers
                 var msg = $"使用者群組-{dbGroup.UserGroupName} 資料更新【失敗】!";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
-                await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "編輯頁資料更新【失敗】", msg, true);
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新【失敗】", msg, true);
 
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"使用者群組-{dbGroup.UserGroupName} 資料更新成功!";
 
-            await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "編輯頁資料更新成功");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -240,7 +245,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "顯示明細頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁");
 
             return View(group);
         }
@@ -269,7 +274,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "顯示刪除確認頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除確認頁");
 
             return View(group);
         }
@@ -305,14 +310,14 @@ namespace BioMedDocManager.Controllers
                 var msg = $"使用者群組-{group.UserGroupName} 刪除【失敗】!";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
-                await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "刪除【失敗】", msg, true);
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
 
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupName} 已刪除!";
 
-            await accessLog.NewActionAsync(GetLoginUser(), "使用者群組", "刪除成功");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -320,6 +325,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 建立使用者群組清單查詢 EF
         /// </summary>
+        [NonAction]
         public async Task<IActionResult> BuildQueryUserGroup(UserGroupQueryViewModel queryModel, CancellationToken ct)
         {
             ViewData["pageNumber"] = queryModel.PageNumber.ToString();

@@ -3,21 +3,25 @@ using BioMedDocManager.Factory;
 using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting.Internal;
 
 namespace BioMedDocManager.Controllers
 {
     /// <summary>
-    /// Resource（資源）管理
+    /// 資源管理
     /// </summary>
     [Route("[controller]")]
-    public class ResourceController(
-        DocControlContext context,
-        IWebHostEnvironment hostingEnvironment,
-        IAccessLogService accessLog
-    ) : BaseController(context, hostingEnvironment)
+    public class ResourceController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
+
+        /// <summary>
+        /// 頁面名稱
+        /// </summary>
+        public const string PageName = "資源管理";
+
         /// <summary>
         /// 預設排序依據
         /// </summary>
@@ -41,7 +45,7 @@ namespace BioMedDocManager.Controllers
 
         // ======================= Index（清單頁） =======================
 
-        [HttpGet]
+        [HttpGet("")]
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             var queryModel = GetSessionQueryModel<ResourceQueryViewModel>();
@@ -58,19 +62,19 @@ namespace BioMedDocManager.Controllers
             QueryableExtensions.TrimStringProperties(queryModel);
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), "資源管理", "顯示清單頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
 
             return await BuildQueryResource(queryModel, ct);
         }
 
-        [HttpPost]
+        [HttpPost("")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(ResourceQueryViewModel queryModel)
         {
             QueryableExtensions.TrimStringProperties(queryModel);
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), "資源管理", "清單頁送出查詢");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
 
             return RedirectToAction(nameof(Index));
         }
@@ -86,7 +90,7 @@ namespace BioMedDocManager.Controllers
                 CreatedAt = DateTime.Now
             };
 
-            await accessLog.NewActionAsync(GetLoginUser(), "資源管理", "顯示新增頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
 
             return View(model);
         }
@@ -118,12 +122,12 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), "資源管理", "新增【失敗】", msg, true);
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"資源-{posted.ResourceKey} 新增成功!";
-            await accessLog.NewActionAsync(GetLoginUser(), "資源管理", "新增成功");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -144,7 +148,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), "資源管理", "顯示編輯頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
             return View(entity);
         }
 
@@ -180,12 +184,12 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), "資源管理", "更新【失敗】", msg, true);
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "更新【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"資源-{dbEntity.ResourceKey} 更新成功!";
-            await accessLog.NewActionAsync(GetLoginUser(), "資源管理", "編輯成功");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -284,7 +288,7 @@ namespace BioMedDocManager.Controllers
 
             ViewBag.ResourceGroupUsageList = groupUsage;
 
-            await accessLog.NewActionAsync(GetLoginUser(), "系統資源管理", "顯示詳細資料");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示詳細資料");
 
             return View(entity);
         }
@@ -378,7 +382,7 @@ namespace BioMedDocManager.Controllers
                 groupUsage = withGroup
                     .Concat(withoutGroup)
                     .Distinct() // 避免重複
-                    .OrderBy(g => g.UserGroupName ?? "~~~未指定群組~~~") // 讓有群組的排前面
+                    .OrderBy(g => g.UserGroupName ?? "未指定群組") // 讓有群組的排前面
                     .ThenBy(g => g.RoleGroup)
                     .ThenBy(g => g.RoleName)
                     .ToList();
@@ -386,7 +390,7 @@ namespace BioMedDocManager.Controllers
 
             ViewBag.ResourceGroupUsageList = groupUsage;
 
-            await accessLog.NewActionAsync(GetLoginUser(), "系統資源管理", "顯示刪除確認頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除確認頁");
 
             return View(entity);
         }
@@ -441,25 +445,19 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(
-                    GetLoginUser(),
-                    "系統資源管理",
-                    "刪除【失敗】",
-                    msg,
-                    true
-                );
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
 
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"資源-{entity.ResourceKey} ({entity.ResourceDisplayName}) 已刪除!";
-            await accessLog.NewActionAsync(GetLoginUser(), "系統資源管理", "刪除成功");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));
         }
 
         // ======================= 查詢邏輯 =======================
-
+        [NonAction]
         public async Task<IActionResult> BuildQueryResource(ResourceQueryViewModel queryModel, CancellationToken ct)
         {
             ViewData["pageNumber"] = queryModel.PageNumber.ToString();

@@ -1,0 +1,103 @@
+﻿@model BioMedDocManager.Models.MenuItem
+@{
+    ViewData["Title"] = "選單項目管理-新增";
+    Layout = "_NoNavLayout";
+
+    // 上層選單清單
+    var parentList = ViewBag.ParentMenuItems as List<MenuItem> ?? new();
+    var resourceList = ViewBag.Resources as List<Resource> ?? new();
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-plus-square me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <form asp-action="Create" method="post" id="myForm" target="_top">
+        @Html.AntiForgeryToken()
+
+        <div class="pop">
+
+            <!-- 上層選單 -->
+            <div class="row align-items-center my-3">
+                <label asp-for="MenuItemParentId" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <select asp-for="MenuItemParentId"
+                            class="form-select"
+                            asp-items="@(new SelectList(parentList, "MenuItemId", "MenuItemTitle"))">
+                        <option value="">-- 無上層選單 --</option>
+                    </select>
+                    <span asp-validation-for="MenuItemParentId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- 標題 -->
+            <div class="row align-items-center my-3">
+                <label asp-for="MenuItemTitle" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <input asp-for="MenuItemTitle" class="form-control" />
+                    <span asp-validation-for="MenuItemTitle" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- 圖示 -->
+            <div class="row align-items-center my-3">
+                <label asp-for="MenuItemIcon" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <input asp-for="MenuItemIcon" class="form-control" placeholder="EX：fas fa-home" />
+                    <span asp-validation-for="MenuItemIcon" class="text-danger"></span>
+                    <a href="https://fontawesome.com/v6/search?ic=free-collection" target="_blank" title="查詢 Font Awesome icon">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        查詢Icon
+                    </a>
+                </div>
+            </div>
+
+            <!-- 顯示順序 -->
+            <div class="row align-items-center my-3">
+                <label asp-for="MenuItemDisplayOrder" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <input asp-for="MenuItemDisplayOrder" class="form-control" />
+                    <span asp-validation-for="MenuItemDisplayOrder" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- 是否啟用 -->
+            <div class="row align-items-center my-3">
+                <label asp-for="MenuItemIsActive" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <div class="form-check">
+                        <input asp-for="MenuItemIsActive" class="form-check-input" />
+                    </div>
+                    <span asp-validation-for="MenuItemIsActive" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- ResourceKey（由 ResourceId 決定） -->
+            <div class="row align-items-center my-3">
+                <label asp-for="ResourceId" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <select asp-for="ResourceId"
+                            class="form-select"
+                            asp-items="@(new SelectList(resourceList, "ResourceId", "ResourceKey"))">
+                        <option value="">-- 無相關資料 --</option>
+                    </select>
+                    <span asp-validation-for="ResourceId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- 按鈕 -->
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap justify-content-center">
+                    <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-check-circle"></i>&ensp;儲存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce"></script>
+}

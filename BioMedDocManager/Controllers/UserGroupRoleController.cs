@@ -10,19 +10,20 @@ using Microsoft.EntityFrameworkCore;
 namespace BioMedDocManager.Controllers
 {
     /// <summary>
-    /// 使用者群組角色設定
+    /// 使用者群組角色管理
     /// </summary>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">操作紀錄服務</param>
     //[Authorize(Roles = AppSettings.AdminRoleStrings.系統管理者)]
     [Route("[controller]")]
-    public class UserGroupRoleController(
-        DocControlContext context,
-        IWebHostEnvironment hostingEnvironment,
-        IAccessLogService accessLog
-    ) : BaseController(context, hostingEnvironment)
+    public class UserGroupRoleController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
+        /// <summary>
+        /// 頁面名稱
+        /// </summary>
+        public const string PageName = "使用者群組角色管理";
+
         /// <summary>
         /// 顯示群組角色設定頁（指定某個 UserGroup）
         /// </summary>
@@ -77,7 +78,7 @@ namespace BioMedDocManager.Controllers
                         act.AppActionName,
                         act.AppActionDisplayName,
                         act.AppActionOrder,
-                    })                
+                    })
                 .ToListAsync();
 
             // 合併同一 Resource + Action（多角色的權限只要「有」就好）
@@ -115,10 +116,10 @@ namespace BioMedDocManager.Controllers
                 UserGroupName = group.UserGroupName,
                 SelectedRoleIds = selectedRoleIds,
                 AllRoles = allRoles,
-                EffectivePermissions= effectivePerms
+                EffectivePermissions = effectivePerms
             };
 
-            await accessLog.NewActionAsync(GetLoginUser(), "使用者群組角色", "顯示群組角色設定頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示群組角色設定頁");
 
             return View(vm);
         }
@@ -200,33 +201,23 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(
-                    GetLoginUser(),
-                    "使用者群組角色",
-                    "群組角色設定更新【失敗】",
-                    msg
-                );
+                await accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色設定更新【失敗】", msg);
 
                 return RedirectToAction(nameof(UserGroupController.Index), "UserGroup");
             }
 
             TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupName} 角色設定更新成功!";
 
-            await accessLog.NewActionAsync(
-                GetLoginUser(),
-                "使用者群組角色",
-                "群組角色設定更新成功"
-            );
-
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色設定更新成功");
             return RedirectToAction(nameof(UserGroupController.Index), "UserGroup");
         }
 
         /// <summary>
         /// 預覽某群組在目前勾選角色下的有效權限變化
         /// </summary>
-        [HttpPost("PreviewGroupPermissions")]
+        [HttpPost("PreviewPermissions")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PreviewGroupPermissions([FromBody] PreviewGroupPermissionsViewModel req)
+        public async Task<IActionResult> PreviewPermissions([FromBody] PreviewPermissionsViewModel req)
         {
             if (req == null || req.UserGroupId <= 0)
             {
@@ -306,6 +297,8 @@ namespace BioMedDocManager.Controllers
                 .ThenBy(p => p.AppActionOrder)
                 .ToList();
 
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色有效權限預覽");
+
             return Json(new
             {
                 permissions = permDtos
@@ -316,5 +309,5 @@ namespace BioMedDocManager.Controllers
 
     }
 
-    
+
 }
