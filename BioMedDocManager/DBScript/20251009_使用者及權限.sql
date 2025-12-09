@@ -128,12 +128,6 @@ UserGroupId，UserId
 CREATE TABLE [dbo].[UserGroupMember] (
     [UserGroupId] INT NOT NULL,  -- 被[使用者群組表]參照，與PK名稱一致
     [UserId]       INT NOT NULL,  -- 被[使用者表]參照，與PK名稱一致
-    [CreatedAt]    DATETIME NOT NULL DEFAULT GETDATE(),
-    [CreatedBy]    INT NULL,
-    [UpdatedAt]    DATETIME NULL,
-    [UpdatedBy]    INT NULL,
-    [DeletedAt]    DATETIME NULL,
-    [DeletedBy]    INT NULL,
     CONSTRAINT [PKUserGroupMember] PRIMARY KEY CLUSTERED ([UserGroupId] ASC, [UserId] ASC),
     CONSTRAINT [FKugmGroup]
         FOREIGN KEY ([UserGroupId])
@@ -258,17 +252,16 @@ GO
 
 -- 選單表（對應 Resource，可做角色導覽控制）
 /*
-MenuItemId，ParentId，MenuItemTitle，MenuItemIcon，MenuItemUrl，ResourceId，MenuItemDisplayOrder，MenuItemIsActive
-1，null，文件管理，fa-folder，/Control，1，1，1
-2，1，文件查詢，fa-file，/CFileQuery，1，1，1
-3，1，表單發行，fa-file-alt，/CIssueTables，2，2，1
+MenuItemId，ParentId，MenuItemTitle，MenuItemIcon，ResourceId，MenuItemDisplayOrder，MenuItemIsActive
+1，null，文件管理，fa-folder，1，1，1
+2，1，文件查詢，fa-file，1，1，1
+3，1，表單發行，fa-file-alt，2，2，1
 */
 CREATE TABLE [dbo].[MenuItem] (
     [MenuItemId]            INT IDENTITY(1,1) NOT NULL,
     [MenuItemParentId]     INT NULL,       -- 自我參照
     [MenuItemTitle]         NVARCHAR(100) NOT NULL,
     [MenuItemIcon]          NVARCHAR(100) NULL,
-    [MenuItemUrl]           NVARCHAR(300) NULL,    
     [MenuItemDisplayOrder] INT NOT NULL DEFAULT 0,
     [MenuItemIsActive]     BIT NOT NULL DEFAULT 1,
     [ResourceId]             INT NULL,       -- 被[資源表]參照，與PK名稱一致
@@ -467,33 +460,30 @@ FROM [dbo].[Resource] r CROSS JOIN [dbo].[AppAction] a;
 
 
 -- insert選單
+-- 系統選單(固定)
+INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (1, NULL, N'系統設定', N'fa-solid fa-gear', 1, 1, NULL, CAST(N'2025-12-09T03:11:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
+INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (2, 1, N'系統資源設定', N'fa-solid fa-square-poll-horizontal', 1, 1, 8, CAST(N'2025-12-09T15:12:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
+INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (3, 1, N'系統動作設定', N'fa-solid fa-wrench', 2, 1, 10, CAST(N'2025-12-09T15:13:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
+INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (4, 1, N'選單項目管理', N'fa-brands fa-elementor', 3, 1, 11, CAST(N'2025-12-09T15:15:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
+INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (5, NULL, N'帳號管理', N'fa-solid fa-id-badge', 2, 1, NULL, CAST(N'2025-12-09T14:45:00.000' AS DateTime), 1, CAST(N'2025-12-09T03:12:00.000' AS DateTime), 1, NULL, NULL)
+INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (6, 5, N'使用者帳號管理', N'fa-solid fa-id-badge', 1, 1, 4, CAST(N'2025-12-09T15:08:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
+INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (7, 5, N'使用者群組管理', N'fa-solid fa-people-group', 2, 1, 5, CAST(N'2025-12-09T14:46:00.000' AS DateTime), 1, CAST(N'2025-12-09T03:08:00.000' AS DateTime), 1, NULL, NULL)
+INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (8, 5, N'角色管理', N'fa-solid fa-person', 3, 1, 7, CAST(N'2025-12-09T15:10:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
+
+-- 選單項目範例資料
 -- 父節點：文件管理（對應 Resourcekey=Control）
 DECLARE @residcontrol INT, @residquery INT, @residissue INT;
 SELECT @residcontrol = [ResourceId] FROM [dbo].[Resource] WHERE [ResourceKey]=N'Control';
 SELECT @residquery   = [ResourceId] FROM [dbo].[Resource] WHERE [ResourceKey]=N'CFileQuery';
 SELECT @residissue   = [ResourceId] FROM [dbo].[Resource] WHERE [ResourceKey]=N'CIssueTables';
 
-INSERT INTO [dbo].[MenuItem] ([MenuItemParentId],[MenuItemTitle],[MenuItemIcon],[MenuItemUrl],[MenuItemDisplayOrder],[MenuItemIsActive],[ResourceId])
-VALUES (NULL, N'文件管理', N'fa-folder', N'/Control', 1, 1, @residcontrol);
+INSERT INTO [dbo].[MenuItem] ([MenuItemParentId],[MenuItemTitle],[MenuItemIcon],[MenuItemDisplayOrder],[MenuItemIsActive],[ResourceId])
+VALUES (NULL, N'文件管理', N'fa-solid fa-folder',3, 1, @residcontrol);
 
 DECLARE @menucontrolId INT = SCOPE_IDENTITY();
 
 -- 子節點：文件查詢、表單發行
-INSERT INTO [dbo].[MenuItem] ([MenuItemParentId],[MenuItemTitle],[MenuItemIcon],[MenuItemUrl],[MenuItemDisplayOrder],[MenuItemIsActive],[ResourceId])
+INSERT INTO [dbo].[MenuItem] ([MenuItemParentId],[MenuItemTitle],[MenuItemIcon],[MenuItemDisplayOrder],[MenuItemIsActive],[ResourceId])
 VALUES
-(@menucontrolId, N'文件查詢', N'fa-file',     N'/CFileQuery', 1, 1, @residquery),
-(@menucontrolId, N'表單發行', N'fa-file-alt', N'/CIssueTables', 2, 1, @residissue);
-
-
--- insert使用者角色
-INSERT [dbo].[UserRole] ([UserId], [RoleId]) VALUES (1, 1);
-INSERT [dbo].[UserRole] ([UserId], [RoleId]) VALUES (1, 2);
-INSERT [dbo].[UserRole] ([UserId], [RoleId]) VALUES (1, 3);
-INSERT [dbo].[UserRole] ([UserId], [RoleId]) VALUES (1, 4);
-INSERT [dbo].[UserRole] ([UserId], [RoleId]) VALUES (1, 5);
-INSERT [dbo].[UserRole] ([UserId], [RoleId]) VALUES (1, 6);
-INSERT [dbo].[UserRole] ([UserId], [RoleId]) VALUES (2, 2);
-INSERT [dbo].[UserRole] ([UserId], [RoleId]) VALUES (2, 4);
-INSERT [dbo].[UserRole] ([UserId], [RoleId]) VALUES (2, 5);
-INSERT [dbo].[UserRole] ([UserId], [RoleId]) VALUES (3, 2);
-INSERT [dbo].[UserRole] ([UserId], [RoleId]) VALUES (3, 4);
+(@menucontrolId, N'文件查詢', N'fa-solid fa-file',     1, 1, @residquery),
+(@menucontrolId, N'表單發行', N'fa-solid fa-file-alt', 2, 1, @residissue);
