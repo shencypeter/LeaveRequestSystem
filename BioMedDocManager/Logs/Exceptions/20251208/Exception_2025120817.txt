@@ -1,0 +1,13 @@
+﻿### 紀錄開始 ###
+[2025/12/08 17:25:20]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/Login/Login
+ClientIp: 127.0.0.1
+Message: Index was outside the bounds of the array.
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 237
+
+### 紀錄結束 ###
+
+
