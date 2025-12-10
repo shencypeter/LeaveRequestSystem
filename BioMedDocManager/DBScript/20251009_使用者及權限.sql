@@ -325,7 +325,27 @@ GO
 
 
 
+/*
+清空資料
+-- 1) 用 DELETE 依 FK 由子到父清空
+DELETE FROM [DocControl0].[dbo].[RolePermission];
+DELETE FROM [DocControl0].[dbo].[UserGroupMember];
+DELETE FROM [DocControl0].[dbo].[UserGroupRole];
+DELETE FROM [DocControl0].[dbo].[UserGroup];
+DELETE FROM [DocControl0].[dbo].[UserRole];
+DELETE FROM [DocControl0].[dbo].[AppAction];
+DELETE FROM [DocControl0].[dbo].[MenuItem];
+DELETE FROM [DocControl0].[dbo].[Role];
+DELETE FROM [DocControl0].[dbo].[Resource];
 
+-- 2) 如果有 Identity，要重設從 1 開始
+DBCC CHECKIDENT ('[DocControl0].[dbo].[UserGroup]', RESEED, 0);
+DBCC CHECKIDENT ('[DocControl0].[dbo].[AppAction]', RESEED, 0);
+DBCC CHECKIDENT ('[DocControl0].[dbo].[MenuItem]', RESEED, 0);
+DBCC CHECKIDENT ('[DocControl0].[dbo].[Role]', RESEED, 0);
+DBCC CHECKIDENT ('[DocControl0].[dbo].[Resource]', RESEED, 0);
+
+*/
 
 
 
@@ -336,154 +356,82 @@ VALUES
 (N'admin', N'行政部', NULL, 1),
 (N'it',    N'資訊部', NULL, 1);
 
--- insert角色
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'請購人', N'採購');
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'採購人', N'採購');
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'評核人', N'採購');
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'領用人', N'文管');
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'負責人', N'文管');
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'系統管理者', N'系統');
-
 -- insert使用者 (密碼：Abcd+帳號)
 INSERT INTO [dbo].[User] ( [UserAccount], [UserPasswordHash], [UserFullName], [UserJobTitle], [UserEmail], [UserPhone], [UserMobile],    [UserIsActive], [UserIsLocked], [UserLoginFailedCount],  [UserLastLoginAt], [UserLastLoginIp], [UserPasswordChangedAt], [UserStatus], [UserRemarks], [DepartmentId],   [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES
 (N'534159', N'AQAAAAIAAYagAAAAEAuGmeU7ZK3mDlRyENROFEB45r8V9rk2pVH4BJUZYQ3Nwgz0UDiBQxcpicRd1MlSfw==', N'範例使用者1', NULL, N'User1@example.com', NULL, NULL, 1, 0, 0, NULL, NULL, NULL, NULL, NULL, 1,  '2020-05-29T00:00:00', NULL, NULL, NULL, NULL, NULL),
 (N'970265', N'AQAAAAIAAYagAAAAECpu7Md8zrZ5a5JhFj+q16dQI4zk04yj2jRIiBCzUn2DSfM4tPhPZnPxHzwIu/cjxg==', N'範例使用者2', NULL, N'User2@example.com', NULL, NULL, 1, 0, 0, NULL, NULL, NULL, NULL, NULL, 1,  GETDATE(), NULL, NULL, NULL, NULL, NULL),
 (N'990205', N'AQAAAAIAAYagAAAAEP1XSiS1hCBP1//TP7veqi+o1YGV+cfxjzDdShk+m5pdg6OjQSpLeZNCkbiQs3VlrA==', N'範例使用者3', NULL, N'User3@example.com', NULL, NULL, 1, 0, 0, NULL, NULL, NULL, NULL, NULL, 2,  '2023-03-08T00:00:00', NULL, NULL, NULL, NULL, NULL);
 
+-- insert角色
+INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'系統管理者', N'系統');
+INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'請購人', N'採購');
+INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'採購人', N'採購');
+INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'評核人', N'採購');
+INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'領用人', N'文管');
+INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'負責人', N'文管');
+
 -- insert使用者群組
 INSERT INTO [dbo].[UserGroup] ([UserGroupName],[UserGroupDescription])
 VALUES
+(N'系統組', N'系統管理所有成員'),
 (N'研發部門', N'研發部門所有成員'),
 (N'A專案小組', N'負責A專案的成員'),
 (N'行政部B組', N'行政部B組所有成員');
 
 -- insert使用者群組成員
--- 先抓使用者群組與使用者的 ID
-DECLARE @gidrd   INT, @gidprojA INT, @gidadminB INT;
-DECLARE @uid1 INT, @uid2 INT, @uid3 INT;
-
-SELECT @gidrd    = [UserGroupId] FROM [dbo].[UserGroup] WHERE [UserGroupName]=N'研發部門';
-SELECT @gidprojA = [UserGroupId] FROM [dbo].[UserGroup] WHERE [UserGroupName]=N'A專案小組';
-SELECT @gidadminB= [UserGroupId] FROM [dbo].[UserGroup] WHERE [UserGroupName]=N'行政部B組';
-
-SELECT @uid1 = [UserId] FROM [dbo].[User] WHERE [UserAccount]=N'534159';
-SELECT @uid2 = [UserId] FROM [dbo].[User] WHERE [UserAccount]=N'970265';
-SELECT @uid3 = [UserId] FROM [dbo].[User] WHERE [UserAccount]=N'990205';
-
 INSERT INTO [dbo].[UserGroupMember] ([UserGroupId],[UserId])
 VALUES
-(@gidrd,    @uid1),  -- 研發部門有使用者1
-(@gidrd,    @uid2),  -- 研發部門有使用者2
-(@gidprojA, @uid3),  -- A專案小組有使用者3
-(@gidadminB,@uid2);  -- 行政部B組有使用者2
+(1, 1);  -- 系統組有使用者1
 
 -- insert使用者群組角色
--- 先抓角色 ID
-DECLARE @ridreq  INT, @ridbuy INT, @rideval INT, @riduse INT, @ridowner INT, @ridadmin INT;
-SELECT @ridreq   = [RoleId] FROM [dbo].[Role] WHERE [RoleName]=N'請購人';
-SELECT @ridbuy   = [RoleId] FROM [dbo].[Role] WHERE [RoleName]=N'採購人';
-SELECT @rideval  = [RoleId] FROM [dbo].[Role] WHERE [RoleName]=N'評核人';
-SELECT @riduse   = [RoleId] FROM [dbo].[Role] WHERE [RoleName]=N'領用人';
-SELECT @ridowner = [RoleId] FROM [dbo].[Role] WHERE [RoleName]=N'負責人';
-SELECT @ridadmin = [RoleId] FROM [dbo].[Role] WHERE [RoleName]=N'系統管理者';
-
 INSERT INTO [dbo].[UserGroupRole] ([UserGroupId],[RoleId])
 VALUES
-(@gidrd,    @ridreq),   -- 研發部門有請購人
-(@gidrd,    @ridbuy),   -- 研發部門有採購人
-(@gidprojA, @rideval),  -- A專案小組有評核人
-(@gidadminB,@ridowner); -- 行政部B組有負責人
+(1, 1);   -- 系統組有系統管理者
 
 -- insert資源
-INSERT INTO [dbo].[Resource] ([ResourceType],[ResourceKey],[ResourceDisplayName],[ResourceIsActive])
+INSERT INTO Resource (ResourceType, ResourceKey, ResourceDisplayName, ResourceIsActive, CreatedAt)
 VALUES
-(N'PAGE', N'Control',     N'文件管理', 1),
-(N'PAGE', N'CFileQuery',  N'文件查詢', 1),
-(N'PAGE', N'CIssueTables',N'表單發行', 1);
+('PAGE', 'Resource', '系統資源管理', 1, '2025-12-05 10:06:00'),
+('PAGE', 'AppAction', '系統動作管理', 1, '2025-12-05 10:06:00'),
+('PAGE', 'MenuItem', '選單項目管理', 1, '2025-12-05 10:06:00'),
+('PAGE', 'AccountSettings', '帳號管理', 1, '2025-12-05 10:06:00'),
+('PAGE', 'UserGroup', '使用者群組', 1, '2025-12-05 10:06:00'),
+('PAGE', 'Role', '角色管理', 1, '2025-12-05 10:06:00'),
+('PAGE', 'UserGroupRole', '使用者群組權限管理', 1, '2025-12-05 10:06:00'),
+('PAGE', 'RolePermission', '角色權限管理', 1, '2025-12-05 10:06:00'),
+('PAGE', 'CFileQuery', '文件查詢', 1, '2025-10-16 11:27:00'),
+('PAGE', 'CIssueTables', '表單發行', 1, '2025-10-16 11:27:00');
 
 -- insert動作
 INSERT INTO [dbo].[AppAction] ([AppActionName],[AppActionDisplayName],[AppActionOrder]) VALUES
-(N'index',   N'首頁/列表', 10),
-(N'create',  N'新增',      20),
-(N'edit',    N'編輯',      30),
-(N'delete',  N'刪除',      40),
-(N'details', N'檢視明細',  50),
-(N'export',  N'匯出',      60),
-(N'import',  N'匯入',      70);
-
--- insert角色權限
-DECLARE @rescontrol INT, @resquery INT, @resissue INT;
-SELECT @rescontrol = [ResourceId] FROM [dbo].[Resource] WHERE [ResourceKey]=N'Control';
-SELECT @resquery   = [ResourceId] FROM [dbo].[Resource] WHERE [ResourceKey]=N'CFileQuery';
-SELECT @resissue   = [ResourceId] FROM [dbo].[Resource] WHERE [ResourceKey]=N'CIssueTables';
-
-DECLARE @actindex INT, @actcreate INT, @actedit INT, @actdelete INT, @actdetails INT, @actexport INT, @actimport INT;
-SELECT @actindex   = [AppActionId] FROM [dbo].[AppAction] WHERE [AppActionName]=N'index';
-SELECT @actcreate  = [AppActionId] FROM [dbo].[AppAction] WHERE [AppActionName]=N'create';
-SELECT @actedit    = [AppActionId] FROM [dbo].[AppAction] WHERE [AppActionName]=N'edit';
-SELECT @actdelete  = [AppActionId] FROM [dbo].[AppAction] WHERE [AppActionName]=N'delete';
-SELECT @actdetails = [AppActionId] FROM [dbo].[AppAction] WHERE [AppActionName]=N'details';
-SELECT @actexport  = [AppActionId] FROM [dbo].[AppAction] WHERE [AppActionName]=N'export';
-SELECT @actimport  = [AppActionId] FROM [dbo].[AppAction] WHERE [AppActionName]=N'import';
-
--- 範例授權
--- 請購人、採購人、領用人：可看查詢頁 列表/明細
-INSERT INTO [dbo].[RolePermission] ([RoleId],[ResourceId],[AppActionId]) VALUES
-(@ridreq, @resquery, @actindex),
-(@ridreq, @resquery, @actdetails),
-(@ridbuy, @resquery, @actindex),
-(@ridbuy, @resquery, @actdetails),
-(@riduse, @resquery, @actindex),
-(@riduse, @resquery, @actdetails);
-
--- 評核人：查詢頁 列表/明細 + 表單發行 新增/編輯（含進入頁的 index）
-INSERT INTO [dbo].[RolePermission] ([RoleId],[ResourceId],[AppActionId]) VALUES
-(@rideval, @resquery, @actindex),
-(@rideval, @resquery, @actdetails),
-(@rideval, @resissue, @actindex),
-(@rideval, @resissue, @actcreate),
-(@rideval, @resissue, @actedit);
-
--- 負責人：查詢頁 列表/明細 + 匯出；表單發行 新增/編輯（含 index）
-INSERT INTO [dbo].[RolePermission] ([RoleId],[ResourceId],[AppActionId]) VALUES
-(@ridowner, @resquery, @actindex),
-(@ridowner, @resquery, @actdetails),
-(@ridowner, @resquery, @actexport),
-(@ridowner, @resissue, @actindex),
-(@ridowner, @resissue, @actcreate),
-(@ridowner, @resissue, @actedit);
+(N'Index',   N'首頁/列表', 10),
+(N'Create',  N'新增',      20),
+(N'Edit',    N'編輯',      30),
+(N'Delete',  N'刪除',      40),
+(N'Details', N'檢視明細',  50),
+(N'Export',  N'匯出',      60),
+(N'Import',  N'匯入',      70),
+(N'EditGroup',  N'編輯群組', 80),
+(N'PreviewPermissions',  N'預覽使用者群組角色權限', 90),
+(N'ChangePassword',  N'變更密碼', 100);
 
 -- 系統管理者：全資源全動作
 INSERT INTO [dbo].[RolePermission] ([RoleId],[ResourceId],[AppActionId])
-SELECT @ridadmin, r.[ResourceId], a.[AppActionId]
+SELECT 1, r.[ResourceId], a.[AppActionId]
 FROM [dbo].[Resource] r CROSS JOIN [dbo].[AppAction] a;
 
 
 -- insert選單
 -- 系統選單(固定)
-INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (1, NULL, N'系統設定', N'fa-solid fa-gear', 1, 1, NULL, CAST(N'2025-12-09T03:11:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
-INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (2, 1, N'系統資源設定', N'fa-solid fa-square-poll-horizontal', 1, 1, 8, CAST(N'2025-12-09T15:12:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
-INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (3, 1, N'系統動作設定', N'fa-solid fa-wrench', 2, 1, 10, CAST(N'2025-12-09T15:13:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
-INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (4, 1, N'選單項目管理', N'fa-brands fa-elementor', 3, 1, 11, CAST(N'2025-12-09T15:15:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
-INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (5, NULL, N'帳號管理', N'fa-solid fa-id-badge', 2, 1, NULL, CAST(N'2025-12-09T14:45:00.000' AS DateTime), 1, CAST(N'2025-12-09T03:12:00.000' AS DateTime), 1, NULL, NULL)
-INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (6, 5, N'使用者帳號管理', N'fa-solid fa-id-badge', 1, 1, 4, CAST(N'2025-12-09T15:08:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
-INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (7, 5, N'使用者群組管理', N'fa-solid fa-people-group', 2, 1, 5, CAST(N'2025-12-09T14:46:00.000' AS DateTime), 1, CAST(N'2025-12-09T03:08:00.000' AS DateTime), 1, NULL, NULL)
-INSERT [dbo].[MenuItem] ([MenuItemId], [MenuItemParentId], [MenuItemTitle], [MenuItemIcon], [MenuItemDisplayOrder], [MenuItemIsActive], [ResourceId], [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES (8, 5, N'角色管理', N'fa-solid fa-person', 3, 1, 7, CAST(N'2025-12-09T15:10:00.000' AS DateTime), 1, NULL, NULL, NULL, NULL)
-
--- 選單項目範例資料
--- 父節點：文件管理（對應 Resourcekey=Control）
-DECLARE @residcontrol INT, @residquery INT, @residissue INT;
-SELECT @residcontrol = [ResourceId] FROM [dbo].[Resource] WHERE [ResourceKey]=N'Control';
-SELECT @residquery   = [ResourceId] FROM [dbo].[Resource] WHERE [ResourceKey]=N'CFileQuery';
-SELECT @residissue   = [ResourceId] FROM [dbo].[Resource] WHERE [ResourceKey]=N'CIssueTables';
-
-INSERT INTO [dbo].[MenuItem] ([MenuItemParentId],[MenuItemTitle],[MenuItemIcon],[MenuItemDisplayOrder],[MenuItemIsActive],[ResourceId])
-VALUES (NULL, N'文件管理', N'fa-solid fa-folder',3, 1, @residcontrol);
-
-DECLARE @menucontrolId INT = SCOPE_IDENTITY();
-
--- 子節點：文件查詢、表單發行
-INSERT INTO [dbo].[MenuItem] ([MenuItemParentId],[MenuItemTitle],[MenuItemIcon],[MenuItemDisplayOrder],[MenuItemIsActive],[ResourceId])
+INSERT INTO MenuItem (MenuItemParentId, MenuItemTitle, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedAt, CreatedBy)
 VALUES
-(@menucontrolId, N'文件查詢', N'fa-solid fa-file',     1, 1, @residquery),
-(@menucontrolId, N'表單發行', N'fa-solid fa-file-alt', 2, 1, @residissue);
+(NULL, '系統管理', 'fa-solid fa-gear', 1, 1, NULL, '2025-12-09 03:11:00', 1),
+(1, '系統資源管理', 'fa-solid fa-square-poll-horizontal', 1, 1, 1, '2025-12-09 15:12:00', 1),
+(1, '系統動作管理', 'fa-solid fa-wrench', 2, 1, 2, '2025-12-09 15:13:00', 1),
+(1, '選單項目管理', 'fa-brands fa-elementor', 3, 1, 3, '2025-12-09 15:15:00', 1),
+(NULL, '帳號管理', 'fa-solid fa-id-badge', 2, 1, NULL, '2025-12-09 14:45:00', 1),
+(5, '使用者帳號管理', 'fa-solid fa-id-badge', 1, 1, 4, '2025-12-09 15:08:00', 1),
+(5, '使用者群組管理', 'fa-solid fa-people-group', 2, 1, 5, '2025-12-09 14:46:00', 1),
+(5, '角色管理', 'fa-solid fa-person', 3, 1, 6, '2025-12-09 15:10:00', 1),
+(NULL, '文件管理', 'fa-solid fa-folder', 3, 1, NULL, '2025-10-16 11:27:00', NULL),
+( 9, '文件查詢', 'fa-solid fa-file', 1, 1, 9, '2025-10-16 11:27:00', NULL);
