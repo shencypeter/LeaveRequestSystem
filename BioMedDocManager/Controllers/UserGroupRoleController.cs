@@ -15,7 +15,6 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">操作紀錄服務</param>
-    //[Authorize(Roles = AppSettings.AdminRoleStrings.系統管理者)]
     [Route("[controller]")]
     public class UserGroupRoleController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {

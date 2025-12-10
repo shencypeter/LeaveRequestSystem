@@ -707,7 +707,23 @@ namespace BioMedDocManager.Models
         public bool HasGroup { get; set; }
     }
 
+    public class MenuItemGroupViewModel
+    {
+        /// <summary>
+        /// 父層選單編號
+        /// </summary>
+        public int? MenuItemParentId { get; set; }
 
+        /// <summary>
+        /// 父層選單本身
+        /// </summary>
+        public MenuItem? Parent { get; set; }
+
+        /// <summary>
+        /// 底下的子選單
+        /// </summary>
+        public List<MenuItem> Children { get; set; } = new();
+    }
 
 
 

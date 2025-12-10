@@ -1,56 +1,152 @@
 ﻿@using System.Linq
 @using System.Collections.Generic
-@{
-    var HasDoc = ViewData["HasDoc"] as bool? ?? false;
-    var HasPur = ViewData["HasPur"] as bool? ?? false;
-    var pageMode = ViewData["PageMode"]?.ToString() ?? "";
-    var controllerLabel = ViewData["ControllerLabel"]?.ToString() ?? "";
+@using BioMedDocManager.Models
 
-    // 建議你的 PageLink 類：Controller/Action/Label
-    var navPages = ViewData["NavPages"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
-    bool navEmpty = !navPages.Any();
+@{
+    // BaseController 塞進來的 List<MenuItemGroupViewModel>
+    var menuTree = ViewData["MenuTree"] as List<MenuItemGroupViewModel> ?? new();
+
+    // 目前所在 controller
+    var routeController = (ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty)
+        .ToLowerInvariant();
+
+    // 判斷目前所在的群組（用 child.Resource.ResourceKey 對 controller）
+    MenuItemGroupViewModel? currentGroup = null;
+
+    if (!string.IsNullOrEmpty(routeController) &&
+        !string.Equals(routeController, "home", StringComparison.OrdinalIgnoreCase))
+    {
+        currentGroup = menuTree.FirstOrDefault(g =>
+            // 若未來 parent 也綁 Resource，就一起比對
+            (g.Parent?.Resource?.ResourceKey ?? string.Empty)
+                .Equals(routeController, StringComparison.OrdinalIgnoreCase)
+            ||
+            g.Children.Any(c =>
+                (c.Resource?.ResourceKey ?? string.Empty)
+                    .Equals(routeController, StringComparison.OrdinalIgnoreCase))
+        );
+    }
+
+    var hasMenu = menuTree.Any();
 }
 
 <div class="scroll-container">
-    <button class="scroll-btn left"><i class="fa fa-chevron-left"></i></button>
+    <button class="scroll-btn left">
+        <i class="fa fa-chevron-left"></i>
+    </button>
 
     <div class="banner-menu" id="scrollableMenu">
-        @* 雙系統切換 *@
-        @if (!string.IsNullOrEmpty(pageMode) && HasDoc && HasPur)
+        @if (!hasMenu)
         {
-            var otherSystemLink = pageMode == "Document" ? "/Purchase" : "/Control";
-            var otherSystemLabel = pageMode == "Document" ? "往採購系統" : "往文管系統";
-            <a href="@otherSystemLink" id="linkSystemSelect" class="btn btn1 btn-info btn-start">
-                <i class="fas fa-arrow-left me-1"></i> @otherSystemLabel
-            </a>
-        }
-
-        @if (navEmpty)
-        {
+            // 沒有任何 MenuItem（未登入或沒有可用選單）
             var isLoggedIn = User?.Identity?.IsAuthenticated == true;
-            var linkUrl = isLoggedIn ? Url.Content("~/Logout") : Url.Content("~/Login");
+            var linkUrl = isLoggedIn ? Url.Content("~/Login/Logout") : Url.Content("~/Login/Login");
             var message = isLoggedIn
             ? "您的帳號尚未開通使用權限 — 若有疑問請聯絡系統管理員"
             : "您尚未登入，請點此登入";
 
-            <a href="@linkUrl" id="linkSystemSelect" class="btn btn1 btn-info">
+            <a href="@linkUrl" class="btn btn1 btn-info">
                 <i class="fas fa-sign-out-alt me-1"></i> @message
             </a>
         }
         else
         {
-            foreach (dynamic item in navPages)
+
+            if (currentGroup == null)
             {
-                string label = item.Label ?? "";
-                string ctrl = item.Controller ?? "";
-                string act = item.Action ?? "Index";
-                var isActive = controllerLabel == label ? "active" : "";
-                var btnCls = $"btn btn1 btn-info {isActive}";
-                var url = $"/{ctrl}/{act}";
-                <a href="@url" class="@btnCls" role="button">@label</a>
+                // ===== 第一層：父層選單（結構跟之前一樣，用 <a> 直接掛在 .banner-menu 底下） =====
+                @foreach (var group in menuTree
+                        .OrderBy(g => g.Parent?.MenuItemDisplayOrder ?? int.MaxValue)
+                        .ThenBy(g => g.Parent?.MenuItemId ?? int.MaxValue))
+                {
+                    var parent = group.Parent;
+                    if (parent == null)
+                    {
+                        continue;
+                    }
+
+                    var label = parent.MenuItemTitle ?? "(未命名選單)";
+                    var iconClass = parent.MenuItemIcon;
+                    var isActiveParent = currentGroup != null &&
+                    currentGroup.MenuItemParentId == group.MenuItemParentId;
+
+                    var btnCls = "btn btn1 btn-info" + (isActiveParent ? " active" : string.Empty);
+
+                    // Parent 不直接對應 controller，讓它連到第一個子項
+                    var firstChild = group.Children
+                    .OrderBy(c => c.MenuItemDisplayOrder)
+                    .ThenBy(c => c.MenuItemId)
+                    .FirstOrDefault();
+
+                    string url = "#";
+                    if (firstChild?.Resource?.ResourceKey is string childKey &&
+                    !string.IsNullOrWhiteSpace(childKey))
+                    {
+                        // childKey 當作 Controller，Action 用 Index
+                        url = Url.Action("Index", childKey);
+                    }
+
+                    <a href="@url"
+                       class="@btnCls"
+                       role="button"
+                       data-parent-id="@group.MenuItemParentId">
+                        @if (!string.IsNullOrWhiteSpace(iconClass))
+                        {
+                            <i class="@iconClass me-1"></i>
+                        }
+                        @label
+                    </a>
+                }
+            }
+            // ===== 第二層：子選單（有 currentGroup 時才顯示） =====
+            else
+            {
+                <a href="@Url.Content("~/")"
+                   class="btn btn-outline-secondary btn-sm me-2">
+                    <i class="fa fa-arrow-left"></i> 返回上層
+                </a>
+
+                @foreach (var child in currentGroup.Children
+                        .OrderBy(c => c.MenuItemDisplayOrder)
+                        .ThenBy(c => c.MenuItemId))
+                {
+                    var label = child.MenuItemTitle ?? "(未命名)";
+                    var iconClass = child.MenuItemIcon;
+
+                    string url = "#";
+                    if (child.Resource?.ResourceKey is string childKey &&
+                    !string.IsNullOrWhiteSpace(childKey))
+                    {
+                        url = Url.Action("Index", childKey);
+                    }
+
+                    var childCtrl = (child.Resource?.ResourceKey ?? string.Empty).ToLowerInvariant();
+                    var isActiveChild =
+                    !string.IsNullOrEmpty(childCtrl) &&
+                    string.Equals(childCtrl, routeController, StringComparison.OrdinalIgnoreCase);
+
+                    var btnCls = "btn btn1 btn-info" + (isActiveChild ? " active" : string.Empty);
+                    //var btnCls = "btn btn-sm btn-outline-info me-1 mb-1" + (isActiveChild ? " active" : string.Empty);
+
+                    <a href="@url" class="@btnCls">
+                        @if (!string.IsNullOrWhiteSpace(iconClass))
+                        {
+                            <i class="@iconClass me-1"></i>
+                        }
+                        @label
+                    </a>
+                }
             }
         }
     </div>
 
-    <button class="scroll-btn right"><i class="fa fa-chevron-right"></i></button>
+    <button class="scroll-btn right">
+        <i class="fa fa-chevron-right"></i>
+    </button>
 </div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+
+    </script>
+}

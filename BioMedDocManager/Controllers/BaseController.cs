@@ -92,122 +92,142 @@ namespace BioMedDocManager.Controllers
             // 每個Controller的SessionKey
             context.HttpContext.Items["SessionKey"] = SessionKey;
 
-            // 登入者ID
-            ViewData["LoginUserId"] = GetLoginUserId();
+            // 選單(Login就存入Session中了)
+            var menuTree = HttpContext.Session.GetObject<List<MenuItemGroupViewModel>>("MenuTree") ?? new List<MenuItemGroupViewModel>();
+            ViewData["MenuTree"] = menuTree;
 
-            // *** MENU 與 頁面權限 ***
-            // 1) 使用者資訊
-            var user = context.HttpContext.User;
-            var userFullName = user.FindFirst("FullName")?.Value ?? "訪客";
-
-            // 2) 權限
-            var HasDoc = HasRoleGroup(user, "文管");
-            var HasPur = HasRoleGroup(user, "採購");
-            var HasAdmin = HasRoleGroup(user, "系統");
-
-            // 3) 控制器與目前頁
-            var effectiveController = GetEffectiveController();
-
-            // 合併所有頁面
-            var allPages = AppSettings.AccountPages
-                .Concat(AppSettings.DocControlPages)
-                .Concat(AppSettings.PurchasingPages);
-
-            // 目前所在頁面
-            var currentPage = allPages.FirstOrDefault(p => Utilities.Norm(p.Controller) == effectiveController);
-
-            // 目前所在頁面標籤
-            var controllerLabel = currentPage?.Label ?? string.Empty;
-
-            // 4) 系統選單（預設 systemPages，依權限過濾）
-            var sysFilter = AppSettings.SystemPages
-                .Where(s =>
-                    (HasPur || s.Label != "電子採購") &&
-                    (HasDoc || s.Label != "文件管理"))
-                .ToArray();
-
-            PageLink[] navPages = sysFilter;
-            string pageMode = string.Empty;
-
-            // 符合文管/採購控制器 → 用模組頁面 + 設定 pageMode
-            if (effectiveController == "control" ||
-                AppSettings.DocControlPages.Any(p => Utilities.Norm(p.Controller) == effectiveController))
+            // 使用者資訊
+            var user = GetLoginUser();
+            if (user != null)
             {
-                navPages = GetAvailablePages(user, AppSettings.DocControlPages);
-                pageMode = "Document";
-            }
-            else if (effectiveController == "purchase" ||
-                     AppSettings.PurchasingPages.Any(p => Utilities.Norm(p.Controller) == effectiveController))
-            {
-                navPages = GetAvailablePages(user, AppSettings.PurchasingPages);
-                pageMode = "Purchase";
+                ViewData["UserFullName"] = user.UserFullName;
             }
 
-            // 5) Title 與問候語
-            var baseTitle = "文管與電子採購系統(範例)";
-            // 若 Action/子頁面有自己設定 ViewData["Title"]，保留它；否則用 controllerLabel
-            var existingTitle = ViewData["Title"]?.ToString();
-            var suffix = !string.IsNullOrWhiteSpace(controllerLabel)
-                ? controllerLabel
-                : (!string.IsNullOrWhiteSpace(existingTitle) ? existingTitle : null);
+            // 目前頁面
+            var (controllerLabel, fullTitle) = ResolvePageTitleFromMenuItem(context);
+            ViewData["ControllerLabel"] = controllerLabel;   // 目前這頁的標題（ResourceDisplayName）
+            ViewData["FullTitle"] = fullTitle;               // 頂端 <title>
 
-            var fullTitle = suffix != null ? $"{baseTitle}-{suffix}" : baseTitle;
-            var greeting = GreetingByHour(DateTime.Now.Hour);
-
-            // 6) 統一丟到 ViewData（layout 讀取）
-            ViewData["UserFullName"] = userFullName;
-            ViewData["HasAdmin"] = HasAdmin;
-            ViewData["HasDoc"] = HasDoc;
-            ViewData["HasPur"] = HasPur;
-
-            ViewData["EffectiveController"] = effectiveController;
-            ViewData["ControllerLabel"] = controllerLabel;
-
-            ViewData["NavPages"] = navPages;
-            ViewData["PageMode"] = pageMode;
-
-            ViewData["FullTitle"] = fullTitle;
-            ViewData["Greeting"] = greeting;
+            // 問候語
+            ViewData["Greeting"] = GreetingByHour(DateTime.Now.Hour);
 
             base.OnActionExecuting(context);
         }
 
-        /// <summary>
-        /// 比對屬於哪個權限群組
-        /// </summary>
-        /// <param name="user">登入者</param>
-        /// <param name="roleGroup">權限群組</param>
-        /// <returns>true：登入者是這個群組、false：登入者不是這個群組</returns>
-        protected static bool HasRoleGroup(ClaimsPrincipal user, string roleGroup) =>
-            user.HasClaim(c => c.Type == "RoleGroup" && c.Value == roleGroup);
-
-        /// <summary>
-        /// 取得Controller名稱
-        /// </summary>
-        /// <returns>Controller名稱</returns>
-        protected string? GetRefController()
+        [NonAction]
+        protected List<MenuItemGroupViewModel> BuildMenuTreeForUser(ClaimsPrincipal user)
         {
-            var r = HttpContext?.Request?.GetTypedHeaders().Referer;
-            return r?.Segments.Skip(1).FirstOrDefault()?.Trim('/');
+            // 1) 取得角色名稱（已在 Login 寫入 Claims Cookie）
+            var userRoles = user.Claims
+                .Where(c => c.Type == ClaimTypes.Role)
+                .Select(c => c.Value)
+                .Distinct()
+                .ToList();
+
+            if (!userRoles.Any())
+            {
+                return new List<MenuItemGroupViewModel>();
+            }
+
+            // 2) 取得這些角色允許的 ResourceId
+            var allowedResourceIds = context.RolePermissions
+                .Where(rp => userRoles.Contains(rp.Role.RoleName))
+                .Select(rp => rp.ResourceId)
+                .Distinct()
+                .ToList();
+
+            if (!allowedResourceIds.Any())
+            {
+                return new List<MenuItemGroupViewModel>();
+            }
+
+            // 3) 抓出符合 ResourceId 的 MenuItem（可被顯示的子選單們）
+            var menuItems = context.MenuItems
+                .Include(m => m.Resource)
+                .Where(m =>
+                    m.MenuItemIsActive &&
+                    m.ResourceId != null &&
+                    allowedResourceIds.Contains(m.ResourceId.Value))
+                .ToList();
+
+            if (!menuItems.Any())
+            {
+                return new List<MenuItemGroupViewModel>();
+            }
+
+            // 4) 依 MenuItemParentId 分組：lookup 的 key = 父選單Id，value = 這個父底下所有子選單
+            var childrenLookup = menuItems
+                .Where(m => m.MenuItemParentId != null)
+                .ToLookup(m => m.MenuItemParentId!.Value);
+
+            var parentIds = childrenLookup
+                .Select(g => g.Key)
+                .Distinct()
+                .ToList();
+
+            if (!parentIds.Any())
+            {
+                return new List<MenuItemGroupViewModel>();
+            }
+
+            // 5) 把這些父選單抓出來（不需要管它有沒有 ResourceId，只要是啟用即可）
+            var parents = context.MenuItems
+                .Include(m => m.Resource)
+                .Where(m => m.MenuItemIsActive && parentIds.Contains(m.MenuItemId))
+                .ToList();
+
+            if (!parents.Any())
+            {
+                return new List<MenuItemGroupViewModel>();
+            }
+
+            // 6) 排序 + 組成想要的結構
+            var result = parents
+                .OrderBy(p => p.MenuItemDisplayOrder) // 父與父之間先看顯示順序
+                .ThenBy(p => p.MenuItemId)
+                .Select(p => new MenuItemGroupViewModel
+                {
+                    MenuItemParentId = p.MenuItemId,
+                    Parent = p,
+                    Children = childrenLookup[p.MenuItemId]
+                        .OrderBy(c => c.MenuItemDisplayOrder)
+                        .ThenBy(c => c.MenuItemId)
+                        .ToList()
+                })
+                .ToList();
+
+            return result;
         }
 
         /// <summary>
-        /// 取得有效的Controller名稱
+        /// 從目前路由反查 MenuItem，組出頁面標題
         /// </summary>
-        /// <returns>Controller名稱</returns>
-        protected string GetEffectiveController()
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        [NonAction]
+        protected (string ControllerLabel, string FullTitle) ResolvePageTitleFromMenuItem(ActionExecutingContext ctx)
         {
-            var path = HttpContext?.Request?.Path.ToString() ?? string.Empty; // e.g. "/CDocumentClaim/Index"
-            var segs = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            var ctl = segs.Length >= 1 ? segs[0] : string.Empty;
-            var nctl = Utilities.Norm(ctl);
+            var route = ctx.RouteData;
+            var controllerKey = route.Values["controller"]?.ToString() ?? string.Empty;
 
-            if (nctl == "home")
+            // 反查：MenuItem → Resource → ResourceKey == controller 名稱
+            var menuItem = context.MenuItems
+                .Include(m => m.Resource)
+                .AsNoTracking()
+                .FirstOrDefault(m => m.Resource != null
+                                     && m.Resource.ResourceKey == controllerKey);
+
+            var baseTitle = "文管與電子採購系統(範例)";
+
+            if (menuItem == null)
             {
-                var refCtl = GetRefController();
-                return Utilities.Norm(refCtl);
+                return (string.Empty, baseTitle);
             }
-            return nctl;
+
+            var label = menuItem.MenuItemTitle;     // ← 改抓 MenuItem 標題
+            var fullTitle = $"{baseTitle}-{label}";
+
+            return (label, fullTitle);
         }
 
         /// <summary>
@@ -217,7 +237,6 @@ namespace BioMedDocManager.Controllers
         /// <returns>問候語文字</returns>
         protected static string GreetingByHour(int hour) =>
             hour < 12 ? "早安" : (hour < 18 ? "午安" : "晚安");
-
 
         /// <summary>
         /// 取得登入者實體
@@ -236,7 +255,6 @@ namespace BioMedDocManager.Controllers
             return null;
         }
 
-
         /// <summary>
         /// 取得登入者ID
         /// </summary>
@@ -251,31 +269,6 @@ namespace BioMedDocManager.Controllers
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// 依照登入者身分，顯示對應選單頁面
-        /// </summary>
-        /// <param name="user">登入者</param>
-        /// <param name="navPages">選單頁面陣列</param>
-        /// <returns></returns>
-        protected static PageLink[] GetAvailablePages(ClaimsPrincipal user, PageLink[] navPages)
-        {
-            // 取得使用者角色
-            var userRoles = user.Claims
-                .Where(c => c.Type == ClaimTypes.Role)
-                .Select(c => c.Value);
-
-            // 如果沒有角色，則回傳空陣列
-            var result = from page in navPages
-                         let csvRole = page.Roles?.Length == 1 && page.Roles[0].Contains(',')
-                             ? page.Roles[0].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                             : []
-                         where page.Roles.Intersect(userRoles).Any() || csvRole.Intersect(userRoles).Any()
-                         select page;
-
-
-            return [.. result];
         }
 
         /// <summary>
@@ -296,6 +289,236 @@ namespace BioMedDocManager.Controllers
 
             await context.SaveChangesAsync(ct);
         }
+
+        /// <summary>
+        /// 從 Session 中取得指定型別的查詢 Model
+        /// </summary>
+        /// <typeparam name="T">class類型</typeparam>
+        /// <param name="sessionKey">session名稱</param>
+        /// <returns></returns>
+        protected T GetSessionQueryModel<T>(string sessionKey) where T : class, new()
+        {
+            return QueryableExtensions.GetSessionQueryModel<T>(HttpContext, sessionKey);
+        }
+
+        /// <summary>
+        /// 從 Session 中取得指定型別的查詢 Model
+        /// </summary>
+        /// <typeparam name="T">class類型</typeparam>
+        protected T GetSessionQueryModel<T>() where T : class, new()
+        {
+            return QueryableExtensions.GetSessionQueryModel<T>(HttpContext);
+        }
+
+        protected void FilterOrderBy<T>(T queryModel, Dictionary<string, string> TableHeaders, string InitSort) where T : Pagination
+        {
+            // 允許清單（大小寫不敏感）
+            var allowed = new HashSet<string>(TableHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+
+            // 取使用者要求的 Key
+            var key = (queryModel?.OrderBy ?? string.Empty).Trim();
+
+            // 非法或空 → 退回預設欄位 + ASC
+            if (string.IsNullOrEmpty(key) || !allowed.Contains(key))
+            {
+                key = InitSort;
+                queryModel.SortDir = "asc";
+            }
+
+            // 方向只允許 ASC/DESC；其他一律 ASC
+            queryModel.SortDir = string.Equals(queryModel.SortDir, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc";
+
+            // 特殊欄位：版次字串轉數字排序（NULL 永遠最後）
+            // 先不考慮
+
+            // 一般欄位：直接使用白名單中的欄位名
+            queryModel.OrderBy = $"{key}";
+
+        }
+
+        /// <summary>
+        /// 取得所有角色資料(系統權限除外)
+        /// </summary>
+        /// <returns></returns>
+        protected async Task<List<Role>> GetRoles()
+        {
+            // 取得所有角色資料(系統權限除外)
+            return await _context.Roles
+                  //.Where(r => r.RoleGroup != "系統")
+                  .OrderBy(r => r.RoleGroup)
+                  .ThenBy(r => r.RoleName)
+                  .ToListAsync();
+        }
+
+        /// <summary>
+        /// 將CreateUser轉回User
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        protected static User ToUserEntity(CreateUserViewModel model)
+        {
+            return new User
+            {
+                UserAccount = model.UserAccount,
+                UserFullName = model.UserFullName,
+                UserPasswordHash = HashPassword(model, model.UserPasswordHash),
+                UserIsActive = model.UserIsActive,
+                CreatedAt = model.CreatedAt
+            };
+        }
+
+        /// <summary>
+        /// 密碼Hash
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="Password"></param>
+        /// <returns></returns>
+        protected static string HashPassword(object model, string Password)
+        {
+            return _hasher.HashPassword(model, Password);
+        }
+
+        /// <summary>
+        /// 密碼驗證
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="Password1"></param>
+        /// <param name="Password2"></param>
+        /// <returns></returns>
+        protected static PasswordVerificationResult VerifyHashedPassword(object model, string Password1, string Password2)
+        {
+            return _hasher.VerifyHashedPassword(model, Password1, Password2);
+        }
+
+        /// <summary>
+        /// 關閉Modal並回傳訊息給父視窗
+        /// </summary>
+        /// <param name="alertMsg">訊息</param>
+        /// <returns></returns>
+        protected IActionResult DismissModal(string alertMsg = "")
+        {
+            string? nonce = HttpContext?.Items["CspNonce"] as string;
+
+            // 安全轉義（避免斷行 / 反斜線 / 雙引號造成 JS 字串壞掉）
+            static string JsString(string? s) =>
+                (s ?? string.Empty)
+                    .Replace("\\", "\\\\")
+                    .Replace("\"", "\\\"")
+                    .Replace("\r", "\\r")
+                    .Replace("\n", "\\n");
+
+            string safeMsg = JsString(alertMsg);
+            string nonceAttr = string.IsNullOrWhiteSpace(nonce) ? "" : $@" nonce=""{nonce}""";
+            string html = $@"<script{nonceAttr}>window.parent.dismiss(""{safeMsg}"");</script>";
+
+            return Content(html, "text/html; charset=utf-8");
+        }
+
+        /// <summary>
+        /// 包裝RowNum用，依 TableHeaders 將實體列表轉為 List<Dictionary<string, object>>，
+        /// 可自動加入 RowNum（#），並可選擇使用「顯示名或屬性名」當輸出鍵。
+        /// </summary>
+        protected static List<Dictionary<string, object>> BuildRows<T>(
+            IEnumerable<T> entities,
+            IReadOnlyDictionary<string, string> tableHeaders, // Key=屬性名, Value=顯示文字；含 "RowNum" => "#"
+            int pageNumber,
+            int pageSize,
+            KeyMode keyMode = KeyMode.DisplayName,
+            bool includeRowNum = true,
+            IEnumerable<string>? payloadProps = null // 額外要放進 row 的隱藏鍵（例如 UserId）
+        )
+        {
+            var list = entities as IList<T> ?? entities.ToList();
+            var baseNo = Math.Max(0, (pageNumber - 1)) * Math.Max(0, pageSize);
+
+            var rows = new List<Dictionary<string, object>>(list.Count);
+            foreach (var row in list.Select((entity, i) => new { entity, i }))
+            {
+                var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+                // 1) 先處理可見欄位（依 headers 決定顯示與順序）
+                foreach (var kv in tableHeaders)
+                {
+                    var propName = kv.Key;
+                    var header = kv.Value;
+
+                    if (propName.Equals("RowNum", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var val = Utilities.GetProp(row.entity!, propName) ?? "";
+                    var outKey = keyMode == KeyMode.DisplayName ? header : propName;
+                    dict[outKey] = val;
+                }
+
+                // 2) RowNum
+                if (includeRowNum && tableHeaders.TryGetValue("RowNum", out var rowNumDisplay))
+                {
+                    var outKey = keyMode == KeyMode.DisplayName ? rowNumDisplay : "RowNum";
+                    dict[outKey] = baseNo + row.i + 1;
+                }
+
+                // 3) ★ 額外塞 payload（不影響可見欄位與順序；用屬性名當 key）
+                if (payloadProps != null)
+                {
+                    foreach (var p in payloadProps)
+                    {
+                        // 用屬性名存，避免被 DisplayName 模式吃掉
+                        if (!string.IsNullOrWhiteSpace(p) && !dict.ContainsKey(p))
+                        {
+                            dict[p] = Utilities.GetProp(row.entity!, p) ?? "";
+                        }
+                    }
+                }
+
+                rows.Add(dict);
+            }
+            return rows;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         /// <summary>
         /// 文件領用：預查 領用後會打在文件上面的流水號 (非保留號)
@@ -631,25 +854,7 @@ namespace BioMedDocManager.Controllers
             return RedirectToAction(actionPath, routeValues);
         }
 
-        /// <summary>
-        /// 從 Session 中取得指定型別的查詢 Model
-        /// </summary>
-        /// <typeparam name="T">class類型</typeparam>
-        /// <param name="sessionKey">session名稱</param>
-        /// <returns></returns>
-        protected T GetSessionQueryModel<T>(string sessionKey) where T : class, new()
-        {
-            return QueryableExtensions.GetSessionQueryModel<T>(HttpContext, sessionKey);
-        }
 
-        /// <summary>
-        /// 從 Session 中取得指定型別的查詢 Model
-        /// </summary>
-        /// <typeparam name="T">class類型</typeparam>
-        protected T GetSessionQueryModel<T>() where T : class, new()
-        {
-            return QueryableExtensions.GetSessionQueryModel<T>(HttpContext);
-        }
 
         /// <summary>
         /// 文件編號(年月)：如果DocNoA比DocNoB大，則交換兩者順序（字典順序），確保A<=B。
@@ -669,31 +874,6 @@ namespace BioMedDocManager.Controllers
             return (docNoA, docNoB); // 不改順序
         }
 
-        protected void FilterOrderBy<T>(T queryModel, Dictionary<string, string> TableHeaders, string InitSort) where T : Pagination
-        {
-            // 允許清單（大小寫不敏感）
-            var allowed = new HashSet<string>(TableHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-
-            // 取使用者要求的 Key
-            var key = (queryModel?.OrderBy ?? string.Empty).Trim();
-
-            // 非法或空 → 退回預設欄位 + ASC
-            if (string.IsNullOrEmpty(key) || !allowed.Contains(key))
-            {
-                key = InitSort;
-                queryModel.SortDir = "asc";
-            }
-
-            // 方向只允許 ASC/DESC；其他一律 ASC
-            queryModel.SortDir = string.Equals(queryModel.SortDir, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc";
-
-            // 特殊欄位：版次字串轉數字排序（NULL 永遠最後）
-            // 先不考慮
-
-            // 一般欄位：直接使用白名單中的欄位名
-            queryModel.OrderBy = $"{key}";
-
-        }
 
         /// <summary>
         /// 將查詢後的 rows（List&lt;Dictionary&lt;string,object&gt;&gt;）依 TableHeaders 的順序輸出成 Excel。
@@ -866,59 +1046,7 @@ namespace BioMedDocManager.Controllers
                 .ToList() ?? new List<string>();
         }
 
-        /// <summary>
-        /// 取得所有角色資料(系統權限除外)
-        /// </summary>
-        /// <returns></returns>
-        protected async Task<List<Role>> GetRoles()
-        {
-            // 取得所有角色資料(系統權限除外)
-            return await _context.Roles
-                  //.Where(r => r.RoleGroup != "系統")
-                  .OrderBy(r => r.RoleGroup)
-                  .ThenBy(r => r.RoleName)
-                  .ToListAsync();
-        }
 
-        /// <summary>
-        /// 將CreateUser轉回User
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        protected static User ToUserEntity(CreateUserViewModel model)
-        {
-            return new User
-            {
-                UserAccount = model.UserAccount,
-                UserFullName = model.UserFullName,
-                UserPasswordHash = HashPassword(model, model.UserPasswordHash),
-                UserIsActive = model.UserIsActive,
-                CreatedAt = model.CreatedAt
-            };
-        }
-
-        /// <summary>
-        /// 密碼Hash
-        /// </summary>
-        /// <param name="model"></param>
-        /// <param name="Password"></param>
-        /// <returns></returns>
-        protected static string HashPassword(object model, string Password)
-        {
-            return _hasher.HashPassword(model, Password);
-        }
-
-        /// <summary>
-        /// 密碼驗證
-        /// </summary>
-        /// <param name="model"></param>
-        /// <param name="Password1"></param>
-        /// <param name="Password2"></param>
-        /// <returns></returns>
-        protected static PasswordVerificationResult VerifyHashedPassword(object model, string Password1, string Password2)
-        {
-            return _hasher.VerifyHashedPassword(model, Password1, Password2);
-        }
 
         /// <summary>
         /// 匯出Word樣板檔案
@@ -1163,90 +1291,6 @@ namespace BioMedDocManager.Controllers
             return rows;
         }
 
-        /// <summary>
-        /// 關閉Modal並回傳訊息給父視窗
-        /// </summary>
-        /// <param name="alertMsg">訊息</param>
-        /// <returns></returns>
-        protected IActionResult DismissModal(string alertMsg = "")
-        {
-            string? nonce = HttpContext?.Items["CspNonce"] as string;
-
-            // 安全轉義（避免斷行 / 反斜線 / 雙引號造成 JS 字串壞掉）
-            static string JsString(string? s) =>
-                (s ?? string.Empty)
-                    .Replace("\\", "\\\\")
-                    .Replace("\"", "\\\"")
-                    .Replace("\r", "\\r")
-                    .Replace("\n", "\\n");
-
-            string safeMsg = JsString(alertMsg);
-            string nonceAttr = string.IsNullOrWhiteSpace(nonce) ? "" : $@" nonce=""{nonce}""";
-            string html = $@"<script{nonceAttr}>window.parent.dismiss(""{safeMsg}"");</script>";
-
-            return Content(html, "text/html; charset=utf-8");
-        }
-
-        /// <summary>
-        /// 包裝RowNum用，依 TableHeaders 將實體列表轉為 List<Dictionary<string, object>>，
-        /// 可自動加入 RowNum（#），並可選擇使用「顯示名或屬性名」當輸出鍵。
-        /// </summary>
-        protected static List<Dictionary<string, object>> BuildRows<T>(
-            IEnumerable<T> entities,
-            IReadOnlyDictionary<string, string> tableHeaders, // Key=屬性名, Value=顯示文字；含 "RowNum" => "#"
-            int pageNumber,
-            int pageSize,
-            KeyMode keyMode = KeyMode.DisplayName,
-            bool includeRowNum = true,
-            IEnumerable<string>? payloadProps = null // 額外要放進 row 的隱藏鍵（例如 UserId）
-        )
-        {
-            var list = entities as IList<T> ?? entities.ToList();
-            var baseNo = Math.Max(0, (pageNumber - 1)) * Math.Max(0, pageSize);
-
-            var rows = new List<Dictionary<string, object>>(list.Count);
-            foreach (var row in list.Select((entity, i) => new { entity, i }))
-            {
-                var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-                // 1) 先處理可見欄位（依 headers 決定顯示與順序）
-                foreach (var kv in tableHeaders)
-                {
-                    var propName = kv.Key;
-                    var header = kv.Value;
-
-                    if (propName.Equals("RowNum", StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    var val = Utilities.GetProp(row.entity!, propName) ?? "";
-                    var outKey = keyMode == KeyMode.DisplayName ? header : propName;
-                    dict[outKey] = val;
-                }
-
-                // 2) RowNum
-                if (includeRowNum && tableHeaders.TryGetValue("RowNum", out var rowNumDisplay))
-                {
-                    var outKey = keyMode == KeyMode.DisplayName ? rowNumDisplay : "RowNum";
-                    dict[outKey] = baseNo + row.i + 1;
-                }
-
-                // 3) ★ 額外塞 payload（不影響可見欄位與順序；用屬性名當 key）
-                if (payloadProps != null)
-                {
-                    foreach (var p in payloadProps)
-                    {
-                        // 用屬性名存，避免被 DisplayName 模式吃掉
-                        if (!string.IsNullOrWhiteSpace(p) && !dict.ContainsKey(p))
-                        {
-                            dict[p] = Utilities.GetProp(row.entity!, p) ?? "";
-                        }
-                    }
-                }
-
-                rows.Add(dict);
-            }
-            return rows;
-        }
 
 
         #endregion
@@ -1301,7 +1345,7 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 若你想把「部門名稱」本身也做成下拉（只能選既有部門）
+        /// 部門名稱下拉選單
         /// </summary>
         protected SelectOption[] DepartmentNameOptions(bool onlyActive = true, bool withInactiveSuffix = false)
         {

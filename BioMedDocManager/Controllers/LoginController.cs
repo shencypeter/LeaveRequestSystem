@@ -1,4 +1,5 @@
-﻿using BioMedDocManager.Helpers;
+﻿using BioMedDocManager.Extensions;
+using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
 using DocumentFormat.OpenXml.InkML;
@@ -231,57 +232,17 @@ namespace BioMedDocManager.Controllers
                 var principal = new ClaimsPrincipal(identity);
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                // ===== 4. Redirect =====
+                // ===== 4. 建立選單樹(只做一次) =====
+                var menuTree = BuildMenuTreeForUser(principal);
+
+                HttpContext.Session.SetObject("MenuTree", menuTree);
+
+                // ===== 5. Redirect =====
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && !returnUrl.Contains("Login"))
                 {
                     var controller = returnUrl.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
                     return Redirect($"/{controller}");
                 }
-
-                // 建立 Claims
-                /*
-                var userRoles = await context.UserRoles
-                    .Where(ur => ur.UserId == user.UserId)
-                    .Include(ur => ur.Role)
-                    .Select(ur => new { ur.Role.RoleName, ur.Role.RoleGroup })
-                    .ToListAsync();
-                */
-
-
-                /*
-                var claims = new List<Claim>
-                {
-                    new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                    new("UserFullName", user.UserFullName),
-                    new("UserAccount",user.UserAccount)
-                };*/
-
-
-                /*
-                foreach (var r in userRoles.Select(x => x.RoleName))
-                {
-                    claims.Add(new(ClaimTypes.Role, r));
-                }
-
-                foreach (var g in userRoles.Select(x => x.RoleGroup).Distinct())
-                {
-                    claims.Add(new("RoleGroup", g));
-                }
-                */
-
-
-                /*
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var principal = new ClaimsPrincipal(identity);
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-                
-
-                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && !returnUrl.Contains("Login"))
-                {
-                    var controller = returnUrl.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
-                    return Redirect($"/{controller}");
-                }
-                */
             }
             catch (Exception ex)
             {
@@ -292,72 +253,11 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 變更密碼頁面
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet("ChangePassword")]
-        public IActionResult ChangePassword()
-        {
-            // 產生變更密碼模型
-            var model = new ChangePasswordViewModel
-            {
-                UserAccount = User.Identity?.Name ?? "",
-                UserFullName = User.FindFirst("UserFullName")?.Value ?? ""
-            };
-
-            return View(model);
-        }
-
-        /// <summary>
-        /// 變更密碼功能
-        /// </summary>
-        /// <param name="model">資料</param>
-        /// <returns></returns>
-        [HttpPost("ChangePassword")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
-        {
-
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            // 找出使用者id
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; ;
-            var uid = int.Parse(userId);
-
-            // 找出使用者實體
-            var user = await context.Users.FindAsync(uid);
-
-            // 確認原密碼正確
-            var result = VerifyHashedPassword(user, user.UserPasswordHash, model.UserCurrentPassword);
-
-            // 原密碼錯誤
-            if (result != PasswordVerificationResult.Success)
-            {
-                ModelState.AddModelError("CurrentPassword", "原密碼錯誤");
-                return View(model);
-            }
-
-            // 將新密碼寫入資料庫
-            user.UserPasswordHash = HashPassword(user, model.UserNewPassword);
-            user.UserPasswordChangedAt = DateTime.Now;
-
-            await context.SaveChangesAsync();
-
-            //ViewBag.Message = "密碼已成功變更";
-
-            return DismissModal("密碼已成功變更!");
-
-            //return View(model);
-        }
-
-        /// <summary>
         /// 登出
         /// </summary>
         /// <returns></returns>
         [HttpGet("Logout")]
+        [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
             httpAccessor.HttpContext.Session.SetString("try_login", "");
