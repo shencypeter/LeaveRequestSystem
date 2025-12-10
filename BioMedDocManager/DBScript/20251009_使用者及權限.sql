@@ -316,9 +316,25 @@ CREATE TABLE [dbo].[UserRole](
 );
 GO
 
-
-
-
+-- debug用：檢視群組各資源權限
+CREATE VIEW RolePermissionViewer
+AS
+SELECT 
+    r.RoleName,
+    res.ResourceDisplayName,
+    res.ResourceKey,
+    a.AppActionName,
+    a.AppActionDisplayName
+FROM RolePermission rp
+INNER JOIN Role r 
+    ON rp.RoleId = r.RoleId
+INNER JOIN Resource res
+    ON rp.ResourceId = res.ResourceId
+INNER JOIN AppAction a
+    ON rp.AppActionId = a.AppActionId
+order by ResourceKey,[AppActionOrder]
+offset 0 rows
+GO
 
 
 
