@@ -6,10 +6,12 @@ using BioMedDocManager.Models;
 using Dapper;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using System.Security.Claims;
 
 namespace BioMedDocManager.Controllers
 {
@@ -18,7 +20,6 @@ namespace BioMedDocManager.Controllers
     /// </summary>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
-    //[Authorize(Roles = AppSettings.AdminRoleStrings.系統管理者)]
     [Route("[controller]")]
     public class AccountSettingsController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
@@ -272,6 +273,68 @@ namespace BioMedDocManager.Controllers
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新成功");
 
             return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// 變更密碼頁面
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("ChangePassword")]
+        public IActionResult ChangePassword()
+        {
+            // 產生變更密碼模型
+            var model = new ChangePasswordViewModel
+            {
+                UserAccount = User.Identity?.Name ?? "",
+                UserFullName = User.FindFirst("UserFullName")?.Value ?? ""
+            };
+
+            return View(model);
+        }
+
+        /// <summary>
+        /// 變更密碼功能
+        /// </summary>
+        /// <param name="model">資料</param>
+        /// <returns></returns>
+        [HttpPost("ChangePassword")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // 找出使用者id
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; ;
+            var uid = int.Parse(userId);
+
+            // 找出使用者實體
+            var user = await context.Users.FindAsync(uid);
+
+            // 確認原密碼正確
+            var result = VerifyHashedPassword(user, user.UserPasswordHash, model.UserCurrentPassword);
+
+            // 原密碼錯誤
+            if (result != PasswordVerificationResult.Success)
+            {
+                ModelState.AddModelError("CurrentPassword", "原密碼錯誤");
+                return View(model);
+            }
+
+            // 將新密碼寫入資料庫
+            user.UserPasswordHash = HashPassword(user, model.UserNewPassword);
+            user.UserPasswordChangedAt = DateTime.Now;
+
+            await context.SaveChangesAsync();
+
+            //ViewBag.Message = "密碼已成功變更";
+
+            return DismissModal("密碼已成功變更!");
+
+            //return View(model);
         }
 
         /// <summary>
