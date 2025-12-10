@@ -320,9 +320,12 @@ GO
 CREATE VIEW RolePermissionViewer
 AS
 SELECT 
+    r.RoleId,
     r.RoleName,
+    res.ResourceId,
     res.ResourceDisplayName,
     res.ResourceKey,
+    a.AppActionId,
     a.AppActionName,
     a.AppActionDisplayName
 FROM RolePermission rp
@@ -332,7 +335,7 @@ INNER JOIN Resource res
     ON rp.ResourceId = res.ResourceId
 INNER JOIN AppAction a
     ON rp.AppActionId = a.AppActionId
-order by ResourceKey,[AppActionOrder]
+order by ResourceId,[AppActionOrder]
 offset 0 rows
 GO
 
