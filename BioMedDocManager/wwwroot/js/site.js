@@ -678,6 +678,7 @@ function formClearInputListener() {
     $(document).on("click", ".clear_btn", function () {
         const formId = $(this).data("form");
         FormClearInput(formId);
+        $("#" + formId).trigger("submit");
     });
 }
 
