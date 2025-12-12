@@ -52,8 +52,22 @@ EXEC sys.sp_addextendedproperty @name=N'說明', @value=N'文管請購單' , @level0typ
 GO
 
 
+CREATE TABLE [dbo].[issue_table](
+	[name] [nvarchar](max) NULL,
+	[issue_datetime] [date] NULL,
+	[original_doc_no] [nvarchar](50) NOT NULL,
+	[doc_ver] [nvarchar](10) NOT NULL,
+	[file_extension] [nvarchar](10) NULL,
+ CONSTRAINT [PK_issue_table] PRIMARY KEY CLUSTERED 
+(
+	[original_doc_no] ASC,
+	[doc_ver] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
 
--- insert 初始資料
+-- ===== 一般頁面相關範例資料 =====
+-- insert 領用紀錄表
 INSERT [dbo].[doc_control_maintable] ([type], [date_time], [id], [person_name], [id_no], [name], [purpose], [original_doc_no], [doc_ver], [in_time], [unuse_time], [reject_reason], [project_name], [file_extension], [is_confidential], [is_sensitive], [in_time_modify_by], [in_time_modify_at], [unuse_time_modify_by], [unuse_time_modify_at]) VALUES (N'B', CAST(N'2020-01-02' AS Date), N'534159', N'鍾葦蓉', N'B202001001', N'文件制修訂申請單---1', N'QP01改版v3.0---1', N'BMP-QP01-TR001', N'2.0', CAST(N'2020-01-02' AS Date), NULL, NULL, N'---1', N'docx', NULL, NULL, NULL, NULL, NULL, NULL);
 INSERT [dbo].[doc_control_maintable] ([type], [date_time], [id], [person_name], [id_no], [name], [purpose], [original_doc_no], [doc_ver], [in_time], [unuse_time], [reject_reason], [project_name], [file_extension], [is_confidential], [is_sensitive], [in_time_modify_by], [in_time_modify_at], [unuse_time_modify_by], [unuse_time_modify_at]) VALUES (N'B', CAST(N'2020-01-02' AS Date), N'534159', N'鍾葦蓉', N'B202001002', N'產品配方與製程參數紀錄表', N'安定性試驗報告(35度加速T=1年)', N'BMP-QP08-TR020', N'2.4', CAST(N'2020-01-22' AS Date), NULL, NULL, N'CSD', N'docx', NULL, NULL, NULL, NULL, NULL, NULL);
 INSERT [dbo].[doc_control_maintable] ([type], [date_time], [id], [person_name], [id_no], [name], [purpose], [original_doc_no], [doc_ver], [in_time], [unuse_time], [reject_reason], [project_name], [file_extension], [is_confidential], [is_sensitive], [in_time_modify_by], [in_time_modify_at], [unuse_time_modify_by], [unuse_time_modify_at]) VALUES (N'B', CAST(N'2020-01-02' AS Date), N'534159', N'鍾葦蓉', N'B202001003', N'文件更新表', N'2020/01~2020/03文件更新紀錄', N'BMP-QP01-TR013', N'3.0', CAST(N'2020-03-31' AS Date), NULL, NULL, N'', N'docx', NULL, NULL, NULL, NULL, NULL, NULL);
@@ -61,3 +75,80 @@ INSERT [dbo].[doc_control_maintable] ([type], [date_time], [id], [person_name], 
 INSERT [dbo].[doc_control_maintable] ([type], [date_time], [id], [person_name], [id_no], [name], [purpose], [original_doc_no], [doc_ver], [in_time], [unuse_time], [reject_reason], [project_name], [file_extension], [is_confidential], [is_sensitive], [in_time_modify_by], [in_time_modify_at], [unuse_time_modify_by], [unuse_time_modify_at]) VALUES (N'B', CAST(N'2020-01-02' AS Date), N'534159', N'鍾葦蓉', N'B202001005', N'不符合改善措施執行成果審核紀錄表', N'不符合改善措施執行成果審核紀錄', N'BMP-QP10-TR002', N'3.2', CAST(N'2020-01-02' AS Date), NULL, NULL, N'', N'docx', NULL, NULL, NULL, NULL, NULL, NULL);
 INSERT [dbo].[doc_control_maintable] ([type], [date_time], [id], [person_name], [id_no], [name], [purpose], [original_doc_no], [doc_ver], [in_time], [unuse_time], [reject_reason], [project_name], [file_extension], [is_confidential], [is_sensitive], [in_time_modify_by], [in_time_modify_at], [unuse_time_modify_by], [unuse_time_modify_at]) VALUES (N'B', CAST(N'2020-06-30' AS Date), N'A50606', N'盧珈蓉', N'B202006018', N'管理審查會議表單', N'行銷室管理審查', N'BMP-QP03-TR007', N'2.4', CAST(N'2020-06-30' AS Date), NULL, NULL, N'', N'pptx', NULL, NULL, NULL, NULL, NULL, NULL);
 INSERT [dbo].[doc_control_maintable] ([type], [date_time], [id], [person_name], [id_no], [name], [purpose], [original_doc_no], [doc_ver], [in_time], [unuse_time], [reject_reason], [project_name], [file_extension], [is_confidential], [is_sensitive], [in_time_modify_by], [in_time_modify_at], [unuse_time_modify_by], [unuse_time_modify_at]) VALUES (N'B', CAST(N'2020-06-01' AS Date), N'A80151', N'陳靖眉', N'B202006051', N'倉儲總覽表', N'6月倉儲總覽表', N'BMP-QP13-TR010', N'3.1', CAST(N'2020-06-30' AS Date), NULL, NULL, N'', N'xlsx', NULL, NULL, NULL, NULL, NULL, NULL);
+
+-- insert 發行表單
+INSERT INTO [issue_table] ( [name], [issue_datetime], [original_doc_no], [doc_ver], [file_extension])
+VALUES
+(N'產品配方與製程參數紀錄表', '2019-08-30', 'BMP-QP08-TR020', '2.4', 'docx'),
+(N'文件更新表', '2020-01-02', 'BMP-QP01-TR013', '3.0', 'docx'),
+(N'品質紀錄領用入庫紀錄表', '2020-01-02', 'BMP-QP01-TR017', '3.0', 'docx'),
+(N'不符合改善措施執行成果審核紀錄表', '2018-03-23', 'BMP-QP10-TR002', '3.2', 'docx'),
+(N'管理審查會議表單', '2019-03-08', 'BMP-QP03-TR007', '2.4', 'pptx'),
+(N'倉儲總覽表', '2018-12-27', 'BMP-QP13-TR010', '3.1', 'xlsx');
+
+
+
+
+
+
+
+-- ==== 資源、權限相關範例資料 =====
+-- insert 資源
+INSERT INTO Resource (ResourceType, ResourceKey, ResourceDisplayName, ResourceIsActive, CreatedAt)
+VALUES
+('PAGE', 'CFileQuery', '文件查詢', 1, GETDATE()), -- id=9
+('PAGE', 'CIssueTables', '表單發行', 1, GETDATE()), -- id=10
+('PAGE', 'Tree', '表單查詢樹', 1, GETDATE()), -- id=11
+('PAGE', 'File', '檔案', 1, GETDATE()); -- id=12
+
+
+-- insert 動作
+INSERT INTO [dbo].[AppAction] ([AppActionName],[AppActionDisplayName],[AppActionOrder]) VALUES
+(N'SearchAll',  N'查詢全部', 120), -- id=12
+(N'GetTreeDataVerLatest',  N'顯示最新版本的查詢樹', 130), -- id=13
+(N'GetTreeDataVer',  N'顯示所有版本的查詢樹', 140), -- id=14
+(N'GetClaimFile',  N'下載檔案', 150), -- id=15
+(N'GetClaimFileByAdmin',  N'管理者下載檔案', 160), -- id=16
+(N'NewVersion',  N'發行新版', 170), -- id=17
+(N'History',  N'入庫歷程', 180); -- id=18
+
+
+-- insert 角色權限 (系統管理者：全資源全動作)
+INSERT INTO [dbo].[RolePermission] ([RoleId],[ResourceId],[AppActionId])
+VALUES
+	-- [範例] 文件查詢
+    (1, 9, 1),
+    (1, 9, 2),
+    (1, 9, 3),
+    (1, 9, 4),
+    (1, 9, 5),
+    (1, 9, 6),
+    (1, 9, 7),
+
+	-- [範例] 表單發行
+    (1, 10, 1),
+    (1, 10, 2),
+    (1, 10, 3),
+    (1, 10, 4),
+    (1, 10, 5),
+    (1, 10, 6),
+    (1, 10, 7),
+    (1, 10, 17), -- 特例：發行新版
+    (1, 10, 18), -- 特例：入庫歷程
+	
+	-- [範例] 查詢樹
+    (1, 11, 1),
+    (1, 11, 12),
+    (1, 11, 13),
+    (1, 11, 14),
+
+    -- [範例] 檔案下載
+    (1, 12, 15),
+    (1, 12, 16);
+
+-- insert 系統選單
+INSERT INTO MenuItem (MenuItemParentId, MenuItemTitle, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedAt, CreatedBy)
+VALUES
+(NULL, '文件管理', 'fa-solid fa-folder', 3, 1, NULL, GETDATE(), NULL), -- id=9
+( 9, '文件查詢', 'fa-solid fa-file', 1, 1, 9, GETDATE(), NULL), -- id=10
+( 9, '表單發行', 'fa-solid fa-book', 2, 1, 10, GETDATE(), NULL); -- id=11

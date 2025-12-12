@@ -1,0 +1,226 @@
+﻿@using System.Text.Json
+@using BioMedDocManager.Extensions
+@model List<Dictionary<string, object>>
+@{
+    ViewData["Title"] = "表單發行";
+    Layout = "_AssetLayout";
+
+    var queryModel = QueryableExtensions.GetSessionQueryModel<FormQueryModel>(Context);
+    queryModel.OrderBy ??= "issue_datetime";
+    queryModel.SortDir ??= "desc";
+
+    var headers = ViewData["tableHeaders"] as Dictionary<string, string> ?? new Dictionary<string, string>();
+}
+<form method="post" id="myForm">
+    @Html.AntiForgeryToken()
+    <div class="accordion" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="flush-headingOne">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                    <i class="fa fa-search"></i>&ensp;關鍵字搜尋
+                </button>
+            </h2>
+            <div id="flush-collapseOne" class="accordion-collapse collapse show" aria-labelledby="flush-headingOne"
+                 data-bs-parent="#accordionExample">
+                <div class="accordion-body mx-3">
+                    <!-- Row 1：發行日期 / 表單編號 -->
+                    <div class="row mb-3 g-3 row-cols-1 row-cols-md-2 align-items-center">
+
+                        <!-- 組1：發行日期 -->
+                        <div class="col">
+                            <div class="row g-2 align-items-center">
+                                <label for="txt_issue_date" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    發行日期：
+                                </label>
+                                <div class="col-12 col-sm-8">
+                                    <input type="date"
+                                           class="form-control"
+                                           id="txt_issue_date"
+                                           name="@nameof(queryModel.IssueDate)"
+                                           value="@(queryModel.IssueDate.HasValue? queryModel.IssueDate.Value.ToString("yyyy-MM-dd") : "")"
+                                           max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 組2：表單編號 -->
+                        <div class="col">
+                            <div class="row g-2 align-items-center">
+                                <label for="txt_form_no" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    表單編號：
+                                </label>
+                                <div class="col-12 col-sm-8">
+                                    <div class="input-group">
+                                        <input type="text"
+                                               class="form-control"
+                                               id="txt_form_no"
+                                               name="@nameof(queryModel.FormNo)"
+                                               value="@queryModel.FormNo" />
+                                        <a class="btn btn-sm btn-secondary doc_tree_search_btn"
+                                           target="_blank"
+                                           href='@Url.Action("SearchAll", "Tree")'>
+                                            <i class="fas fa-project-diagram"></i>&ensp;查詢
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2：表單版次 / 表單名稱 -->
+                    <div class="row mb-3 g-3 row-cols-1 row-cols-md-2 align-items-center">
+
+                        <!-- 組1：表單版次 -->
+                        <div class="col">
+                            <div class="row g-2 align-items-center">
+                                <label for="txt_form_version" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    表單版次：
+                                </label>
+                                <div class="col-12 col-sm-8">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="txt_form_version"
+                                           name="@nameof(queryModel.DocVer)"
+                                           value="@queryModel.DocVer" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 組2：表單名稱 -->
+                        <div class="col">
+                            <div class="row g-2 align-items-center">
+                                <label for="txt_form_name" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    表單名稱：
+                                </label>
+                                <div class="col-12 col-sm-8">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="txt_form_name"
+                                           name="@nameof(queryModel.DocName)"
+                                           value="@queryModel.DocName" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Buttons -->
+                    <div class="row mt-3">
+                        <div class="col-12 d-flex flex-wrap justify-content-center gap-2">
+                            <button type="submit" formaction="@Url.Action("Index")"
+                                    class="btn2 btn-primary mt-2 col-12 col-md-auto search_btn">
+                                <i class="fa fa-search"></i>&ensp;查詢
+                            </button>
+
+                            <button type="submit" formaction="@Url.Action("GetExcel")"
+                                    formtarget="_blank"
+                                    class="btn2 btn-success mt-2 col-12 col-md-auto export_btn">
+                                <i class="fa fa-file-export"></i>&ensp;匯出 Excel
+                            </button>
+
+                            <button type="button" class="btn2 btn-secondary mt-2 col-12 col-md-auto clear_btn" data-form="myForm">
+                                <i class="fas fa-eraser"></i>&ensp;清除
+                            </button>
+
+                            <a id="create_btn" class="btn2 btn-info mt-2 col-12 col-md-auto"
+                               href="@Url.Action("NewVersion")" target="_blank">
+                                <i class="fa fa-plus"></i>&ensp;發行新表單
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Hidden fields -->
+                    <input type="hidden" id="@(nameof(queryModel.OrderBy))" name="@(nameof(queryModel.OrderBy))" value="@queryModel.OrderBy" />
+                    <input type="hidden" id="@(nameof(queryModel.SortDir))" name="@(nameof(queryModel.SortDir))" value="@queryModel.SortDir" />
+                    <input type="hidden" id="@nameof(queryModel.PageSize)" name="@nameof(queryModel.PageSize)" value="@queryModel.PageSize" />
+                    <input type="hidden" id="@nameof(queryModel.PageNumber)" name="@nameof(queryModel.PageNumber)" value="@queryModel.PageNumber" />
+
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="table">
+    <table class="table table-striped table-hover table-bordered text-break" id="myTable">
+        <thead>
+            <tr>
+                @foreach (var item in headers)
+                {
+                    <th data-id="@item.Key">
+                        @if (item.Key != "RowNum")
+                        {
+                            <a href="#" title="點選「@(item.Value)」欄位進行排序"> @item.Value </a>
+                        }
+                        else
+                        {
+                            @item.Value
+                        }
+                        <span class="order-index"> @(queryModel.OrderBy.EndsWith(item.Key) ? (queryModel.SortDir == "asc" ? "▲" : "▼") : "")</span>
+                    </th>
+                }
+                <th class="col-actions">功能</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="@(headers.Count + 1)">查無資料</td>
+                </tr>
+            }
+
+            @foreach (var row in Model)
+            {
+                var keys = row.Keys;
+                <tr>
+                    @foreach (var key in headers.Keys) @* 依表頭順序取值 *@
+                    {
+                        if (!headers.ContainsKey(key))
+                        {
+                            continue;
+                        }
+
+                        string value = TableHelper.FormatValue(row[key]);
+
+                        <td class="@(value == "(無)" ? "none-data" : "") @((key == "RowNum") ? "text-nowrap" : "")">
+                            @Html.Raw(value)
+                        </td>
+                    }
+                    <td class="col-actions">
+                        @{
+                            var txt_form_no = row["OriginalDocNo"];
+                            var txt_form_version = row["DocVer"];
+                            var IsLatest = (int)row["IsLatest"];//是否為新版
+                        }
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                功能
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item detail" href="@Url.Action("Details", "CIssueTables", new { DocNo = txt_form_no, DocVer = txt_form_version })">檢視</a></li>
+                                <li><a class="dropdown-item detail" href="@Url.Action("Edit", "CIssueTables", new { DocNo = txt_form_no, DocVer = txt_form_version })">編輯</a></li>
+
+                                @if (IsLatest == 1)
+                                {
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "CIssueTables", new { DocNo = txt_form_no, DocVer = txt_form_version })">刪除</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("NewVersion", "CIssueTables", new { DocNo = txt_form_no, DocVer = txt_form_version })">發行新版</a></li>
+                                }
+                                <li><a class="dropdown-item detail" href="@Url.Action("History", "CIssueTables", new { DocNo = txt_form_no, DocVer = txt_form_version })">入庫歷程</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@await Html.PartialAsync("_PagerSection", queryModel)
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+
+    </script>
+}

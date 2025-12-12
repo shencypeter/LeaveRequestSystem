@@ -101,10 +101,10 @@
                                             @foreach (var role in leftRoles)
                                             {
                                                 string checkboxId = $"role{roleIndex++}";
-                                                bool isChecked = queryModel.RoleName != null && queryModel.RoleName.Contains(role.RoleName);
+                                                bool isChecked = queryModel.RoleId != null && queryModel.RoleId.Contains(role.RoleId);
                                                 <div class="form-check text-start">
-                                                    <input class="form-check-input" type="checkbox" name="RoleName"
-                                                           value="@role.RoleName" id="@checkboxId" @(isChecked ? "checked" : "") />
+                                                    <input class="form-check-input" type="checkbox" name="RoleId"
+                                                           value="@role.RoleId" id="@checkboxId" @(isChecked ? "checked" : "") />
                                                     <label class="form-check-label" for="@checkboxId">【@role.RoleGroup】@role.RoleName</label>
                                                 </div>
                                             }
@@ -113,10 +113,10 @@
                                             @foreach (var role in rightRoles)
                                             {
                                                 string checkboxId = $"role{roleIndex++}";
-                                                bool isChecked = queryModel.RoleName != null && queryModel.RoleName.Contains(role.RoleName);
+                                                bool isChecked = queryModel.RoleId != null && queryModel.RoleId.Contains(role.RoleId);
                                                 <div class="form-check text-start">
-                                                    <input class="form-check-input" type="checkbox" name="RoleName"
-                                                           value="@role.RoleName" id="@checkboxId" @(isChecked ? "checked" : "") />
+                                                    <input class="form-check-input" type="checkbox" name="RoleId"
+                                                           value="@role.RoleId" id="@checkboxId" @(isChecked ? "checked" : "") />
                                                     <label class="form-check-label" for="@checkboxId">【@role.RoleGroup】@role.RoleName</label>
                                                 </div>
                                             }

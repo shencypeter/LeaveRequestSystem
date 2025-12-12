@@ -13,7 +13,7 @@ namespace BioMedDocManager.Extensions
             WriteIndented = false,
         };
 
-        public static void SetObject<T>(this ISession session, string key, T value)
+        public static void SetObject<T>(this ISession session, string key, T? value)
         {
             if (value == null)
             {

@@ -1,0 +1,89 @@
+﻿@model BioMedDocManager.Models.IssueTable
+@{
+    Layout = "_NoNavLayout";//套用無Nav的Layout
+    ViewData["Title"] = "表單發行-編輯";
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2"><i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]</h4>
+    <form id="myFormDetail" method="post" action="@Url.Action("Edit", "CIssueTables", new { DocNo = Model.OriginalDocNo, DocVer = Model.DocVer })" target="_top" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div class="pop">
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span>
+                    <strong>@Html.LabelFor(m => m.Name)：</strong>
+                </div>
+                <div class="col-md-4">
+                    <input asp-for="Name" class="form-control" required />
+                </div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span>
+                    <strong>@Html.LabelFor(m => m.IssueDatetime)：</strong>
+                </div>
+                <div class="col-md-4">
+                    <input asp-for="IssueDatetime" class="form-control" type="date" required max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.OriginalDocNo)：</strong>
+                </div>
+                <div class="col-md-4">
+                    @Html.DisplayFor(m => m.OriginalDocNo)
+                </div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.DocVer)：</strong>
+                </div>
+                <div class="col-md-4">
+                    @Html.DisplayFor(m => m.DocVer)
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>目前文件：</strong>
+                </div>
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <input asp-for="RealFileName" class="form-control" readonly />
+                        <a class="btn btn-sm btn-primary" asp-controller="File" asp-action="GetFormFile" asp-route-OriginalDocNo="@Model.OriginalDocNo" asp-route-DocVer="@Model.DocVer">
+                            取得
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>上傳更新文件：</strong>
+                </div>
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <input type="file" class="form-control" id="FileUpload" name="FileUpload" accept=".docx,.xlsx" />
+                    </div>
+                    <small class="text-muted">若未選擇新文件，表示不更新檔案</small>
+
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap align-items-center justify-content-center">
+                    <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-check-circle"></i>&ensp;儲存
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        $(function () {
+            checkFileExtension("#FileUpload", [".docx", ".xlsx"]);
+        });
+    </script>
+}

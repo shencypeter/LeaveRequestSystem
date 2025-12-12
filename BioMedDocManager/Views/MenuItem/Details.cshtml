@@ -79,7 +79,7 @@
                 <p class="form-control-plaintext">
                     @if (Model.Resource != null)
                     {
-                        @Model.Resource.ResourceKey
+                        <a href="@Url.Action("Index", Model.Resource.ResourceKey)" target="_blank"> @Model.Resource.ResourceKey</a>
                     }
                     else
                     {

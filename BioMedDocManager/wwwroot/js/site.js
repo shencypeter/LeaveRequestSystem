@@ -1442,7 +1442,7 @@ function editGroupEventListener() {
     btnPreview.addEventListener('click', function (e) {
         e.preventDefault();
 
-        const userId = document.getElementById('userId');
+        const userId = document.getElementById('UserId');
 
         const groupIds = Array.from(selected.options).map(o => parseInt(o.value, 10));
         const previewUrl = '/AccountSettings/PreviewPermissions';

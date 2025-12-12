@@ -1,0 +1,145 @@
+﻿@using System.Text.Json
+@using BioMedDocManager.Extensions
+@model List<Dictionary<string, object>>
+@{
+    ViewData["Title"] = "表單發行-入庫歷程";
+    Layout = "_NoNavLayout";//套用無Nav的Layout
+
+    var queryModel = QueryableExtensions.GetSessionQueryModel<FormQueryModel>(Context);
+    queryModel.OrderBy ??= "date_time";
+    queryModel.SortDir ??= "asc";
+
+    IssueTable formIssue = (IssueTable)ViewData["formIssue"];
+
+    var headers = ViewData["tableHeaders"] as Dictionary<string, string> ?? new Dictionary<string, string>();
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2"><i class="bi bi-search me-2"></i>@ViewData["Title"]</h4>
+
+    <div class="pop">
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>發行日期：</strong>
+            </div>
+            <div class="col-md-4 text-start">
+                @formIssue.IssueDatetime?.ToString("yyyy-MM-dd")
+            </div>
+
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>表單編號：</strong>
+            </div>
+            <div class="col-md-4 text-start">
+                @formIssue.OriginalDocNo
+            </div>
+        </div>
+        <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>表單版次：</strong>
+            </div>
+            <div class="col-md-4 text-start">
+                @formIssue.DocVer
+            </div>
+
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>表單名稱：</strong>
+            </div>
+            <div class="col-md-4 text-start">
+                @formIssue.Name
+            </div>
+        </div>
+    </div>
+
+    <form method="get" id="myForm" class="px-5">
+        <!-- Hidden fields -->
+        <input type="hidden" id="@(nameof(queryModel.OrderBy))" name="@(nameof(queryModel.OrderBy))" value="@queryModel.OrderBy" />
+        <input type="hidden" id="@(nameof(queryModel.SortDir))" name="@(nameof(queryModel.SortDir))" value="@queryModel.SortDir" />
+        <input type="hidden" id="@nameof(queryModel.PageSize)" name="@nameof(queryModel.PageSize)" value="@queryModel.PageSize" />
+        @* <input type="hidden" id="@nameof(queryModel.PageNumber)" name="@nameof(queryModel.PageNumber)" value="@queryModel.PageNumber" /> *@
+    </form>
+
+    <div class="table w-100">
+        <table class="table table-striped table-hover table-bordered text-break" id="myTable">
+            <thead>
+                <tr>
+                    @foreach (var item in headers)
+                    {
+                        <th data-id="@item.Key">
+                            @if (item.Key != "RowNum")
+                            {
+                                <a href="#" title="點選「@(item.Value)」欄位進行排序"> @item.Value </a>
+                            }
+                            else
+                            {
+                                @item.Value
+                            }
+                            <span class="order-index"> @(queryModel.OrderBy.EndsWith(item.Key) ? (queryModel.SortDir == "asc" ? "▲" : "▼") : "")</span>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="@(headers.Count)">查無資料</td>
+                    </tr>
+                }
+                @foreach (var row in Model)
+                {
+                    var keys = row.Keys;
+                    <tr>
+                        @foreach (var key in headers.Keys) @* 依表頭順序取值 *@
+                        {
+                            if (!headers.ContainsKey(key))
+                            {
+                                continue;
+                            }
+
+                            string value = TableHelper.FormatValue(row[key]);
+
+                            var classes = new List<string>();
+
+                            if (key == "RowNum")
+                            {
+                                classes.Add("col-rownum");
+                                classes.Add("text-nowrap");
+                            }
+
+                            if (value == "(無)")
+                            {
+                                classes.Add("none-data"); // 會包含置中
+                            }
+                            else
+                            {
+                                if (decimal.TryParse(value, out _))
+                                {
+                                    classes.Add("text-end"); // 右對齊（Bootstrap）
+                                }
+
+                                if (value == "未入庫")
+                                {
+                                    classes.Add("val-not-in");
+                                }
+                            }
+                            <td class="@string.Join(" ", classes)">
+                                @Html.Raw(value)
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+@await Html.PartialAsync("_PagerSection", queryModel)
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        $(document).ready(function () {
+            tableSortListener("myForm");// 表格排序事件監聽
+        });
+    </script>
+}

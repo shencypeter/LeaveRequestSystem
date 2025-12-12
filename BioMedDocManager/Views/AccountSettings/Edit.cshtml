@@ -10,6 +10,8 @@
         @Html.AntiForgeryToken()
         <div class="pop">
 
+            <input asp-for="UserId" class="form-control" type="hidden" />
+
             <!-- 帳號(工號) - 唯讀 -->
             <div class="row align-items-center my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserAccount)：</strong></div>
@@ -90,7 +92,7 @@
                                         }, new { @class = "form-select" })
                 </div>
             </div>
-            
+
             <!-- 備註 -->
             <div class="row align-items-center my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserRemarks)：</strong></div>

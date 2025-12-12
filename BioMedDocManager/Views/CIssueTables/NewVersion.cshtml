@@ -1,0 +1,119 @@
+﻿@model BioMedDocManager.Models.IssueTable
+@{
+
+    Layout = "_NoNavLayout";//套用無Nav的Layout
+
+    var issueNewDoc = ViewData.ContainsKey("NextMajorVersion") && ViewData.ContainsKey("NextMinorVersion");
+    var bigVer = "";
+    var smallVer = "";
+
+    if (issueNewDoc)
+    {
+        bigVer = smallVer = ViewData["NextMajorVersion"]?.ToString() ?? "";
+        smallVer = smallVer = ViewData["NextMinorVersion"]?.ToString() ?? "";
+    }
+
+    string title = "新版";
+    if (String.IsNullOrEmpty(smallVer))
+    {
+        title = "新文件";
+    }
+
+    ViewData["Title"] = "表單發行-發行" + title;
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2"><i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]</h4>
+    <form id="myFormDetail" method="post" action="@Url.Action("Create", "CIssueTables")" target="_top" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div class="pop">
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.Name)：</strong>
+                </div>
+                <div class="col-md-4">
+                    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", @required = "required" })
+                </div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.IssueDatetime)：</strong>
+                </div>
+                <div class="col-md-4">
+                    <input class="form-control" id="IssueDatetime" name="IssueDatetime" required="required" type="date" value="@DateTime.Today.ToString("yyyy-MM-dd")" max="@DateTime.Today.ToString("yyyy-MM-dd")">
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.OriginalDocNo)：</strong>
+                </div>
+                <div class="col-md-4">
+                    @if (!String.IsNullOrEmpty(smallVer))
+                    {
+                        @Html.TextBoxFor(m => m.OriginalDocNo, new { @class = "form-control", @required = "required", @readonly = "readonly" })
+                    }
+                    else
+                    {
+                        @Html.TextBoxFor(m => m.OriginalDocNo, new { @class = "form-control", @required = "required" })
+                    }
+                </div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.DocVer)：</strong>
+                </div>
+                <div class="col-md-4">
+                    目前版次：@Html.DisplayFor(m => m.DocVer)<br>
+                    新版次：
+                    @if (issueNewDoc)
+                    {
+                        <select class="form-select" id="nextVersion" name="nextVersion" required="required">
+                            @if (!String.IsNullOrEmpty(smallVer))
+                            {
+                                <option value="@smallVer">小進版：@smallVer</option>
+                            }
+                            @if (!String.IsNullOrEmpty(bigVer))
+                            {
+                                <option value="@bigVer">大進版：@bigVer</option>
+                            }
+                        </select>
+                    }
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span><strong>上傳文件：</strong>
+                </div>
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <input type="file" class="form-control" id="FileUpload" name="FileUpload" required="required" accept=".docx,.xlsx,.pptx" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap align-items-center justify-content-center">
+                    <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-check-circle"></i>&ensp;儲存
+                    </button>
+                    @*發行新版就不顯示清除；全新檔案才顯示清除*@
+                    @if (String.IsNullOrEmpty(smallVer))
+                    {
+                        <button type="button" class="btn2 btn-secondary mt-2 col-6 col-md-3 mx-1 clear_btn" data-form="myFormDetail">
+                            <i class="fas fa-eraser"></i>&ensp;清除
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        $(document).ready(function () {
+            checkFileExtension("#FileUpload", [".docx", ".xlsx", ".pptx"]);
+
+            formClearInputListener();// 清除按鈕事件監聽
+        });
+    </script>
+}

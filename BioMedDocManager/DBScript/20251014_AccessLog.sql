@@ -78,3 +78,44 @@ GO
 
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'描述' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'AccessLogs', @level2type=N'COLUMN',@level2name=N'Description'
 GO
+
+
+-- debug用：檢視群組各資源權限
+CREATE VIEW AccessLogViewer
+AS
+SELECT 
+    al.LogDateTime        AS 紀錄時間,
+    CASE al.AccessLogType
+        WHEN 1 THEN N'登入紀錄'
+        WHEN 2 THEN N'操作紀錄'
+        WHEN 3 THEN N'密碼紀錄'
+        ELSE N'未知'
+    END AS 紀錄類型,
+    CASE al.AccountType
+        WHEN 0 THEN N'未知'
+        WHEN 1 THEN N'後台管理者'
+        WHEN 2 THEN N'前台會員'
+        ELSE N'未知'
+    END AS 帳號類型,
+    al.AccountNum         AS 使用者帳號,
+    u.UserFullName        AS 使用者姓名,
+    al.FunctionName       AS 功能,
+    al.ActionName         AS 動作,
+    al.RequestUrl         AS 請求網址,
+    al.RequestMethod      AS 請求方法,
+    al.RequestReferrer    AS 來源網址,
+    al.ClientIp           AS 使用者IP,
+    /*
+    CASE al.IsSuccess
+        WHEN 1 THEN N'是'
+        ELSE N'否'
+    END AS 是否成功,
+    */
+    al.Severity           AS 嚴重度,
+    al.Description        AS 額外敘述
+FROM [DocControl0].[dbo].[AccessLogs] al
+LEFT JOIN [DocControl0].[dbo].[User] u
+    ON al.AccountId = u.[UserId]
+ORDER BY LogDateTime DESC
+OFFSET 0 ROWS
+GO

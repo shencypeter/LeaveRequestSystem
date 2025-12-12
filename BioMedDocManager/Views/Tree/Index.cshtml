@@ -1,0 +1,30 @@
+﻿@{
+    Layout = "_NoNavLayout";
+}
+
+<div class="container mt-5">
+    <h4>表單查詢-顯示領用日的最新版本</h4>
+    <div class="mb-3">
+        <input type="text" id="treeSearch" class="form-control" placeholder="🔍 搜尋文件編號 或 任意欄位關鍵字..." />
+    </div>
+    <div id="myTree"></div>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        $(function () {
+
+            let dateFromQuery = getQueryStringValue('date');
+            // console.log('查詢字串中的date:', dateFromQuery);
+
+            // Initial tree load
+            buildTree("GetTreeDataVerLatest", dateFromQuery);
+
+            // Rebuild tree on search input change
+            $('#treeSearch').on('input', debounce(function () {
+                const searchVal = $(this).val();
+                buildTree("GetTreeDataVerLatest", dateFromQuery, searchVal);
+            }, 300));
+        });
+    </script>
+}

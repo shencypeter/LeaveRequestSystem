@@ -14,6 +14,8 @@
 
         <div class="pop">
 
+            <input asp-for="UserId" class="form-control" type="hidden" />
+
             <!-- 使用者(唯讀) -->
             <div class="row align-items-center my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start">
@@ -21,7 +23,6 @@
                 </div>
                 <div class="col-md-10">
                     @Model.UserFullName (@Model.UserAccount)
-                    <input type="hidden" id="userId" name="UserId" value="@Model.UserId" />
                 </div>
             </div>
 

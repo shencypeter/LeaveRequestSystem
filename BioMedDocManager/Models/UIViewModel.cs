@@ -552,7 +552,7 @@ namespace BioMedDocManager.Models
         /// 角色群組(List)
         /// </summary>
         [Display(Name = "系統角色")]
-        public List<string> RoleName { get; set; }
+        public List<int>? RoleId { get; set; }
 
         /// <summary>
         /// 建立時間
@@ -733,6 +733,98 @@ namespace BioMedDocManager.Models
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // ====== 範例 View Model ======
+
+    /// <summary>
+    /// 文件列
+    /// </summary>
+    public class DocRowViewModel
+    {
+        /// <summary>
+        /// 表單編號
+        /// </summary>
+        public string OriginalDocNo { get; set; } = "";
+
+        /// <summary>
+        /// 第1階層：MBP
+        /// </summary>
+        public string? Level1 { get; set; }
+
+        /// <summary>
+        /// 第2階層：QR01、CS等
+        /// </summary>
+        public string? Level2 { get; set; }
+
+        /// <summary>
+        /// 第3階層：AP02、MP05、TRO01(因為是3階)
+        /// </summary>
+        public string? Level3 { get; set; }
+
+        /// <summary>
+        /// 第4階層：null 或 TRO01(因為是4階)
+        /// </summary>
+        public string? Level4 { get; set; }
+
+        /// <summary>
+        /// TR階層：TRO01、TRO02等
+        /// </summary>
+        public string? TRCode { get; set; }
+
+        /// <summary>
+        /// 版次(文字型態)
+        /// </summary>
+        public string DocVer { get; set; } = "0";
+
+        /// <summary>
+        /// 版次(數字型態)
+        /// </summary>
+        public double DocVerNumber { get; set; }
+
+        /// <summary>
+        /// 表單名稱
+        /// </summary>
+        public string Name { get; set; } = "";
+
+        /// <summary>
+        /// 表單發行日期
+        /// </summary>
+        public DateTime? IssueDatetime { get; set; }
+    }
+
+    public sealed class IssueTableListIssueTableViewModel
+    {
+        public string? Name { get; set; }
+        public DateTime? IssueDatetime { get; set; }
+        public string? OriginalDocNo { get; set; }
+        public string? DocVer { get; set; }
+        public string? FileExtension { get; set; }
+
+        public int IsLatest { get; set; } // 1=最新版, 0=非最新版
+    }
 
 
 }

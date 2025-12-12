@@ -178,6 +178,18 @@ public partial class DocControlMaintable
         !IsSensitive.HasValue ? "無" : (IsSensitive.Value ? "是" : "否");
 
 
+    [NotMapped]
+    [Display(Name = "文件狀態")]
+    public string DocStatus
+    {
+        get
+        {
+            if (UnuseTime != null) return "已註銷";
+            if (InTime != null) return "已入庫";
+            return "未入庫";
+        }
+    }
+
     /// <summary>
     /// 檔案的 MIME 類型（Content-Type）
     /// </summary>

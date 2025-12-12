@@ -105,6 +105,7 @@ public partial class DocControlContext : DbContext
 
     // ===== 範例資料表 =====
     public virtual DbSet<DocControlMaintable> DocControlMaintables { get; set; }
+    public virtual DbSet<IssueTable> IssueTables { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -364,6 +365,32 @@ public partial class DocControlContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.UnuseTimeModifyBy)
                 .HasPrincipalKey(u => u.UserAccount);
+
+
+            modelBuilder.Entity<IssueTable>(entity =>
+            {
+                entity.HasKey(e => new { e.OriginalDocNo, e.DocVer });
+
+                entity.ToTable("issue_table");
+
+                entity.Property(e => e.OriginalDocNo)
+                    .HasMaxLength(50)
+                    .HasColumnName("original_doc_no");
+
+                entity.Property(e => e.DocVer)
+                    .HasMaxLength(50)
+                    .HasColumnName("doc_ver");
+
+                entity.Property(e => e.IssueDatetime)
+                    .HasColumnName("issue_datetime");
+
+                entity.Property(e => e.Name)
+                    .HasColumnName("name");
+            });
+
+
+
+
 
         });
     }

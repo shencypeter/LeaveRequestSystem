@@ -1,22 +1,18 @@
 ﻿using Aspose.Words;
 using BioMedDocManager.Extensions;
 using BioMedDocManager.Helpers;
-using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
 using ClosedXML.Excel;
 using Dapper;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;// HeaderUtilities
-using System.Collections.Concurrent;
 using System.Globalization;
-using System.Reflection;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using A = DocumentFormat.OpenXml.Drawing;
@@ -40,6 +36,11 @@ namespace BioMedDocManager.Controllers
         /// 中文欄位排序比較器
         /// </summary>
         private CompareInfo comparer = CultureInfo.GetCultureInfo("zh-TW").CompareInfo;
+
+        /// <summary>
+        /// 合法的上傳檔案屬性
+        /// </summary>
+        private static readonly string[] AllowedExtensions = [".docx", ".xlsx", ".pptx"];
 
         /// <summary>
         /// 資料庫物件
@@ -337,14 +338,13 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 取得所有角色資料(系統權限除外)
+        /// 取得所有角色資料
         /// </summary>
         /// <returns></returns>
         protected async Task<List<Role>> GetRoles()
         {
-            // 取得所有角色資料(系統權限除外)
+            // 取得所有角色資料
             return await _context.Roles
-                  //.Where(r => r.RoleGroup != "系統")
                   .OrderBy(r => r.RoleGroup)
                   .ThenBy(r => r.RoleName)
                   .ToListAsync();
@@ -519,6 +519,81 @@ namespace BioMedDocManager.Controllers
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// 取得表單儲存路徑
+        /// </summary>
+        /// <returns>表單儲存路徑</returns>
+        protected string GetFormPath()
+        {
+
+            // 取得表單儲存路徑
+            var form_path = "D:/form";// 範例
+            return form_path;
+        }
+
+        /// <summary>
+        /// 刪除表單檔案（實際為重新命名前加上 DEL_）
+        /// </summary>
+        /// <param name="model">IssueTable 物件，用於抓取檔名</param>
+        protected void RenameDeleteFormFile(IssueTable model)
+        {
+            if (model == null || string.IsNullOrWhiteSpace(model.OriginalDocNo) || string.IsNullOrWhiteSpace(model.DocVer) || string.IsNullOrWhiteSpace(model.FileExtension))
+                return;
+
+            try
+            {
+                // 組成檔案名稱與路徑
+                var savePath = GetFormPath();
+
+                // 原始檔名 (不帶副檔名)
+                var baseFileName = $"{model.OriginalDocNo}(V{model.DocVer})";
+                var fullPath = Path.Combine(savePath, baseFileName + "." + model.FileExtension);
+
+                if (System.IO.File.Exists(fullPath))
+                {
+                    // 新檔案名稱 (DEL_前綴 + 原檔名 + 刪除時間 + 副檔名)
+                    var timeStamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+                    var newFileName = $"DEL_{baseFileName}_{timeStamp}.{model.FileExtension}";
+                    var newFullPath = Path.Combine(savePath, newFileName);
+
+                    System.IO.File.Move(fullPath, newFullPath);
+                    Console.WriteLine("刪除表單檔案，檔案已重新命名：" + newFullPath);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                // 可以記錄 log
+                Console.WriteLine("刪除表單檔案，檔案重新命名失敗：" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 檢查檔名副檔名是否合法(大小寫不敏感)
+        /// </summary>
+        protected static bool IsValidFileExtension(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName))
+                return false;
+
+            string extension = Path.GetExtension(fileName).ToLowerInvariant();
+            return AllowedExtensions.Contains(extension);
+        }
 
         /// <summary>
         /// 文件領用：預查 領用後會打在文件上面的流水號 (非保留號)
