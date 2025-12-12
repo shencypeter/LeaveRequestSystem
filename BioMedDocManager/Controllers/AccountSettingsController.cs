@@ -286,7 +286,7 @@ namespace BioMedDocManager.Controllers
             // 產生變更密碼模型
             var model = new ChangePasswordViewModel
             {
-                UserAccount = User.Identity?.Name ?? "",
+                UserAccount = User.FindFirst("UserAccount")?.Value ?? "",
                 UserFullName = User.FindFirst("UserFullName")?.Value ?? ""
             };
 

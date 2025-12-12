@@ -38,11 +38,6 @@ namespace BioMedDocManager.Controllers
         private CompareInfo comparer = CultureInfo.GetCultureInfo("zh-TW").CompareInfo;
 
         /// <summary>
-        /// 合法的上傳檔案屬性
-        /// </summary>
-        private static readonly string[] AllowedExtensions = [".docx", ".xlsx", ".pptx"];
-
-        /// <summary>
         /// 資料庫物件
         /// </summary>
         protected readonly DocControlContext _context = context;
@@ -93,8 +88,17 @@ namespace BioMedDocManager.Controllers
             // 每個Controller的SessionKey
             context.HttpContext.Items["SessionKey"] = SessionKey;
 
-            // 選單(Login就存入Session中了)
             var menuTree = HttpContext.Session.GetObject<List<MenuItemGroupViewModel>>("MenuTree") ?? new List<MenuItemGroupViewModel>();
+
+            // 已登入但沒有選單的話，重建選單 (因為重新compiler會讓session消失，但是login cookie還在)
+            if (User?.Identity?.IsAuthenticated == true && menuTree.Count == 0)
+            {
+                menuTree = BuildMenuTreeForUser(User);
+                HttpContext.Session.SetObject("MenuTree", menuTree);
+            }
+
+            // 選單(Login就存入Session中了)
+
             ViewData["MenuTree"] = menuTree;
 
             // 使用者資訊
@@ -592,7 +596,7 @@ namespace BioMedDocManager.Controllers
                 return false;
 
             string extension = Path.GetExtension(fileName).ToLowerInvariant();
-            return AllowedExtensions.Contains(extension);
+            return AppSettings.AllowedExtensions.Contains(extension);
         }
 
         /// <summary>

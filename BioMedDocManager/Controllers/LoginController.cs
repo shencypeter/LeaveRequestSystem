@@ -127,8 +127,7 @@ namespace BioMedDocManager.Controllers
                 HttpContext.Session.SetString("try_login", userAccount);
 
                 // 取得使用者
-                var user = await context.Users
-                    .FirstOrDefaultAsync(u => u.UserAccount == userAccount);
+                var user = await context.Users.FirstOrDefaultAsync(u => u.UserAccount == userAccount);
 
                 // 不存在或未啟用（訊息仍給通用字樣）
                 if (user is null || !user.UserIsActive)

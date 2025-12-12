@@ -379,7 +379,7 @@ function setTableStyle() {
 // 驗證確認密碼
 function validateConfirmPassword(type) {
     var newPassword = $('#' + type + 'Password').val();
-    var confirmPassword = $('#ConfirmPassword').val();
+    var confirmPassword = $('#UserConfirmPassword').val();
 
     if (newPassword !== confirmPassword) {
         $('#ConfirmPasswordValidation')
@@ -394,7 +394,7 @@ function validateConfirmPassword(type) {
 function CheckConfirmPassword(type = "") {
 
     // 失去焦點時驗證
-    $('#ConfirmPassword').on('blur', function () {
+    $('#UserConfirmPassword').on('blur', function () {
         validateConfirmPassword(type);
     });
 
