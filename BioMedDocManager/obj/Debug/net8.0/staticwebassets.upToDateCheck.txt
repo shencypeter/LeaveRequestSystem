@@ -157,3 +157,17 @@ wwwroot\webfonts\fa-solid-900.ttf
 wwwroot\webfonts\fa-solid-900.woff2
 wwwroot\webfonts\fa-v4compatibility.ttf
 wwwroot\webfonts\fa-v4compatibility.woff2
+wwwroot\js\jstree.min.js
+wwwroot\css\jstree\throbber.gif
+wwwroot\css\jstree\style.min.css
+wwwroot\css\jstree\style.css
+wwwroot\css\jstree\40px.png
+wwwroot\css\jstree\32px.png
+wwwroot\docs\供應商評核表6.0_套版.docx
+wwwroot\docs\初次供應商評核表6.0_套版.docx
+wwwroot\docs\品質紀錄領用入庫紀錄表4.0_套版.docx
+wwwroot\docs\收貨驗收單4.0_套版.docx
+wwwroot\docs\範例Excel.xlsx
+wwwroot\docs\範例PPT.pptx
+wwwroot\docs\範例Word.docx
+wwwroot\docs\請購單4.0_套版.docx
