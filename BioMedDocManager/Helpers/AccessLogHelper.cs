@@ -40,9 +40,23 @@ namespace BioMedDocManager.Helpers
             await _context.SaveChangesAsync();
         }
 
-        public async Task NewLoginSuccessAsync(User account, string functionName, string actionName)
+        public async Task NewLoginSuccessAsync(User account)
         {
-            var log = GenerateBaseAccessLog(AccessLogType.LoginLog, functionName, actionName);
+            var log = GenerateBaseAccessLog(AccessLogType.LoginLog, "登入", "登入");
+            log.AccountType = (int)account.GetAccountType();
+            log.AccountNum = account.GetAccount();
+            log.AccountId = account.GetUId();
+            log.IsSuccess = true;
+            log.Severity = 0;
+            log.Description = "登入成功";
+
+            await _context.AccessLogs.AddAsync(log);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task NewLogoutAsync(User account)
+        {
+            var log = GenerateBaseAccessLog(AccessLogType.LoginLog, "登出", "登出");
             log.AccountType = (int)account.GetAccountType();
             log.AccountNum = account.GetAccount();
             log.AccountId = account.GetUId();
@@ -74,7 +88,7 @@ namespace BioMedDocManager.Helpers
                 log.AccountNum = loginAccount.GetAccount();
                 log.AccountId = loginAccount.GetUId();
                 log.IsSuccess = true;
-                log.Severity = 0;
+                log.Severity = description.Contains("錯誤") ? 1 : 0;// 一般Action的錯誤給1分
                 log.Description = description;
 
                 await _context.AccessLogs.AddAsync(log);

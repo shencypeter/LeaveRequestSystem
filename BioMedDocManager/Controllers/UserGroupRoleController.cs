@@ -1,9 +1,6 @@
-﻿using BioMedDocManager.Extensions;
-using BioMedDocManager.Factory;
-using BioMedDocManager.Helpers;
+﻿using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +11,7 @@ namespace BioMedDocManager.Controllers
     /// </summary>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
-    /// <param name="accessLog">操作紀錄服務</param>
+    /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
     public class UserGroupRoleController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
@@ -196,7 +193,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{group.UserGroupName} 角色設定更新【失敗】!";
+                var msg = $"使用者群組-{group.UserGroupName} 角色設定更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -205,7 +202,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(UserGroupController.Index), "UserGroup");
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupName} 角色設定更新成功!";
+            TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupName} 角色設定更新成功";
 
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色設定更新成功");
             return RedirectToAction(nameof(UserGroupController.Index), "UserGroup");

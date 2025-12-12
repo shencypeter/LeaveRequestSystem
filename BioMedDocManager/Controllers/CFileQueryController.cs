@@ -1,10 +1,7 @@
 ﻿using BioMedDocManager.Extensions;
 using BioMedDocManager.Factory;
-using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
-using Dapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +12,7 @@ namespace BioMedDocManager.Controllers
     /// </summary>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
+    /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
     public class CFileQueryController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
@@ -144,18 +142,9 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="queryModel">查詢model</param>
         /// <returns>查詢結果Excel檔</returns>
-        /// <summary>
-        /// 匯出查詢結果Excel
-        /// </summary>
-        /// <param name="queryModel">查詢model</param>
-        /// <param name="sqlDef">SQL查詢</param>
-        /// <param name="parameters">SQL查詢參數</param>
-        /// <param name="TableHeaders">表頭</param>
-        /// <param name="sheetName">檔名</param>
-        /// <returns>查詢結果Excel檔</returns>
-        [HttpPost("GetExcel")]
+        [HttpPost("Export")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GetExcel(FormQueryModel queryModel, CancellationToken ct)
+        public async Task<IActionResult> Export(FormQueryModel queryModel, CancellationToken ct)
         {
             // 不分頁，取全部
             queryModel.PageNumber = 0;

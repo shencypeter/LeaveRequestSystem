@@ -11,13 +11,16 @@ namespace BioMedDocManager.Controllers
     /// <summary>
     /// 角色管理
     /// </summary>
+    /// <param name="context">資料庫查詢物件</param>
+    /// <param name="hostingEnvironment">網站環境變數</param>
+    /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
     public class RoleController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
         /// <summary>
-        /// 角色管理
+        /// 頁面名稱
         /// </summary>
-        public const string PageName = "資源管理";
+        public const string PageName = "角色管理";
 
         /// <summary>
         /// 預設排序依據
@@ -113,7 +116,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"角色-{posted.RoleName} 新增【失敗】!";
+                var msg = $"角色-{posted.RoleName} 新增【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -121,7 +124,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"角色-{posted.RoleName} 新增成功!";
+            TempData["_JSShowSuccess"] = $"角色-{posted.RoleName} 新增成功";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
@@ -177,7 +180,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"角色-{dbEntity.RoleName} 更新【失敗】!";
+                var msg = $"角色-{dbEntity.RoleName} 更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -185,7 +188,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"角色-{dbEntity.RoleName} 更新成功!";
+            TempData["_JSShowSuccess"] = $"角色-{dbEntity.RoleName} 更新成功";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
@@ -335,7 +338,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"角色-{role.RoleName} 權限設定更新【失敗】!";
+                var msg = $"角色-{role.RoleName} 權限設定更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -345,7 +348,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Details), new { roleId = role.RoleId });
             }
 
-            var successMsg = $"角色-{role.RoleName} 權限設定已更新!";
+            var successMsg = $"角色-{role.RoleName} 權限設定已更新";
             TempData["_JSShowSuccess"] = successMsg;
 
             await accessLog.NewActionAsync(
@@ -460,7 +463,7 @@ namespace BioMedDocManager.Controllers
             // 不在 Controller 先 Group，讓 View 自己分組
             ViewBag.RolePermissions = perms;
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除確認頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
 
             return View(role);
         }
@@ -512,7 +515,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"角色-{entity.RoleName} 刪除【失敗】!";
+                var msg = $"角色-{entity.RoleName} 刪除【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -520,7 +523,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"角色-{entity.RoleName} 已刪除!";
+            TempData["_JSShowSuccess"] = $"角色-{entity.RoleName} 已刪除";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));

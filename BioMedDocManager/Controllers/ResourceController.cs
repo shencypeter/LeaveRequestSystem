@@ -3,16 +3,17 @@ using BioMedDocManager.Factory;
 using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
-using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting.Internal;
 
 namespace BioMedDocManager.Controllers
 {
     /// <summary>
     /// 資源管理
     /// </summary>
+    /// <param name="context">資料庫查詢物件</param>
+    /// <param name="hostingEnvironment">網站環境變數</param>
+    /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
     public class ResourceController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
@@ -118,7 +119,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"資源-{posted.ResourceKey} 新增【失敗】!";
+                var msg = $"資源-{posted.ResourceKey} 新增【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -126,7 +127,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"資源-{posted.ResourceKey} 新增成功!";
+            TempData["_JSShowSuccess"] = $"資源-{posted.ResourceKey} 新增成功";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
@@ -180,7 +181,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"資源-{dbEntity.ResourceKey} 更新【失敗】!";
+                var msg = $"系統資源管理-更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -188,7 +189,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"資源-{dbEntity.ResourceKey} 更新成功!";
+            TempData["_JSShowSuccess"] = $"系統資源管理-更新成功";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
@@ -390,7 +391,7 @@ namespace BioMedDocManager.Controllers
 
             ViewBag.ResourceGroupUsageList = groupUsage;
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除確認頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
 
             return View(entity);
         }
@@ -441,7 +442,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"資源-{entity.ResourceKey} ({entity.ResourceDisplayName}) 刪除【失敗】!";
+                var msg = $"資源-{entity.ResourceKey} ({entity.ResourceDisplayName}) 刪除【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -450,7 +451,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"資源-{entity.ResourceKey} ({entity.ResourceDisplayName}) 已刪除!";
+            TempData["_JSShowSuccess"] = $"資源-{entity.ResourceKey} ({entity.ResourceDisplayName}) 已刪除";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));

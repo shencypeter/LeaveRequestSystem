@@ -11,11 +11,11 @@ namespace BioMedDocManager.Controllers
     /// <summary>
     /// 系統動作管理
     /// </summary>
+    /// <param name="context">資料庫查詢物件</param>
+    /// <param name="hostingEnvironment">網站環境變數</param>
+    /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class AppActionController(DocControlContext context,
-                                    IWebHostEnvironment hostingEnvironment,
-                                    IAccessLogService accessLog)
-        : BaseController(context, hostingEnvironment)
+    public class AppActionController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
         /// <summary>
         /// 頁面名稱
@@ -119,7 +119,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"動作-{posted.AppActionName} 新增【失敗】!";
+                var msg = $"動作-{posted.AppActionName} 新增【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -127,7 +127,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"動作-{posted.AppActionName} 新增成功!";
+            TempData["_JSShowSuccess"] = $"動作-{posted.AppActionName} 新增成功";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
@@ -185,7 +185,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"動作-{dbEntity.AppActionName} 更新【失敗】!";
+                var msg = $"動作-{dbEntity.AppActionName} 更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -193,7 +193,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"動作-{dbEntity.AppActionName} 更新成功!";
+            TempData["_JSShowSuccess"] = $"動作-{dbEntity.AppActionName} 更新成功";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
@@ -344,7 +344,7 @@ namespace BioMedDocManager.Controllers
 
             ViewBag.ActionRoleUsageList = usageList;
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除確認頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
 
             return View(entity);
         }
@@ -392,7 +392,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"系統動作-{entity.AppActionName} 刪除【失敗】!";
+                var msg = $"系統動作-{entity.AppActionName} 刪除【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -401,7 +401,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"系統動作-{entity.AppActionName} 已刪除!";
+            TempData["_JSShowSuccess"] = $"系統動作-{entity.AppActionName} 已刪除";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));

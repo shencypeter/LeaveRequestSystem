@@ -1,15 +1,14 @@
-﻿using BioMedDocManager.Extensions;
+﻿using BioMedDocManager.Enums;
+using BioMedDocManager.Extensions;
 using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
-using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting.Internal;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Security.Claims;
@@ -25,6 +24,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="httpAccessor">取得HttpContext，例如Session、Request等</param>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
+    /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
     public class LoginController(IHttpContextAccessor httpAccessor, DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
@@ -42,23 +42,22 @@ namespace BioMedDocManager.Controllers
         [HttpGet("Index")]
         [HttpGet("Login")]
         [AllowAnonymous]
-        public IActionResult Index(string? returnUrl)
+        public async Task<IActionResult> Index(string? returnUrl)
         {
             //密碼錯誤退回來時, 記得剛才的帳號
-            TempData["lastUserId"] = httpAccessor.HttpContext.Session.GetString("try_login");
+            TempData["lastUserId"] = HttpContext.Session.GetString("try_login");
 
-            if (returnUrl != null && returnUrl.Contains("Login"))
+            if (returnUrl != null && returnUrl.EndsWith("Login"))
             {
                 //return URL 防止回到登入頁面
                 returnUrl = "";
             }
 
-            // 將 returnUrl 存入 ViewData 或 ViewBag 或 TempData
+            // 將 returnUrl 存入ViewBag
             ViewBag.ReturnUrl = returnUrl;
 
-            //var messages = context.Bulletins.Where(s => s.Name == "登入公告" && s.Value.Length > 0).ToList();
+            TempData["Messages"] = "登入公告文字";
 
-            TempData["Messages"] = "登入公告文字";// messages.Any() ? messages.FirstOrDefault()?.Value.ToString() : new List<Bulletin>();
 
             return View();
         }
@@ -82,6 +81,8 @@ namespace BioMedDocManager.Controllers
             }
 
             await context.SaveChangesAsync();
+
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "初次遷移密碼");
 #endif
 
 
@@ -89,7 +90,7 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 登入功能
+        /// 登入送出
         /// </summary>
         /// <param name="userAccount">帳號</param>
         /// <param name="password">密碼</param>
@@ -103,15 +104,27 @@ namespace BioMedDocManager.Controllers
             {
 
 #if RELEASE
-    var storedCaptcha = httpAccessor.HttpContext.Session.GetString("CaptchaCode");
-    if (string.IsNullOrEmpty(captcha) || !string.Equals(captcha, storedCaptcha, StringComparison.OrdinalIgnoreCase))
-    {
-        TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
-        return RedirectToAction(nameof(Index));
-    }
+                var storedCaptcha = httpAccessor.HttpContext.Session.GetString("CaptchaCode");
+                if (string.IsNullOrEmpty(captcha) || !string.Equals(captcha, storedCaptcha, StringComparison.OrdinalIgnoreCase))
+                {
+                    TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
+
+                    // 驗證碼錯誤 → 失敗紀錄
+                    await accessLog.NewLoginFailedAsync(
+                        AccountType.Admin,                    // 後台登入
+                        userAccount ?? "",
+                        0,                                    // 沒 user
+                        PageName,
+                        "登入",
+                        1,
+                        "驗證碼錯誤"
+                    );
+
+                    return RedirectToAction(nameof(Index));
+                }
 #endif
 
-                httpAccessor.HttpContext.Session.SetString("try_login", userAccount);
+                HttpContext.Session.SetString("try_login", userAccount);
 
                 // 取得使用者
                 var user = await context.Users
@@ -121,6 +134,17 @@ namespace BioMedDocManager.Controllers
                 if (user is null || !user.UserIsActive)
                 {
                     TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";
+
+                    await accessLog.NewLoginFailedAsync(
+                        user is null ? AccountType.Unknow : AccountType.Admin,
+                        userAccount,
+                        user?.UserId ?? 0,
+                        PageName,
+                        "登入",
+                        1,
+                        user is null ? "登入失敗：帳號不存在" : "登入失敗：帳號未啟用"
+                    );
+
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -136,6 +160,18 @@ namespace BioMedDocManager.Controllers
                     {
                         // 尚在鎖定期
                         TempData["_JSShowAlert"] = $"帳號或密碼錯誤次數達{failedLimit}次以上，請於{lockMinutes}分鐘後重試(或洽管理者解除鎖定)";
+
+                        await accessLog.NewLoginFailedAsync(
+                            AccountType.Admin,
+                            user.UserAccount,
+                            user.UserId,
+                            PageName,
+                            "登入",
+                            2,
+                            $"登入失敗：帳號鎖定中，直到 {user.UserLockedUntil:yyyy-MM-dd HH:mm:ss}"
+                        );
+
+
                         return RedirectToAction(nameof(Index));
                     }
                     else
@@ -159,6 +195,9 @@ namespace BioMedDocManager.Controllers
                         ? user.UserLoginFailedCount + 1
                         : user.UserLoginFailedCount;
 
+                    string failMessage = "登入失敗：密碼錯誤";
+                    int severity = 1;
+
                     // 達門檻 → 鎖定一段時間
                     if (user.UserLoginFailedCount >= failedLimit)
                     {
@@ -166,6 +205,9 @@ namespace BioMedDocManager.Controllers
                         user.UserLockedUntil = now.AddMinutes(lockMinutes);
 
                         TempData["_JSShowAlert"] = $"帳號或密碼錯誤次數達{failedLimit}次以上，請於{lockMinutes}分鐘後重試(或洽管理者解除鎖定)";
+
+                        failMessage = $"密碼錯誤達 {failedLimit} 次以上，帳號鎖定至 {user.UserLockedUntil:yyyy-MM-dd HH:mm:ss}";
+                        severity = 2;
 
                         // 重設計數
                         user.UserLoginFailedCount = 0;
@@ -175,6 +217,17 @@ namespace BioMedDocManager.Controllers
                         // 一律回通用訊息（避免洩漏是帳號還是密碼問題）
                         TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";
                     }
+
+                    // 密碼錯誤 → 記錄
+                    await accessLog.NewLoginFailedAsync(
+                        AccountType.Admin,
+                        user.UserAccount,
+                        user.UserId,
+                        PageName,
+                        "登入",
+                        severity,
+                        failMessage
+                    );
 
                     await context.SaveChangesAsync();
 
@@ -237,6 +290,8 @@ namespace BioMedDocManager.Controllers
 
                 HttpContext.Session.SetObject("MenuTree", menuTree);
 
+                await accessLog.NewLoginSuccessAsync(user);
+
                 // ===== 5. Redirect =====
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && !returnUrl.Contains("Login"))
                 {
@@ -247,6 +302,18 @@ namespace BioMedDocManager.Controllers
             catch (Exception ex)
             {
                 Utilities.WriteExceptionIntoLogFile("登入異常", ex, this.HttpContext);
+
+                // 系統錯誤也記一次失敗
+                await accessLog.NewLoginFailedAsync(
+                    AccountType.Admin,
+                    userAccount ?? "",
+                    0,
+                    PageName,
+                    "登入",
+                    3,
+                    $"登入異常：{ex.Message}"
+                );
+
             }
 
             return RedirectToAction("Index", "Home");
@@ -260,9 +327,13 @@ namespace BioMedDocManager.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
-            httpAccessor.HttpContext.Session.SetString("try_login", "");
-            TempData["_JSShowAlert"] = "您已登出系統，謝謝您的使用!";
+            HttpContext.Session.Remove("try_login");
+            HttpContext.Session.Remove("MenuTree");
+            TempData["_JSShowAlert"] = "您已登出系統，謝謝您的使用";
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await accessLog.NewLogoutAsync(GetLoginUser());
+
             return RedirectToAction("Index", "Home");
         }
 

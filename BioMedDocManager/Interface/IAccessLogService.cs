@@ -8,9 +8,10 @@ namespace BioMedDocManager.Interface
         Task NewLoginFailedAsync(AccountType accountType, string accountNum, int accountId,
                                  string functionName, string actionName, int severity, string description);
 
-        Task NewLoginSuccessAsync(User account, string functionName, string actionName);
+        Task NewLoginSuccessAsync(User account);
+        Task NewLogoutAsync(User account);
 
-        Task NewActionAsync(User loginAccount, string functionName, string actionName,
+        Task NewActionAsync(User? loginAccount, string functionName, string actionName,
                             string description = "", bool isThrowError = false);
 
         Task NewPasswordAsync(User loginAccount, string functionName, string actionName,

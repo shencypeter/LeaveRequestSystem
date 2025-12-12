@@ -3,7 +3,6 @@ using BioMedDocManager.Factory;
 using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +13,7 @@ namespace BioMedDocManager.Controllers
     /// </summary>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
-    /// <param name="accessLog">操作紀錄服務</param>
+    /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
     public class UserGroupController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
@@ -134,14 +133,14 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{posted.UserGroupName} 資料新增【失敗】!";
+                var msg = $"使用者群組-{posted.UserGroupName} 資料新增【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
                 await accessLog.NewActionAsync(GetLoginUser(), PageName, "資料新增【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{posted.UserGroupName} 資料新增成功!";
+            TempData["_JSShowSuccess"] = $"使用者群組-{posted.UserGroupName} 資料新增成功";
 
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁資料新增成功");
 
@@ -205,7 +204,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{dbGroup.UserGroupName} 資料更新【失敗】!";
+                var msg = $"使用者群組-{dbGroup.UserGroupName} 資料更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
                 await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新【失敗】", msg, true);
@@ -213,7 +212,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{dbGroup.UserGroupName} 資料更新成功!";
+            TempData["_JSShowSuccess"] = $"使用者群組-{dbGroup.UserGroupName} 資料更新成功";
 
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新成功");
 
@@ -250,7 +249,7 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 顯示刪除確認頁
+        /// 顯示刪除頁
         /// </summary>
         [HttpGet("Delete/{userGroupId:int}")]
         public async Task<IActionResult> Delete([FromRoute] int? userGroupId)
@@ -273,7 +272,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除確認頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
 
             return View(group);
         }
@@ -306,7 +305,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{group.UserGroupName} 刪除【失敗】!";
+                var msg = $"使用者群組-{group.UserGroupName} 刪除【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
                 await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
@@ -314,7 +313,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupName} 已刪除!";
+            TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupName} 已刪除";
 
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 

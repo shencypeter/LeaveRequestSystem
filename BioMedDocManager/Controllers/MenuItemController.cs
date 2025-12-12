@@ -11,13 +11,12 @@ namespace BioMedDocManager.Controllers
     /// <summary>
     /// 選單項目管理
     /// </summary>
+    /// <param name="context">資料庫查詢物件</param>
+    /// <param name="hostingEnvironment">網站環境變數</param>
+    /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class MenuItemController : BaseController
+    public class MenuItemController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
     {
-        private readonly DocControlContext context;
-        private readonly IWebHostEnvironment hostingEnvironment;
-        private readonly IAccessLogService accessLog;
-
         /// <summary>
         /// 頁面名稱
         /// </summary>
@@ -44,17 +43,6 @@ namespace BioMedDocManager.Controllers
                 "UpdatedAt"
             }
         );
-
-        public MenuItemController(
-            DocControlContext context,
-            IWebHostEnvironment hostingEnvironment,
-            IAccessLogService accessLog
-        ) : base(context, hostingEnvironment)
-        {
-            this.context = context;
-            this.hostingEnvironment = hostingEnvironment;
-            this.accessLog = accessLog;
-        }
 
         // ======================= Index（清單頁） =======================
 
@@ -136,7 +124,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"選單-{posted.MenuItemTitle} 新增【失敗】!";
+                var msg = $"選單-{posted.MenuItemTitle} 新增【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -144,7 +132,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"選單-{posted.MenuItemTitle} 新增成功!";
+            TempData["_JSShowSuccess"] = $"選單-{posted.MenuItemTitle} 新增成功";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
@@ -208,7 +196,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"選單-{dbEntity.MenuItemTitle} 更新【失敗】!";
+                var msg = $"選單-{dbEntity.MenuItemTitle} 更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -216,7 +204,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"選單-{dbEntity.MenuItemTitle} 更新成功!";
+            TempData["_JSShowSuccess"] = $"選單-{dbEntity.MenuItemTitle} 更新成功";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
@@ -284,7 +272,7 @@ namespace BioMedDocManager.Controllers
             ViewBag.ChildrenCount = children.Count;
             ViewBag.ChildrenList = children;
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除確認頁");
+            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
 
             return View(entity);
         }
@@ -332,7 +320,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"選單-{entity.MenuItemTitle} 刪除【失敗】!";
+                var msg = $"選單-{entity.MenuItemTitle} 刪除【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -341,7 +329,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"選單-{entity.MenuItemTitle} 已刪除!";
+            TempData["_JSShowSuccess"] = $"選單-{entity.MenuItemTitle} 已刪除";
             await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));

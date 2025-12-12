@@ -31,18 +31,4 @@ namespace BioMedDocManager.Controllers
         }
     }
 
-    /*
-    [Route("Error/{code}")]
-    public IActionResult Error(int code)
-    {
-        return code switch
-        {
-            401 => View("~/Views/Shared/_Unauthorized.cshtml"),
-            403 => View("~/Views/Shared/_Forbidden.cshtml"),
-            404 => View("~/Views/Shared/_NotFound.cshtml"),
-            500 => View("~/Views/Shared/_InternalServerError.cshtml"),
-            _ => View("~/Views/Shared/_Error.cshtml")
-        };
-    }*/
-
 }
