@@ -101,7 +101,10 @@ namespace BioMedDocManager
             .PersistKeysToFileSystem(new DirectoryInfo(@"C:\DataProtection-Keys"))
             .SetApplicationName("itriDoc");
 
-            
+
+            builderWeb.Services.AddMemoryCache();
+            builderWeb.Services.AddScoped<IParameterService, ParameterHelper>();
+
             // ==============================================
             // 建立web應用程式
             var appWeb = builderWeb.Build();

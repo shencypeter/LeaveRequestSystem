@@ -8,16 +8,8 @@ namespace BioMedDocManager.Helpers
     /// <summary>
     /// 紀錄連線log
     /// </summary>
-    public sealed class AccessLogService : IAccessLogService
+    public sealed class AccessLogService(DocControlContext _context, IHttpContextAccessor _http) : IAccessLogService
     {
-        private readonly DocControlContext _context;
-        private readonly IHttpContextAccessor _http;
-
-        public AccessLogService(DocControlContext context, IHttpContextAccessor http)
-        {
-            _context = context;
-            _http = http;
-        }
 
         public async Task NewLoginFailedAsync(
             AccountType accountType,

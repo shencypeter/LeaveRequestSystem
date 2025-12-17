@@ -15,7 +15,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class UserGroupController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
+    public class UserGroupController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
     {
         /// <summary>
         /// 頁面名稱
@@ -66,7 +66,7 @@ namespace BioMedDocManager.Controllers
             // 存回 Session
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
 
             return await BuildQueryUserGroup(queryModel, ct);
         }
@@ -84,7 +84,7 @@ namespace BioMedDocManager.Controllers
             // 儲存查詢 model 到 Session 中
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
 
             // PRG：轉跳到 GET Index
             return RedirectToAction(nameof(Index));
@@ -101,7 +101,7 @@ namespace BioMedDocManager.Controllers
                 CreatedAt = DateTime.Now
             };
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
 
             return View(model);
         }
@@ -128,21 +128,21 @@ namespace BioMedDocManager.Controllers
                     return View(posted);
                 }
 
-                await context.UserGroups.AddAsync(posted);
-                await context.SaveChangesAsync();
+                await _context.UserGroups.AddAsync(posted);
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException ex)
             {
                 var msg = $"使用者群組-{posted.UserGroupName} 資料新增【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "資料新增【失敗】", msg, true);
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "資料新增【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"使用者群組-{posted.UserGroupName} 資料新增成功";
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁資料新增成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁資料新增成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -158,7 +158,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var group = await context.UserGroups
+            var group = await _context.UserGroups
                 .FirstOrDefaultAsync(g => g.UserGroupId == userGroupId);
 
             if (group == null)
@@ -166,7 +166,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
 
             return View(group);
         }
@@ -186,7 +186,7 @@ namespace BioMedDocManager.Controllers
             // 過濾字串
             QueryableExtensions.TrimStringProperties(posted);
 
-            var dbGroup = await context.UserGroups.FirstOrDefaultAsync(g => g.UserGroupId == posted.UserGroupId);
+            var dbGroup = await _context.UserGroups.FirstOrDefaultAsync(g => g.UserGroupId == posted.UserGroupId);
 
             if (dbGroup == null)
             {
@@ -200,21 +200,21 @@ namespace BioMedDocManager.Controllers
                     ? null
                     : posted.UserGroupDescription.Trim();
 
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException ex)
             {
                 var msg = $"使用者群組-{dbGroup.UserGroupName} 資料更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新【失敗】", msg, true);
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新【失敗】", msg, true);
 
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"使用者群組-{dbGroup.UserGroupName} 資料更新成功";
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -230,7 +230,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var group = await context.UserGroups
+            var group = await _context.UserGroups
                 .Include(g => g.UserGroupMembers)
                 .ThenInclude(m => m.User)
                 .Include(g => g.UserGroupRoles)
@@ -243,7 +243,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁");
 
             return View(group);
         }
@@ -259,7 +259,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var group = await context.UserGroups
+            var group = await _context.UserGroups
                 .Include(g => g.UserGroupMembers)
                 .ThenInclude(m => m.User)
                 .Include(g => g.UserGroupRoles)
@@ -272,7 +272,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
 
             return View(group);
         }
@@ -289,7 +289,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var group = await context.UserGroups.FirstOrDefaultAsync(g => g.UserGroupId == posted.UserGroupId);
+            var group = await _context.UserGroups.FirstOrDefaultAsync(g => g.UserGroupId == posted.UserGroupId);
 
             if (group == null)
             {
@@ -299,23 +299,23 @@ namespace BioMedDocManager.Controllers
             try
             {
                 // 標記為刪除
-                context.UserGroups.Remove(group);
+                _context.UserGroups.Remove(group);
 
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException ex)
             {
                 var msg = $"使用者群組-{group.UserGroupName} 刪除【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
 
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupName} 已刪除";
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -332,7 +332,7 @@ namespace BioMedDocManager.Controllers
             FilterOrderBy(queryModel, TableHeaders, InitSort);
 
             // 2) 產生查詢物件
-            IQueryable<UserGroup> q = context.UserGroups.AsNoTracking();
+            IQueryable<UserGroup> q = _context.UserGroups.AsNoTracking();
 
             // 3) 條件篩選
 

@@ -13,7 +13,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class UserGroupRoleController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
+    public class UserGroupRoleController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
     {
         /// <summary>
         /// 頁面名稱
@@ -32,7 +32,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 先抓群組 + 目前已綁定的角色
-            var group = await context.UserGroups
+            var group = await _context.UserGroups
                 .Include(g => g.UserGroupRoles)
                 .ThenInclude(ugr => ugr.Role)
                 .AsNoTracking()
@@ -44,7 +44,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 全部角色（你可以之後在這邊加上狀態過濾，例如只抓啟用中的角色）
-            var allRoles = await context.Roles
+            var allRoles = await _context.Roles
                 .AsNoTracking()
                 .OrderBy(r => r.RoleName)
                 .ToListAsync();
@@ -55,13 +55,13 @@ namespace BioMedDocManager.Controllers
 
             // ====== 這段是「有效權限」計算 ======
             // 權限：RolePermission + Resource + AppAction
-            var permsRaw = await context.RolePermissions
+            var permsRaw = await _context.RolePermissions
                 .Where(rp => selectedRoleIds.Contains(rp.RoleId))
-                .Join(context.Resources,
+                .Join(_context.Resources,
                     rp => rp.ResourceId,
                     res => res.ResourceId,
                     (rp, res) => new { rp, res })
-                .Join(context.AppActions, // 如果你那張表叫別名，就改這裡
+                .Join(_context.AppActions, // 如果你那張表叫別名，就改這裡
                     j => j.rp.AppActionId,
                     act => act.AppActionId,
                     (j, act) => new
@@ -115,7 +115,7 @@ namespace BioMedDocManager.Controllers
                 EffectivePermissions = effectivePerms
             };
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示群組角色設定頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示群組角色設定頁");
 
             return View(vm);
         }
@@ -133,7 +133,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 重新抓 DB 中的群組 + 目前的角色關聯（追蹤中）
-            var group = await context.UserGroups
+            var group = await _context.UserGroups
                 .Include(g => g.UserGroupRoles)
                 .FirstOrDefaultAsync(g => g.UserGroupId == posted.UserGroupId);
 
@@ -173,7 +173,7 @@ namespace BioMedDocManager.Controllers
                         RoleId = roleId
                         // CreatedAt / CreatedBy 可交給 DB default，或你之後在這裡補上
                     };
-                    await context.UserGroupRoles.AddAsync(entity);
+                    await _context.UserGroupRoles.AddAsync(entity);
                 }
 
                 // 刪除 UserGroupRole
@@ -185,11 +185,11 @@ namespace BioMedDocManager.Controllers
 
                     if (removeEntities.Count > 0)
                     {
-                        context.UserGroupRoles.RemoveRange(removeEntities);
+                        _context.UserGroupRoles.RemoveRange(removeEntities);
                     }
                 }
 
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -197,14 +197,14 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色設定更新【失敗】", msg);
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色設定更新【失敗】", msg);
 
                 return RedirectToAction(nameof(UserGroupController.Index), "UserGroup");
             }
 
             TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupName} 角色設定更新成功";
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色設定更新成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色設定更新成功");
             return RedirectToAction(nameof(UserGroupController.Index), "UserGroup");
         }
 
@@ -224,14 +224,14 @@ namespace BioMedDocManager.Controllers
             var selectedRoleIds = (req.SelectedRoleIds ?? new()).Distinct().ToList();
 
             // === 1) 目前 DB 狀態：這個群組原本擁有的角色 ===
-            var currentRoleIds = await context.UserGroupRoles
+            var currentRoleIds = await _context.UserGroupRoles
                 .Where(ugr => ugr.UserGroupId == groupId)
                 .Select(ugr => ugr.RoleId)
                 .Distinct()
                 .ToListAsync();
 
             // === 2) 目前 DB 狀態：原本的權限集合（ResourceId, AppActionId） ===
-            var currentPermKeys = await context.RolePermissions
+            var currentPermKeys = await _context.RolePermissions
                 .Where(rp => currentRoleIds.Contains(rp.RoleId))
                 .Select(rp => new { rp.ResourceId, rp.AppActionId })
                 .Distinct()
@@ -244,13 +244,13 @@ namespace BioMedDocManager.Controllers
             // === 3) 這次 checkbox 勾選後的角色 → 權限 ===
             var newRoleIds = selectedRoleIds;
 
-            var permsRaw = await context.RolePermissions
+            var permsRaw = await _context.RolePermissions
                 .Where(rp => newRoleIds.Contains(rp.RoleId))
-                .Join(context.Resources,
+                .Join(_context.Resources,
                     rp => rp.ResourceId,
                     res => res.ResourceId,
                     (rp, res) => new { rp, res })
-                .Join(context.AppActions,
+                .Join(_context.AppActions,
                     j => j.rp.AppActionId,
                     act => act.AppActionId,
                     (j, act) => new
@@ -293,7 +293,7 @@ namespace BioMedDocManager.Controllers
                 .ThenBy(p => p.AppActionOrder)
                 .ToList();
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色有效權限預覽");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色有效權限預覽");
 
             return Json(new
             {

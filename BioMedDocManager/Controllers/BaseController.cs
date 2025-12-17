@@ -1,6 +1,7 @@
 ﻿using Aspose.Words;
 using BioMedDocManager.Extensions;
 using BioMedDocManager.Helpers;
+using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
 using ClosedXML.Excel;
 using Dapper;
@@ -27,7 +28,7 @@ namespace BioMedDocManager.Controllers
     /// 預設建構子
     /// </remarks>
     /// <param name="context">資料物件</param>
-    public class BaseController(DocControlContext context, IWebHostEnvironment hostingEnvironment) : Controller
+    public class BaseController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param) : Controller
     {
 
         #region 靜態屬性
@@ -38,19 +39,9 @@ namespace BioMedDocManager.Controllers
         private CompareInfo comparer = CultureInfo.GetCultureInfo("zh-TW").CompareInfo;
 
         /// <summary>
-        /// 資料庫物件
-        /// </summary>
-        protected readonly DocControlContext _context = context;
-
-        /// <summary>
         /// Hash工具
         /// </summary>
         protected static readonly PasswordHasher<object> _hasher = new();
-
-        /// <summary>
-        /// 網站環境相關資訊(例如wwwroot實體路徑)
-        /// </summary>
-        protected readonly IWebHostEnvironment _hostingEnvironment = hostingEnvironment;
 
         /// <summary>
         /// View使用的SessionKey(預設使用)
@@ -135,7 +126,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 2) 取得這些角色允許的 ResourceId
-            var allowedResourceIds = context.RolePermissions
+            var allowedResourceIds = _context.RolePermissions
                 .Where(rp => userRoles.Contains(rp.Role.RoleName))
                 .Select(rp => rp.ResourceId)
                 .Distinct()
@@ -147,7 +138,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 3) 抓出符合 ResourceId 的 MenuItem（可被顯示的子選單們）
-            var menuItems = context.MenuItems
+            var menuItems = _context.MenuItems
                 .Include(m => m.Resource)
                 .Where(m =>
                     m.MenuItemIsActive &&
@@ -176,7 +167,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 5) 把這些父選單抓出來（不需要管它有沒有 ResourceId，只要是啟用即可）
-            var parents = context.MenuItems
+            var parents = _context.MenuItems
                 .Include(m => m.Resource)
                 .Where(m => m.MenuItemIsActive && parentIds.Contains(m.MenuItemId))
                 .ToList();
@@ -216,7 +207,7 @@ namespace BioMedDocManager.Controllers
             var controllerKey = route.Values["controller"]?.ToString() ?? string.Empty;
 
             // 反查：MenuItem → Resource → ResourceKey == controller 名稱
-            var menuItem = context.MenuItems
+            var menuItem = _context.MenuItems
                 .Include(m => m.Resource)
                 .AsNoTracking()
                 .FirstOrDefault(m => m.Resource != null
@@ -253,7 +244,7 @@ namespace BioMedDocManager.Controllers
 
             if (int.TryParse(claimValue, out int userId))
             {
-                return context.Users.FirstOrDefault(u => u.UserId == userId);
+                return _context.Users.FirstOrDefault(u => u.UserId == userId);
             }
 
             // 找不到或格式不對，回傳 null
@@ -292,7 +283,7 @@ namespace BioMedDocManager.Controllers
             user.UserLastLoginAt = DateTime.Now;
             user.UserLastLoginIp = ip;
 
-            await context.SaveChangesAsync(ct);
+            await _context.SaveChangesAsync(ct);
         }
 
         /// <summary>
@@ -413,7 +404,13 @@ namespace BioMedDocManager.Controllers
 
             string safeMsg = JsString(alertMsg);
             string nonceAttr = string.IsNullOrWhiteSpace(nonce) ? "" : $@" nonce=""{nonce}""";
-            string html = $@"<script{nonceAttr}>window.parent.dismiss(""{safeMsg}"");</script>";
+            //string html = $@"<script{nonceAttr}>window.parent.dismiss(""{safeMsg}"");</script>";
+
+            string html = $@"
+                <script src=""/js/site.js""{nonceAttr}></script>
+                <script{nonceAttr}>
+                    window.parent.dismiss(""{safeMsg}"");
+                </script>";
 
             return Content(html, "text/html; charset=utf-8");
         }
@@ -479,6 +476,141 @@ namespace BioMedDocManager.Controllers
             return rows;
         }
 
+        /// <summary>
+        /// 一次抓所有密碼政策參數
+        /// </summary>
+        /// <returns></returns>
+        [NonAction]
+        protected PasswordPolicy GetPasswordPolicy()
+        {
+            // 這裡做「合理預設值」，避免 DB 沒設參數時出事
+            var enabled = _param.GetBool("SEC_PASSWORD_POLICY_ENABLED");
+
+            int? minLen = _param.GetInt("SEC_PASSWORD_MIN_LENGTH");
+            if (minLen <= 0)
+            {
+                minLen = 8;
+            }
+
+            var sets = _param.GetString("SEC_PASSWORD_SPECIAL_CHAR_SETS");
+            if (string.IsNullOrWhiteSpace(sets))
+            {
+                sets = "!@#$%&*()_+-=.`";
+            }
+
+            var hist = _param.GetInt("SEC_PASSWORD_HISTORY_COUNT");
+            if (hist < 0)
+            {
+                hist = 0;
+            }
+
+            var minAge = _param.GetInt("SEC_PASSWORD_MIN_AGE_DAYS");
+            if (minAge < 0)
+            {
+                minAge = 0;
+            }
+
+            return new PasswordPolicy
+            {
+                PolicyEnabled = enabled,
+                MinLength = minLen.Value,
+                RequireUpper = _param.GetBool("SEC_PASSWORD_REQUIRE_UPPER"),
+                RequireLower = _param.GetBool("SEC_PASSWORD_REQUIRE_LOWER"),
+                RequireDigit = _param.GetBool("SEC_PASSWORD_REQUIRE_DIGIT"),
+                RequireSpecial = _param.GetBool("SEC_PASSWORD_REQUIRE_SPECIAL"),
+                SpecialCharSets = sets,
+                HistoryCount = hist.Value,
+                MinAgeDays = minAge.Value
+            };
+        }
+
+        [NonAction]
+        protected void SetPasswordPolicyToViewBag()
+        {
+            var enabled = _param.GetBool("SEC_PASSWORD_POLICY_ENABLED");
+
+            var minLength = _param.GetInt("SEC_PASSWORD_MIN_LENGTH");
+            if (minLength <= 0)
+            {
+                minLength = 8; // 防呆
+            }
+
+            var requireUpper = _param.GetBool("SEC_PASSWORD_REQUIRE_UPPER");
+            var requireLower = _param.GetBool("SEC_PASSWORD_REQUIRE_LOWER");
+            var requireDigit = _param.GetBool("SEC_PASSWORD_REQUIRE_DIGIT");
+            var requireSpecial = _param.GetBool("SEC_PASSWORD_REQUIRE_SPECIAL");
+            var specialCharSets = _param.GetString("SEC_PASSWORD_SPECIAL_CHAR_SETS") ?? string.Empty;
+
+            ViewBag.PasswordPolicy = new
+            {
+                Enabled = enabled,
+                MinLength = minLength,
+                RequireUpper = requireUpper,
+                RequireLower = requireLower,
+                RequireDigit = requireDigit,
+                RequireSpecial = requireSpecial,
+                SpecialCharSets = specialCharSets
+            };
+        }
+
+
+        /// <summary>
+        /// 新密碼檢核
+        /// </summary>
+        /// <param name="modelFieldName">欄位名稱</param>
+        /// <param name="newPassword">新密碼</param>
+        /// <param name="policy">密碼政策內容</param>
+        [NonAction]
+        protected void ValidateNewPasswordByPolicy(
+            string modelFieldName,
+            string? newPassword,
+            PasswordPolicy policy
+        )
+        {
+            // 未啟用政策就不檢核
+            if (!policy.PolicyEnabled)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(newPassword))
+            {
+                // 這個通常由 Required 處理，但保險起見
+                ModelState.AddModelError(modelFieldName, "新密碼不可為空。");
+                return;
+            }
+
+            if (newPassword.Length < policy.MinLength)
+            {
+                ModelState.AddModelError(modelFieldName, $"新密碼長度至少需 {policy.MinLength} 碼。");
+            }
+
+            if (policy.RequireUpper && !newPassword.Any(char.IsUpper))
+            {
+                ModelState.AddModelError(modelFieldName, "新密碼需包含至少 1 個大寫字母。");
+            }
+
+            if (policy.RequireLower && !newPassword.Any(char.IsLower))
+            {
+                ModelState.AddModelError(modelFieldName, "新密碼需包含至少 1 個小寫字母。");
+            }
+
+            if (policy.RequireDigit && !newPassword.Any(char.IsDigit))
+            {
+                ModelState.AddModelError(modelFieldName, "新密碼需包含至少 1 個數字。");
+            }
+
+            if (policy.RequireSpecial)
+            {
+                // 特殊符號：必須存在於允許集合內
+                var allowed = policy.SpecialCharSets ?? "";
+                bool hasAllowedSpecial = newPassword.Any(ch => allowed.Contains(ch));
+                if (!hasAllowedSpecial)
+                {
+                    ModelState.AddModelError(modelFieldName, $"新密碼需包含至少 1 個特殊符號（允許符號：{allowed}）。");
+                }
+            }
+        }
 
 
 

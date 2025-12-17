@@ -43,7 +43,7 @@ namespace BioMedDocManager.Helpers
         public static int? GetCurrentUserId(HttpContext? ctx)
         {
             var u = ctx?.User;
-            if (u?.Identity?.IsAuthenticated != true) return null;
+            if (u?.Identity?.IsAuthenticated != true) return 1;// 若沒有登入，當作系統管理者(id=1)
 
             var id = u.FindFirst("UserId")?.Value
                    ?? u.FindFirst(ClaimTypes.NameIdentifier)?.Value;

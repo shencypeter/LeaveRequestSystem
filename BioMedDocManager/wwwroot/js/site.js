@@ -383,7 +383,7 @@ function validateConfirmPassword(type) {
 
     if (newPassword !== confirmPassword) {
         $('#ConfirmPasswordValidation')
-            .text('「密碼」與「確認密碼」不一致');
+            .text('「新密碼」與「確認密碼」不一致');
         return false;
     } else {
         $('#ConfirmPasswordValidation').text('');
@@ -409,6 +409,159 @@ function CheckConfirmPassword(type = "") {
             e.preventDefault(); // 阻止提交
         }
     });
+}
+
+// 密碼規則動態檢查（text-muted -> text-success）
+function bindPasswordPolicyWatcher(options) {
+    var configSelector = options.configSelector || '#passwordPolicyConfig';
+    var rulesListSelector = options.rulesListSelector || '#passwordRulesList';
+    var inputSelector = options.inputSelector || '#UserNewPassword';
+    var formSelector = options.formSelector || null;
+    var errorSelector = options.errorSelector || null;
+
+    var $config = $(configSelector);
+    if ($config.length === 0) {
+        return;
+    }
+
+    var enabled = $config.data('enabled') === true || $config.data('enabled') === 'true';
+    if (!enabled) {
+        // 未啟用密碼政策就不用做動態顯示
+        return;
+    }
+
+    var policy = {
+        minLength: parseInt($config.data('min-length') || 0, 10),
+        requireUpper: $config.data('require-upper') === true || $config.data('require-upper') === 'true',
+        requireLower: $config.data('require-lower') === true || $config.data('require-lower') === 'true',
+        requireDigit: $config.data('require-digit') === true || $config.data('require-digit') === 'true',
+        requireSpecial: $config.data('require-special') === true || $config.data('require-special') === 'true',
+        specialChars: ($config.data('special-chars') || '').toString()
+    };
+
+    var $input = $(inputSelector);
+    var $rules = $(rulesListSelector).find('.password-rule');
+
+    if ($input.length === 0 || $rules.length === 0) {
+        return;
+    }
+
+    function hasUpper(str) {
+        return /[A-Z]/.test(str);
+    }
+
+    function hasLower(str) {
+        return /[a-z]/.test(str);
+    }
+
+    function hasDigit(str) {
+        return /[0-9]/.test(str);
+    }
+
+    function hasSpecial(str, specialChars) {
+        if (!specialChars) return false;
+        var set = specialChars.split('');
+        for (var i = 0; i < str.length; i++) {
+            if (set.indexOf(str[i]) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // 把 status 計算抽出來，給 updateRules / isPasswordValid 共用
+    function evaluateStatus(val) {
+        return {
+            minLength: policy.minLength > 0 ? val.length >= policy.minLength : true,
+            upper: !policy.requireUpper || hasUpper(val),
+            lower: !policy.requireLower || hasLower(val),
+            digit: !policy.requireDigit || hasDigit(val),
+            special: !policy.requireSpecial || hasSpecial(val, policy.specialChars)
+        };
+    }
+
+    function updateRules() {
+        var val = $input.val() || '';
+
+        var status = {
+            minLength: policy.minLength > 0 ? val.length >= policy.minLength : true,
+            upper: !policy.requireUpper || hasUpper(val),
+            lower: !policy.requireLower || hasLower(val),
+            digit: !policy.requireDigit || hasDigit(val),
+            special: !policy.requireSpecial || hasSpecial(val, policy.specialChars)
+        };
+
+        $rules.each(function () {
+            var $li = $(this);
+            var rule = $li.data('rule'); // minLength / upper / lower / digit / special
+
+            var ok = status[rule];
+            if (ok) {
+                $li.removeClass('text-muted').addClass('text-success');
+            } else {
+                $li.removeClass('text-success').addClass('text-muted');
+            }
+        });
+    }
+
+    // 檢查密碼是否合法
+    function isPasswordValid() {
+        var val = $input.val() || '';
+        var status = evaluateStatus(val);
+
+        if (!status.minLength) {
+            return false;
+        }
+        if (policy.requireUpper && !status.upper) {
+            return false;
+        }
+        if (policy.requireLower && !status.lower) {
+            return false;
+        }
+        if (policy.requireDigit && !status.digit) {
+            return false;
+        }
+        if (policy.requireSpecial && !status.special) {
+            return false;
+        }
+        return true;
+    }
+
+    // 一開始先跑一次（如果有 Autofill 或已經有值）
+    updateRules();
+
+    // 監聽輸入事件
+    $input.on('input', function () {
+        updateRules();
+    });
+
+    // ===== 綁定 form submit，檢查是否符合規則 =====
+    if (formSelector) {
+        var $form = $(formSelector);
+        console.log($form)
+        if ($form.length > 0) {
+            $form.on('submit', function (e) {
+                // 先清掉舊錯誤
+                if (errorSelector) {
+                    $(errorSelector).text('');
+                }
+                $input.removeClass('is-invalid');
+
+                if (!isPasswordValid()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (errorSelector) {
+                        $(errorSelector).text('新密碼不符合密碼規則，請依上方提示調整。');
+                    } else {
+                        alert('新密碼不符合密碼規則，請依上方提示調整。');
+                    }
+
+                    $input.addClass('is-invalid');
+                }
+            });
+        }
+    }
 }
 
 function tableSortListener(form_name) {
@@ -560,6 +713,9 @@ function dismiss(alertMsg = "") {
                 }, 1200);
             }
             return;
+        }
+        else {
+            location.assign('/');//跳回首頁
         }
     } catch (e) {
         // console.log("dismiss Error：");

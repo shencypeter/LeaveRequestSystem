@@ -286,6 +286,31 @@ CREATE TABLE [dbo].[MenuItem] (
 );
 GO
 
+-- 使用者密碼歷史表
+CREATE TABLE [dbo].[UserPasswordHistory] (
+    [UserPasswordHistoryId] INT IDENTITY(1,1) NOT NULL,
+    [UserId]                INT NOT NULL,
+    [PasswordHash]          NVARCHAR(512) NOT NULL,
+    [CreatedAt]             DATETIME2(0) NOT NULL 
+        CONSTRAINT [DF_UserPasswordHistory_CreatedAt] DEFAULT (SYSDATETIME()),
+    [CreatedBy]             INT NULL,
+    CONSTRAINT [PK_UserPasswordHistory] PRIMARY KEY CLUSTERED ([UserPasswordHistoryId])
+);
+GO
+
+ALTER TABLE [dbo].[UserPasswordHistory] WITH CHECK
+ADD CONSTRAINT [FK_UserPasswordHistory_Users_UserId]
+    FOREIGN KEY([UserId]) REFERENCES [dbo].[User]([UserId])
+    ON DELETE NO ACTION ON UPDATE CASCADE;
+GO
+
+-- 常用查詢：抓某個 User 最近 N 筆歷史
+CREATE INDEX [IX_UserPasswordHistory_UserId_CreatedAt]
+ON [dbo].[UserPasswordHistory]([UserId], [CreatedAt] DESC);
+GO
+
+
+
 -- ====【不建議使用】=== 使用者角色對應表(建議改用UserGroup來管理)
 -- 通常使用群組來管理使用者角色，但有些情況需要直接對應角色
 /*

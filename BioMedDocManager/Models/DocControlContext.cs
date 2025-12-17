@@ -2,6 +2,7 @@
 using BioMedDocManager.Interface;
 using ClosedXML.Excel;
 using Dapper;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq.Expressions;
@@ -101,6 +102,9 @@ public partial class DocControlContext : DbContext
     public virtual DbSet<MenuItem> MenuItems { get; set; }
 
     public virtual DbSet<UserRole> UserRoles { get; set; }
+    public virtual DbSet<Parameter> Parameters { get; set; }
+    public virtual DbSet<LocalizationString> LocalizationStrings { get; set; }
+    public virtual DbSet<UserPasswordHistory> UserPasswordHistories { get; set; }
 
 
     // ===== 範例資料表 =====
@@ -263,6 +267,98 @@ public partial class DocControlContext : DbContext
                 .HasForeignKey(e => e.RoleId);
         });
 
+        // 多語系文字
+        modelBuilder.Entity<LocalizationString>(e =>
+        {
+            e.ToTable("LocalizationString");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.Key, x.Culture }).IsUnique();
+            e.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<Parameter>(e =>
+        {
+            e.ToTable("Parameter");
+            e.HasKey(x => x.ParameterId);
+
+            e.Property(x => x.ParameterId).HasColumnName("Parameter_Id");
+
+            e.Property(x => x.ParameterCode)
+                .HasColumnName("Parameter_Code")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            e.Property(x => x.ParameterName)
+                .HasColumnName("Parameter_Name")
+                .HasMaxLength(200)
+                .IsRequired();
+
+            e.Property(x => x.ParameterValue)
+                .HasColumnName("Parameter_Value");
+
+            e.Property(x => x.ParameterFormat)
+                .HasColumnName("Parameter_Format")
+                .HasMaxLength(20)
+                .IsRequired();
+
+            e.Property(x => x.ParameterIsActive)
+                .HasColumnName("Parameter_IsActive")
+                .HasDefaultValue(true);
+
+            e.HasIndex(x => x.ParameterCode).IsUnique(); // 對應 UQ_Parameter_Code
+        });
+
+        modelBuilder.Entity<UserPasswordHistory>(entity =>
+        {
+            entity.ToTable("UserPasswordHistory");
+
+            entity.HasKey(e => e.UserPasswordHistoryId);
+
+            entity.Property(e => e.PasswordHash)
+                .IsRequired()
+                .HasMaxLength(512);
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime2(0)")
+                .HasDefaultValueSql("SYSDATETIME()");
+
+            // User 導覽用 UserId
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.UserPasswordHistories)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // ===== 範例資料表 =====
 
 
@@ -388,13 +484,14 @@ public partial class DocControlContext : DbContext
                     .HasColumnName("name");
             });
 
+            
+
+
+
 
 
 
 
         });
     }
-
-    
-    
 }

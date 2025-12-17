@@ -8,11 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace BioMedDocManager.Controllers
 {
     [Route("[controller]")]
-    public class CIssueTablesController(
-        DocControlContext context,
-        IWebHostEnvironment hostingEnvironment,
-        IAccessLogService accessLog
-    ) : BaseController(context, hostingEnvironment)
+    public class CIssueTablesController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
     {
         public const string PageName = "表單發行";
         public const string InitSort = nameof(IssueTable.OriginalDocNo);
@@ -49,7 +45,7 @@ namespace BioMedDocManager.Controllers
             QueryableExtensions.TrimStringProperties(queryModel);
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
 
             return await BuildQueryDocs(queryModel, ct);
         }
@@ -59,7 +55,7 @@ namespace BioMedDocManager.Controllers
         public async Task<IActionResult> Index(FormQueryModel queryModel)
         {
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "送出查詢");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "送出查詢");
             return RedirectToAction(nameof(Index));
         }
 
@@ -72,12 +68,12 @@ namespace BioMedDocManager.Controllers
             if (string.IsNullOrWhiteSpace(DocNo) || string.IsNullOrWhiteSpace(DocVer))
                 return NotFound();
 
-            var entity = await context.IssueTables.AsNoTracking()
+            var entity = await _context.IssueTables.AsNoTracking()
                 .FirstOrDefaultAsync(x => x.OriginalDocNo == DocNo && x.DocVer == DocVer);
 
             if (entity == null) return NotFound();
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁");
             return View(entity);
         }
 
@@ -93,11 +89,11 @@ namespace BioMedDocManager.Controllers
             {
                 if (!IsLatest(DocNo, DocVer))
                 {
-                    await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示發行新版頁", "錯誤，OriginalDocNo及DocVer非最新版");
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示發行新版頁", "錯誤，OriginalDocNo及DocVer非最新版");
                     return NotFound();
                 }
 
-                model = await context.IssueTables
+                model = await _context.IssueTables
                     .AsNoTracking()
                     .FirstOrDefaultAsync(x => x.OriginalDocNo == DocNo && x.DocVer == DocVer)
                     ?? throw new InvalidOperationException();
@@ -112,7 +108,7 @@ namespace BioMedDocManager.Controllers
                 ViewBag.NextMinorVersion = "";
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示發行新版頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示發行新版頁");
 
             return View(model);
         }
@@ -136,11 +132,11 @@ namespace BioMedDocManager.Controllers
             if (!ModelState.IsValid || string.IsNullOrWhiteSpace(nextVersion))
             {
                 TempData["_JSShowAlert"] = "資料不完整";
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "錯誤，必填資料未填寫");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "錯誤，必填資料未填寫");
                 return RedirectToAction(nameof(Index));
             }
 
-            var latest = await context.IssueTables
+            var latest = await _context.IssueTables
                 .Where(x => x.OriginalDocNo == model.OriginalDocNo)
                 .OrderByDescending(x => x.IssueDatetime)
                 .FirstOrDefaultAsync();
@@ -149,7 +145,7 @@ namespace BioMedDocManager.Controllers
             {
                 if (!IsLatest(latest.OriginalDocNo!, latest.DocVer!))
                 {
-                    await accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "錯誤，OriginalDocNo不存在 或 DocVer不存在");
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "錯誤，OriginalDocNo不存在 或 DocVer不存在");
                     return NotFound();
                 }
 
@@ -157,7 +153,7 @@ namespace BioMedDocManager.Controllers
                 if (nextVersion != major && nextVersion != minor)
                 {
                     TempData["_JSShowAlert"] = "版號錯誤";
-                    await accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "錯誤，版號錯誤");
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "錯誤，版號錯誤");
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -173,7 +169,7 @@ namespace BioMedDocManager.Controllers
                 if (!IsValidFileExtension(FileUpload.FileName))
                 {
                     TempData["_JSShowAlert"] = "檔案格式錯誤";
-                    await accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "錯誤，檔案格式錯誤");
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "錯誤，檔案格式錯誤");
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -181,19 +177,19 @@ namespace BioMedDocManager.Controllers
                 if (ext == null)
                 {
                     TempData["_JSShowAlert"] = "檔案儲存失敗";
-                    await accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "錯誤，檔案儲存失敗");
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "錯誤，檔案儲存失敗");
                     return RedirectToAction(nameof(Index));
                 }
 
                 model.FileExtension = ext;
             }
 
-            context.IssueTables.Add(model);
-            await context.SaveChangesAsync();
+            _context.IssueTables.Add(model);
+            await _context.SaveChangesAsync();
 
             TempData["_JSShowSuccess"] = "發行成功";
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "儲存成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "發行新版頁儲存", "儲存成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -255,7 +251,7 @@ namespace BioMedDocManager.Controllers
         [HttpGet("Edit/{DocNo}/{DocVer}")]
         public async Task<IActionResult> Edit(string DocNo, string DocVer)
         {
-            var entity = await context.IssueTables
+            var entity = await _context.IssueTables
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.OriginalDocNo == DocNo && x.DocVer == DocVer);
 
@@ -266,7 +262,7 @@ namespace BioMedDocManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string DocNo, string DocVer, IssueTable model, IFormFile? FileUpload)
         {
-            var entity = await context.IssueTables
+            var entity = await _context.IssueTables
                 .FirstOrDefaultAsync(x => x.OriginalDocNo == DocNo && x.DocVer == DocVer);
 
             if (entity == null) return NotFound();
@@ -292,7 +288,7 @@ namespace BioMedDocManager.Controllers
             entity.Name = model.Name;
             entity.IssueDatetime = model.IssueDatetime;
 
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             TempData["_JSShowSuccess"] = "編輯成功";
 
             return RedirectToAction(nameof(Index));
@@ -306,7 +302,7 @@ namespace BioMedDocManager.Controllers
         {
             if (!IsLatest(DocNo, DocVer)) return NotFound();
 
-            var entity = await context.IssueTables
+            var entity = await _context.IssueTables
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.OriginalDocNo == DocNo && x.DocVer == DocVer);
 
@@ -319,12 +315,12 @@ namespace BioMedDocManager.Controllers
         {
             if (!IsLatest(DocNo, DocVer)) return NotFound();
 
-            var entity = await context.IssueTables
+            var entity = await _context.IssueTables
                 .FirstOrDefaultAsync(x => x.OriginalDocNo == DocNo && x.DocVer == DocVer);
 
             if (entity == null) return NotFound();
 
-            bool used = await context.DocControlMaintables
+            bool used = await _context.DocControlMaintables
                 .AnyAsync(d => d.OriginalDocNo == DocNo && d.DocVer == DocVer);
 
             if (used)
@@ -334,8 +330,8 @@ namespace BioMedDocManager.Controllers
             }
 
             RenameDeleteFormFile(entity);
-            context.IssueTables.Remove(entity);
-            await context.SaveChangesAsync();
+            _context.IssueTables.Remove(entity);
+            await _context.SaveChangesAsync();
 
             TempData["_JSShowSuccess"] = "刪除成功";
             return RedirectToAction(nameof(Index));
@@ -355,7 +351,7 @@ namespace BioMedDocManager.Controllers
             CancellationToken ct)
         {
 
-            var formIssue = await context.IssueTables.FirstOrDefaultAsync(m => m.OriginalDocNo == DocNo && m.DocVer == DocVer);
+            var formIssue = await _context.IssueTables.FirstOrDefaultAsync(m => m.OriginalDocNo == DocNo && m.DocVer == DocVer);
 
             if (formIssue == null)
             {
@@ -382,7 +378,7 @@ namespace BioMedDocManager.Controllers
             }
 
             IQueryable<DocControlMaintable> q =
-                context.DocControlMaintables
+                _context.DocControlMaintables
                     .Include(d => d.Person)
                     .AsNoTracking()
                     .Where(d => d.OriginalDocNo == DocNo && d.DocVer == DocVer);
@@ -442,7 +438,7 @@ namespace BioMedDocManager.Controllers
             FilterOrderBy(queryModel, TableHeaders, InitSort);
 
             // 1) 先做基本篩選（IssueTable）
-            IQueryable<IssueTable> baseQ = context.IssueTables.AsNoTracking();
+            IQueryable<IssueTable> baseQ = _context.IssueTables.AsNoTracking();
 
             // 表單編號（FormNo → OriginalDocNo, LIKE）
             if (!string.IsNullOrWhiteSpace(queryModel.FormNo))
@@ -476,7 +472,7 @@ namespace BioMedDocManager.Controllers
             // 2) 算出每個 OriginalDocNo 的「最大版本 key」
             //    key = AAA.BBB （A/B 都補零到 3 碼），ex: 1.2 → 001.002
             var latestKeyPerDoc =
-                context.IssueTables
+                _context.IssueTables
                     .AsNoTracking()
                     .Where(t => t.OriginalDocNo != null && t.DocVer != null)
                     .Select(t => new
@@ -565,7 +561,7 @@ namespace BioMedDocManager.Controllers
             if (string.IsNullOrWhiteSpace(originalDocNo) || string.IsNullOrWhiteSpace(docVer))
                 return false;
 
-            var latest = context.IssueTables
+            var latest = _context.IssueTables
                 .Where(t => t.OriginalDocNo == originalDocNo && t.DocVer != null)
                 .Select(t => t.DocVer!)
                 .AsEnumerable()

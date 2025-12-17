@@ -13,7 +13,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class FileController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
+    public class FileController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
     {
 
         /// <summary>
@@ -46,14 +46,14 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var model = await context.DocControlMaintables.FirstOrDefaultAsync(d => d.IdNo == IdNo && d.Id == LoginUser.UserAccount);// 因為DocControlMaintables的Id是工號不是id
+            var model = await _context.DocControlMaintables.FirstOrDefaultAsync(d => d.IdNo == IdNo && d.Id == LoginUser.UserAccount);// 因為DocControlMaintables的Id是工號不是id
 
             if (model == null)
             {
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "檔案下載-取得先前領用過的檔案");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "檔案下載-取得先前領用過的檔案");
 
             //回傳文件檔案blob
             return GetDocument(model);
@@ -69,14 +69,14 @@ namespace BioMedDocManager.Controllers
         public async Task<IActionResult> GetClaimFileByAdmin(string IdNo)
         {
             // 不需要登入者資料工號
-            var model = await context.DocControlMaintables.FirstOrDefaultAsync(d => d.IdNo == IdNo);
+            var model = await _context.DocControlMaintables.FirstOrDefaultAsync(d => d.IdNo == IdNo);
 
             if (model == null)
             {
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "檔案下載-取得先前領用過的檔案(負責人)");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "檔案下載-取得先前領用過的檔案(負責人)");
 
             //回傳文件檔案blob
             return GetDocument(model);

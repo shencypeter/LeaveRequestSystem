@@ -15,7 +15,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class MenuItemController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
+    public class MenuItemController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
     {
         /// <summary>
         /// 頁面名稱
@@ -64,7 +64,7 @@ namespace BioMedDocManager.Controllers
             QueryableExtensions.TrimStringProperties(queryModel);
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
 
             return await BuildQueryMenuItem(queryModel, ct);
         }
@@ -76,7 +76,7 @@ namespace BioMedDocManager.Controllers
             QueryableExtensions.TrimStringProperties(queryModel);
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
 
             return RedirectToAction(nameof(Index));
         }
@@ -93,10 +93,10 @@ namespace BioMedDocManager.Controllers
                 CreatedAt = DateTime.Now
             };
 
-            ViewBag.ParentMenuItems = await context.MenuItems.Where(m => m.MenuItemParentId == null && m.DeletedAt == null).OrderBy(m => m.MenuItemTitle).ToListAsync();
-            ViewBag.Resources = await context.Resources.OrderBy(r => r.ResourceKey).ToListAsync();
+            ViewBag.ParentMenuItems = await _context.MenuItems.Where(m => m.MenuItemParentId == null && m.DeletedAt == null).OrderBy(m => m.MenuItemTitle).ToListAsync();
+            ViewBag.Resources = await _context.Resources.OrderBy(r => r.ResourceKey).ToListAsync();
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
 
             return View(model);
         }
@@ -119,8 +119,8 @@ namespace BioMedDocManager.Controllers
                     return View(posted);
                 }
 
-                await context.MenuItems.AddAsync(posted);
-                await context.SaveChangesAsync();
+                await _context.MenuItems.AddAsync(posted);
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -128,12 +128,12 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增【失敗】", msg, true);
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"選單-{posted.MenuItemTitle} 新增成功";
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -148,7 +148,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var entity = await context.MenuItems
+            var entity = await _context.MenuItems
                 .FirstOrDefaultAsync(m => m.MenuItemId == menuItemId);
 
             if (entity == null)
@@ -156,10 +156,10 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            ViewBag.ParentMenuItems = await context.MenuItems.Where(m => m.MenuItemParentId == null && m.DeletedAt == null).OrderBy(m => m.MenuItemTitle).ToListAsync();
-            ViewBag.Resources = await context.Resources.OrderBy(r => r.ResourceKey).ToListAsync();
+            ViewBag.ParentMenuItems = await _context.MenuItems.Where(m => m.MenuItemParentId == null && m.DeletedAt == null).OrderBy(m => m.MenuItemTitle).ToListAsync();
+            ViewBag.Resources = await _context.Resources.OrderBy(r => r.ResourceKey).ToListAsync();
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
 
             return View(entity);
         }
@@ -175,7 +175,7 @@ namespace BioMedDocManager.Controllers
 
             QueryableExtensions.TrimStringProperties(posted);
 
-            var dbEntity = await context.MenuItems
+            var dbEntity = await _context.MenuItems
                 .FirstOrDefaultAsync(m => m.MenuItemId == menuItemId);
 
             if (dbEntity == null)
@@ -192,7 +192,7 @@ namespace BioMedDocManager.Controllers
                 dbEntity.MenuItemIsActive = posted.MenuItemIsActive;
                 dbEntity.ResourceId = posted.ResourceId;
 
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -200,12 +200,12 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "更新【失敗】", msg, true);
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "更新【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"選單-{dbEntity.MenuItemTitle} 更新成功";
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -220,7 +220,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var entity = await context.MenuItems
+            var entity = await _context.MenuItems
                 .Include(m => m.Parent)
                 .Include(m => m.Resource)
                 .AsNoTracking()
@@ -231,7 +231,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示詳細資料");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示詳細資料");
 
             return View(entity);
         }
@@ -246,7 +246,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var entity = await context.MenuItems
+            var entity = await _context.MenuItems
                 .Include(m => m.Parent)
                 .Include(m => m.Resource)
                 .AsNoTracking()
@@ -258,7 +258,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 把底下子選單撈出來（含 Resource，方便顯示 ResourceKey）
-            var children = await context.MenuItems
+            var children = await _context.MenuItems
                 .Where(m => m.MenuItemParentId == entity.MenuItemId)
                 .Include(m => m.Resource)
                 .AsNoTracking()
@@ -272,7 +272,7 @@ namespace BioMedDocManager.Controllers
             ViewBag.ChildrenCount = children.Count;
             ViewBag.ChildrenList = children;
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
 
             return View(entity);
         }
@@ -286,7 +286,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var entity = await context.MenuItems
+            var entity = await _context.MenuItems
                 .FirstOrDefaultAsync(m => m.MenuItemId == posted.MenuItemId);
 
             if (entity == null)
@@ -296,7 +296,7 @@ namespace BioMedDocManager.Controllers
 
             try
             {
-                var hasChildren = await context.MenuItems
+                var hasChildren = await _context.MenuItems
                     .AnyAsync(m => m.MenuItemParentId == entity.MenuItemId);
 
                 if (hasChildren)
@@ -304,7 +304,7 @@ namespace BioMedDocManager.Controllers
                     var msg = $"選單-{entity.MenuItemTitle} 目前仍有子選單，無法刪除。";
                     TempData["_JSShowAlert"] = msg;
 
-                    await accessLog.NewActionAsync(
+                    await _accessLog.NewActionAsync(
                         GetLoginUser(),
                         PageName,
                         "刪除【失敗-仍有子選單】",
@@ -315,8 +315,8 @@ namespace BioMedDocManager.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                context.MenuItems.Remove(entity);
-                await context.SaveChangesAsync();
+                _context.MenuItems.Remove(entity);
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -324,13 +324,13 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
 
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"選單-{entity.MenuItemTitle} 已刪除";
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -345,7 +345,7 @@ namespace BioMedDocManager.Controllers
             FilterOrderBy(queryModel, TableHeaders, null);
 
             // 基礎查詢（含 Resource）
-            IQueryable<MenuItem> q = context.MenuItems
+            IQueryable<MenuItem> q = _context.MenuItems
                 .Include(m => m.Resource)
                 .AsNoTracking();
 
@@ -374,7 +374,7 @@ namespace BioMedDocManager.Controllers
             // ===== 樹狀排序：父層依自己的 DisplayOrder，子層跟在各自父層後面 =====
             q =
                 from m in q
-                join p in context.MenuItems.AsNoTracking()
+                join p in _context.MenuItems.AsNoTracking()
                     on m.MenuItemParentId equals p.MenuItemId into parentJoin
                 from parent in parentJoin.DefaultIfEmpty()
                 orderby

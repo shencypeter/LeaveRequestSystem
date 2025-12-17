@@ -13,7 +13,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class RolePermissionController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
+    public class RolePermissionController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
     {
         /// <summary>
         /// 頁面名稱
@@ -28,7 +28,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var role = await context.Roles
+            var role = await _context.Roles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.RoleId == roleId);
 
@@ -38,14 +38,14 @@ namespace BioMedDocManager.Controllers
             }
 
             // 啟用中的 Resource
-            var resources = await context.Resources
+            var resources = await _context.Resources
                 .Where(r => r.ResourceIsActive && r.DeletedAt == null)
                 .OrderBy(r => r.ResourceDisplayName)
                 .AsNoTracking()
                 .ToListAsync();
 
             // 所有 AppAction（照 AppActionOrder）
-            var actions = await context.AppActions
+            var actions = await _context.AppActions
                 .Where(a => a.DeletedAt == null)
                 .OrderBy(a => a.AppActionOrder)
                 .ThenBy(a => a.AppActionName)
@@ -53,7 +53,7 @@ namespace BioMedDocManager.Controllers
                 .ToListAsync();
 
             // 目前這個角色既有的 RolePermission
-            var existingPerms = await context.RolePermissions
+            var existingPerms = await _context.RolePermissions
                 .Where(rp => rp.RoleId == roleId)
                 .Select(rp => new
                 {
@@ -75,7 +75,7 @@ namespace BioMedDocManager.Controllers
                 SelectedPermissionKeys = selectedKeys
             };
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示權限編輯頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示權限編輯頁");
 
             return View(vm);
         }
@@ -89,7 +89,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var role = await context.Roles
+            var role = await _context.Roles
                 .FirstOrDefaultAsync(r => r.RoleId == posted.RoleId);
 
             if (role == null)
@@ -124,7 +124,7 @@ namespace BioMedDocManager.Controllers
             try
             {
                 // 2) 讀取目前 DB 中此角色的 RolePermission
-                var existingPerms = await context.RolePermissions
+                var existingPerms = await _context.RolePermissions
                     .Where(rp => rp.RoleId == role.RoleId)
                     .ToListAsync();
 
@@ -139,7 +139,7 @@ namespace BioMedDocManager.Controllers
 
                 if (toDelete.Count > 0)
                 {
-                    context.RolePermissions.RemoveRange(toDelete);
+                    _context.RolePermissions.RemoveRange(toDelete);
                 }
 
                 // 4) 找出要新增的：勾選有，但 DB 沒有
@@ -155,10 +155,10 @@ namespace BioMedDocManager.Controllers
                         ResourceId = resId,
                         AppActionId = actId
                     };
-                    await context.RolePermissions.AddAsync(rp);
+                    await _context.RolePermissions.AddAsync(rp);
                 }
 
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -166,7 +166,7 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "權限設定更新【失敗】", msg, true);
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "權限設定更新【失敗】", msg, true);
 
                 return RedirectToAction(nameof(Index), "Role");
             }
@@ -174,7 +174,7 @@ namespace BioMedDocManager.Controllers
             var successMsg = $"角色-{role.RoleName} 權限設定已更新";
             TempData["_JSShowSuccess"] = successMsg;
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "權限設定更新成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "權限設定更新成功");
 
             return RedirectToAction(nameof(Index), "Role");
         }

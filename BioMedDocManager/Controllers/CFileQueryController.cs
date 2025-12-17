@@ -14,7 +14,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class CFileQueryController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
+    public class CFileQueryController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
     {
         /// <summary>
         /// 頁面名稱
@@ -70,7 +70,7 @@ namespace BioMedDocManager.Controllers
             // 領用人下拉式選單(List)
             ViewData["DocUser"] = DocAuthors();
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
 
             return await BuildQueryDocs(queryModel, ct);
         }
@@ -102,7 +102,7 @@ namespace BioMedDocManager.Controllers
             // 儲存查詢model到session中
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
 
             // 轉跳到GET方法頁面，顯示查詢內容
             return RedirectToAction(nameof(Index));
@@ -124,7 +124,7 @@ namespace BioMedDocManager.Controllers
             // 過濾文字
             QueryableExtensions.TrimStringProperties(IdNo);
 
-            var formDocControlMaintable = await context.DocControlMaintables.Include(d => d.Person)
+            var formDocControlMaintable = await _context.DocControlMaintables.Include(d => d.Person)
                 .FirstOrDefaultAsync(m => m.IdNo == IdNo);
 
             if (formDocControlMaintable == null)
@@ -132,7 +132,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁");
 
             return View(formDocControlMaintable);
         }
@@ -156,7 +156,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "下載Excel");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "下載Excel");
 
             // 交給BaseController統一輸出Excel
             return GetExcelFile(rows, TableHeaders, InitSort, "文件查詢");
@@ -178,7 +178,7 @@ namespace BioMedDocManager.Controllers
             FilterOrderBy(queryModel, TableHeaders, InitSort);
 
             // 2) 產生查詢物件
-            IQueryable<DocControlMaintable> q = context.DocControlMaintables.Include(m => m.Person).AsNoTracking();
+            IQueryable<DocControlMaintable> q = _context.DocControlMaintables.Include(m => m.Person).AsNoTracking();
 
             // 3) 條件判斷
             // (A) 文件編號 (年月) 範圍：以字串前綴 + 000/999 建上下界

@@ -14,7 +14,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class TreeController(ILogger<HomeController> logger, DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
+    public class TreeController(ILogger<HomeController> logger, DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
     {
         /// <summary>
         /// 頁面名稱
@@ -28,7 +28,7 @@ namespace BioMedDocManager.Controllers
         [HttpGet("")]
         public async Task<IActionResult> Index()
         {
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示最新版本的查詢樹");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示最新版本的查詢樹");
             return View();
         }
 
@@ -57,7 +57,7 @@ namespace BioMedDocManager.Controllers
         [HttpGet("SearchAll")]
         public async Task<IActionResult> SearchAll()
         {
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示所有版本的查詢樹");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示所有版本的查詢樹");
             return View();
         }
 
@@ -89,7 +89,7 @@ namespace BioMedDocManager.Controllers
             bool latestOnly = false)
         {
             // 1) 基礎查詢（盡量留在 DB 端）
-            var query = context.IssueTables
+            var query = _context.IssueTables
                 .Where(i => i.OriginalDocNo != null && i.OriginalDocNo.StartsWith("BMP"));
 
             if (!string.IsNullOrWhiteSpace(name))
@@ -1175,7 +1175,7 @@ namespace BioMedDocManager.Controllers
                         await connection.ExecuteAsync(query2, new { Value1 = "Test3", Value2 = "Test4" }, transaction);
 
                         context.PeopleControlTables.Add(new PeopleControlTable());
-                        await context.SaveChangesAsync();
+                        await _context.SaveChangesAsync();
 
                         // If everything went well, commit the transaction
                         transaction.Commit();

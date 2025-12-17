@@ -15,7 +15,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class ResourceController(DocControlContext context, IWebHostEnvironment hostingEnvironment, IAccessLogService accessLog) : BaseController(context, hostingEnvironment)
+    public class ResourceController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
     {
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace BioMedDocManager.Controllers
             QueryableExtensions.TrimStringProperties(queryModel);
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
 
             return await BuildQueryResource(queryModel, ct);
         }
@@ -75,7 +75,7 @@ namespace BioMedDocManager.Controllers
             QueryableExtensions.TrimStringProperties(queryModel);
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "清單頁送出查詢");
 
             return RedirectToAction(nameof(Index));
         }
@@ -91,7 +91,7 @@ namespace BioMedDocManager.Controllers
                 CreatedAt = DateTime.Now
             };
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
 
             return View(model);
         }
@@ -114,8 +114,8 @@ namespace BioMedDocManager.Controllers
                     return View(posted);
                 }
 
-                await context.Resources.AddAsync(posted);
-                await context.SaveChangesAsync();
+                await _context.Resources.AddAsync(posted);
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -123,12 +123,12 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增【失敗】", msg, true);
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"資源-{posted.ResourceKey} 新增成功";
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -143,13 +143,13 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var entity = await context.Resources.FirstOrDefaultAsync(r => r.ResourceId == resourceId);
+            var entity = await _context.Resources.FirstOrDefaultAsync(r => r.ResourceId == resourceId);
             if (entity == null)
             {
                 return NotFound();
             }
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
             return View(entity);
         }
 
@@ -164,7 +164,7 @@ namespace BioMedDocManager.Controllers
 
             QueryableExtensions.TrimStringProperties(posted);
 
-            var dbEntity = await context.Resources.FirstOrDefaultAsync(r => r.ResourceId == resourceId);
+            var dbEntity = await _context.Resources.FirstOrDefaultAsync(r => r.ResourceId == resourceId);
             if (dbEntity == null)
             {
                 return NotFound();
@@ -177,7 +177,7 @@ namespace BioMedDocManager.Controllers
                 dbEntity.ResourceDisplayName = posted.ResourceDisplayName?.Trim() ?? "";
                 dbEntity.ResourceIsActive = posted.ResourceIsActive;
 
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -185,12 +185,12 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "更新【失敗】", msg, true);
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "更新【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"系統資源管理-更新成功";
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -205,7 +205,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var entity = await context.Resources
+            var entity = await _context.Resources
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.ResourceId == resourceId);
 
@@ -215,7 +215,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 1) 找出這個 Resource 的 RolePermission
-            var rolePerms = await context.RolePermissions
+            var rolePerms = await _context.RolePermissions
                 .Where(rp => rp.ResourceId == entity.ResourceId)
                 .Include(rp => rp.Role)
                 .AsNoTracking()
@@ -236,7 +236,7 @@ namespace BioMedDocManager.Controllers
             if (roleIds.Count > 0)
             {
                 // 2a) 有群組的 (UserGroupRoles)
-                var withGroup = await context.UserGroupRoles
+                var withGroup = await _context.UserGroupRoles
                     .Where(ugr => roleIds.Contains(ugr.RoleId))
                     .Include(ugr => ugr.UserGroup)
                     .Include(ugr => ugr.Role)
@@ -253,7 +253,7 @@ namespace BioMedDocManager.Controllers
                     .ToListAsync();
 
                 // 2b) 全部角色（避免沒有群組的角色被漏掉）
-                var roles = await context.Roles
+                var roles = await _context.Roles
                     .Where(r => roleIds.Contains(r.RoleId))
                     .AsNoTracking()
                     .ToListAsync();
@@ -289,7 +289,7 @@ namespace BioMedDocManager.Controllers
 
             ViewBag.ResourceGroupUsageList = groupUsage;
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示詳細資料");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示詳細資料");
 
             return View(entity);
         }
@@ -305,7 +305,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var entity = await context.Resources
+            var entity = await _context.Resources
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.ResourceId == resourceId);
 
@@ -315,7 +315,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 1) 找出這個 Resource 的 RolePermission
-            var rolePerms = await context.RolePermissions
+            var rolePerms = await _context.RolePermissions
                 .Where(rp => rp.ResourceId == entity.ResourceId)
                 .Include(rp => rp.Role)
                 .AsNoTracking()
@@ -336,7 +336,7 @@ namespace BioMedDocManager.Controllers
             if (roleIds.Count > 0)
             {
                 // 2a) 有群組的角色 (Role LEFT JOIN UserGroupRoles, 這裡先取「有群組」那一側)
-                var withGroup = await context.UserGroupRoles
+                var withGroup = await _context.UserGroupRoles
                     .Where(ugr => roleIds.Contains(ugr.RoleId))
                     .Include(ugr => ugr.UserGroup)
                     .Include(ugr => ugr.Role)
@@ -353,7 +353,7 @@ namespace BioMedDocManager.Controllers
                     .ToListAsync();
 
                 // 2b) 完整取得這些角色（避免有些角色完全沒綁群組）
-                var roles = await context.Roles
+                var roles = await _context.Roles
                     .Where(r => roleIds.Contains(r.RoleId))
                     .AsNoTracking()
                     .ToListAsync();
@@ -391,7 +391,7 @@ namespace BioMedDocManager.Controllers
 
             ViewBag.ResourceGroupUsageList = groupUsage;
 
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
 
             return View(entity);
         }
@@ -406,7 +406,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var entity = await context.Resources
+            var entity = await _context.Resources
                 .FirstOrDefaultAsync(r => r.ResourceId == posted.ResourceId);
 
             if (entity == null)
@@ -417,7 +417,7 @@ namespace BioMedDocManager.Controllers
             try
             {
                 // 再檢查一次是否仍被 RolePermission 關聯
-                var hasAnyRolePermission = await context.RolePermissions
+                var hasAnyRolePermission = await _context.RolePermissions
                     .AnyAsync(rp => rp.ResourceId == entity.ResourceId);
 
                 if (hasAnyRolePermission)
@@ -425,7 +425,7 @@ namespace BioMedDocManager.Controllers
                     var msg = $"資源-{entity.ResourceKey} ({entity.ResourceDisplayName}) 目前仍被角色權限使用，無法刪除。";
                     TempData["_JSShowAlert"] = msg;
 
-                    await accessLog.NewActionAsync(
+                    await _accessLog.NewActionAsync(
                         GetLoginUser(),
                         "系統資源管理",
                         "刪除【失敗-仍被角色權限使用】",
@@ -437,8 +437,8 @@ namespace BioMedDocManager.Controllers
                 }
 
                 // 沒有任何 RolePermission 使用 → 可刪除
-                context.Resources.Remove(entity);
-                await context.SaveChangesAsync();
+                _context.Resources.Remove(entity);
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -446,13 +446,13 @@ namespace BioMedDocManager.Controllers
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
-                await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
 
                 return RedirectToAction(nameof(Index));
             }
 
             TempData["_JSShowSuccess"] = $"資源-{entity.ResourceKey} ({entity.ResourceDisplayName}) 已刪除";
-            await accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));
         }
@@ -465,7 +465,7 @@ namespace BioMedDocManager.Controllers
 
             FilterOrderBy(queryModel, TableHeaders, InitSort);
 
-            IQueryable<Resource> q = context.Resources.AsNoTracking();
+            IQueryable<Resource> q = _context.Resources.AsNoTracking();
 
             // 資源類型
             if (!string.IsNullOrWhiteSpace(queryModel.ResourceType))

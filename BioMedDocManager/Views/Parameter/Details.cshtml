@@ -1,0 +1,65 @@
+﻿@model BioMedDocManager.Models.Parameter
+
+@{
+    ViewData["Title"] = "系統參數管理-詳細資料";
+    Layout = "_NoNavLayout";
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-search me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <div class="pop">
+
+        <div class="row align-items-center my-2">
+            <label asp-for="ParameterCode" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.ParameterCode</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="ParameterName" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.ParameterName</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="ParameterFormat" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.ParameterFormat</p>
+            </div>
+        </div>
+
+        <div class="row align-items-start my-2">
+            <label asp-for="ParameterValue" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.ParameterValue</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="ParameterIsActiveText" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.ParameterIsActiveText</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="CreatedAt" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="UpdatedAt" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")</p>
+            </div>
+        </div>
+
+    </div>
+</div>

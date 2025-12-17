@@ -26,8 +26,8 @@ namespace BioMedDocManager.Extensions
             => q.IgnoreQueryFilters().Where(e => e.DeletedAt != null);
 
         // 使用方式
-        //var a = await context.DocControlMaintables.IncludeDeleted().ToListAsync();
-        //var b = await context.DocControlMaintables.OnlyDeleted().ToListAsync();
+        //var a = await _context.DocControlMaintables.IncludeDeleted().ToListAsync();
+        //var b = await _context.DocControlMaintables.OnlyDeleted().ToListAsync();
 
     }
 

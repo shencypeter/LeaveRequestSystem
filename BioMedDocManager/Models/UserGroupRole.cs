@@ -7,7 +7,7 @@ namespace BioMedDocManager.Models;
 /// <summary>
 /// 使用者群組角色
 /// </summary>
-public class UserGroupRole/* 不用軟刪除，因為維護權限是刪除不要的權限，這樣會有UN衝突 : ISoftDelete*/
+public class UserGroupRole
 {
     /// <summary>
     /// 群組編號

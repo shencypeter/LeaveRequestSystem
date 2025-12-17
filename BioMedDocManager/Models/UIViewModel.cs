@@ -237,7 +237,6 @@ namespace BioMedDocManager.Models
         /// 新密碼
         /// </summary>
         [Required(ErrorMessage = "請輸入「新密碼」")]
-        [MinLength(8, ErrorMessage = "新密碼長度至少需8個字元")]
         [DataType(DataType.Password)]
         [Display(Name = "新密碼")]
         public string UserNewPassword { get; set; }
@@ -725,8 +724,54 @@ namespace BioMedDocManager.Models
         public List<MenuItem> Children { get; set; } = new();
     }
 
+    /// <summary>
+    /// 系統參數查詢 ViewModel
+    /// </summary>
+    public class ParameterQueryViewModel : Pagination
+    {
+        /// <summary>
+        /// 參數代碼（程式使用）
+        /// </summary>
+        [Display(Name = "參數代碼")]
+        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
+        public string? ParameterCode { get; set; }
 
+        /// <summary>
+        /// 參數名稱（顯示用）
+        /// </summary>
+        [Display(Name = "參數名稱")]
+        [StringLength(200, ErrorMessage = "{0}最多{1}字元")]
+        public string? ParameterName { get; set; }
 
+        /// <summary>
+        /// 參數格式（text / int / html / json）
+        /// </summary>
+        [Display(Name = "參數格式")]
+        [StringLength(20, ErrorMessage = "{0}最多{1}字元")]
+        public string? ParameterFormat { get; set; }
+
+        /// <summary>
+        /// 是否啟用
+        /// </summary>
+        [Display(Name = "是否啟用")]
+        public bool? ParameterIsActive { get; set; }
+    }
+
+    /// <summary>
+    /// 密碼設定選項
+    /// </summary>
+    public class PasswordPolicy
+    {
+        public bool PolicyEnabled { get; set; }
+        public int MinLength { get; set; }
+        public bool RequireUpper { get; set; }
+        public bool RequireLower { get; set; }
+        public bool RequireDigit { get; set; }
+        public bool RequireSpecial { get; set; }
+        public string SpecialCharSets { get; set; } = "!@#$%^&*()-_=+[]{}|;:'\",.<>/?`~\\";
+        public int HistoryCount { get; set; }
+        public int MinAgeDays { get; set; }
+    }
 
 
 
