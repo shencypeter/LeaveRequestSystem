@@ -54,7 +54,15 @@ VALUES
     "SupplierEval":{"TemplateFile":"供應商評核表6.0_套版.docx","FileTitle":"供應商評核表(V6.0)"},
     "DocumentManageList":{"TemplateFile":"品質紀錄領用入庫紀錄表4.0_套版.docx","FileTitle":"品質紀錄領用入庫紀錄表(V4.0)"}
  }',
- N'json', 1);
+ N'json', 1),
+
+ -- ===== Email設定參數 =====
+ (N'EMAIL_ACCOUNT', N'email帳號', N'3probeai@gmail.com', N'text', 1),
+ (N'EMAIL_APP_PASSWORD', N'email應用程式密碼', N'enljxvouolirbkqa', N'text', 1),
+ (N'EMAIL_SMTP_HOST', N'SMTP伺服器主機', N'mtp.gmail.com', N'text', 1),
+ (N'EMAIL_SMTP_PORT', N'SMTP埠號', N'465', N'text', 1),
+
+ (N'SITE_NAME', N'網站名稱', N'範例網站', N'text', 1);
 
 
 
@@ -65,10 +73,17 @@ INSERT INTO Resource (ResourceType, ResourceKey, ResourceDisplayName, ResourceIs
 VALUES
 ('PAGE', 'Parameter', '系統參數管理', 1, GETDATE());
 
+-- insert動作
+INSERT INTO [dbo].[AppAction] ([AppActionName],[AppActionDisplayName],[AppActionOrder]) VALUES
+(N'RegisterTotp',  N'註冊TOTP', 190),
+(N'TotpQrCode',  N'顯示TOTP的QRcode', 200);
+
 -- insert選單
 -- 系統選單
 DECLARE @Res_Parameter INT;
+DECLARE @Res_AccountSettings INT;
 SELECT @Res_Parameter = ResourceId FROM Resource WHERE ResourceKey = 'Parameter';
+SELECT @Res_AccountSettings = ResourceId FROM Resource WHERE ResourceKey = 'AccountSettings';
 
 INSERT INTO MenuItem (MenuItemParentId, MenuItemTitle, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedAt, CreatedBy)
 VALUES
@@ -83,7 +98,9 @@ DECLARE
     @Act_Edit               INT,
     @Act_Delete             INT,
     @Act_Export             INT,
-    @Act_Import             INT;
+    @Act_Import             INT,
+    @Act_RegisterTotp       INT,
+    @Act_TotpQrCode         INT;
 
 SELECT @Act_Index   = AppActionId FROM AppAction WHERE AppActionName = 'Index';
 SELECT @Act_Details = AppActionId FROM AppAction WHERE AppActionName = 'Details';
@@ -92,6 +109,8 @@ SELECT @Act_Edit    = AppActionId FROM AppAction WHERE AppActionName = 'Edit';
 SELECT @Act_Delete  = AppActionId FROM AppAction WHERE AppActionName = 'Delete';
 SELECT @Act_Export  = AppActionId FROM AppAction WHERE AppActionName = 'Export';
 SELECT @Act_Import  = AppActionId FROM AppAction WHERE AppActionName = 'Import';
+SELECT @Act_RegisterTotp  = AppActionId FROM AppAction WHERE AppActionName = 'RegisterTotp';
+SELECT @Act_TotpQrCode  = AppActionId FROM AppAction WHERE AppActionName = 'TotpQrCode';
 
 -- insert 角色權限 (系統管理者（RoleId = 1）：全資源全動作)
 
@@ -106,5 +125,18 @@ WHERE NOT EXISTS (
     SELECT 1 FROM RolePermission rp
     WHERE rp.RoleId = 1
       AND rp.ResourceId = @Res_Parameter
+      AND rp.AppActionId = v.ActId
+);
+
+--- 帳號設定頁面 (讓使用者能設定2FA)
+INSERT INTO RolePermission (RoleId, ResourceId, AppActionId)
+SELECT 1, @Res_AccountSettings, v.ActId
+FROM (VALUES
+    (@Act_RegisterTotp), (@Act_TotpQrCode)
+) v(ActId)
+WHERE NOT EXISTS (
+    SELECT 1 FROM RolePermission rp
+    WHERE rp.RoleId = 1
+      AND rp.ResourceId = @Res_AccountSettings
       AND rp.AppActionId = v.ActId
 );

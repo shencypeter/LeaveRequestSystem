@@ -80,6 +80,7 @@ CREATE TABLE [dbo].[User] (
     [UserPasswordChangedAt]     DATETIME NULL,
     [UserStatus]                INT NULL,
     [UserRemarks]               NVARCHAR(255) NULL,
+    [UserTotpSecret]                NVARCHAR(128) NULL,
     [DepartmentId]              INT NULL,  -- 被[部門表]參照，與PK名稱一致
     [CreatedAt]                 DATETIME NOT NULL DEFAULT GETDATE(),
     [CreatedBy]                 INT NULL,
@@ -318,6 +319,7 @@ UserId，RoleId
 1，1
 1，2
 */
+/*
 CREATE TABLE [dbo].[UserRole](
     [UserId]        INT NOT NULL,  -- 被[使用者表]參照，與PK名稱一致
     [RoleId]        INT NOT NULL,  -- 被[權限表]參照，與PK名稱一致
@@ -340,6 +342,7 @@ CREATE TABLE [dbo].[UserRole](
         ON UPDATE CASCADE
 );
 GO
+*/
 
 -- Debug：檢視群組各資源權限
 CREATE VIEW RolePermissionViewer
