@@ -1,0 +1,321 @@
+﻿### 紀錄開始 ###
+[2025/12/18 14:44:29]
+customErrorString: 寄送 Email 失敗，Subject=【範例網站】二階段驗證碼
+Message: Failure sending mail.
+Source: System.Private.CoreLib
+StackTrace:
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+Message: 無法識別這台主機。
+Source: System.Net.Sockets
+StackTrace:
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Threading.Tasks.ValueTask.ValueTaskSourceAsTask.<>c.<.cctor>b__4_0(Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.Tasks.TaskToAsyncResult.End(IAsyncResult asyncResult)
+   at System.Net.Sockets.TcpClient.EndConnect(IAsyncResult asyncResult)
+   at System.Net.Mail.SmtpConnection.ConnectAndHandshakeAsyncResult.InitializeConnectionCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:44:29]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/Login/Login
+ClientIp: 127.0.0.1
+Message: Failure sending mail.
+Source: System.Private.CoreLib
+StackTrace:
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+   at BioMedDocManager.Controllers.LoginController.SendTwoFactorEmailCodeAsync(User user, String code) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 584
+   at BioMedDocManager.Controllers.LoginController.StartTwoFactorFlowAsync(User user, PasswordPolicy sec, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 495
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 188
+Message: 無法識別這台主機。
+Source: System.Net.Sockets
+StackTrace:
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Threading.Tasks.ValueTask.ValueTaskSourceAsTask.<>c.<.cctor>b__4_0(Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.Tasks.TaskToAsyncResult.End(IAsyncResult asyncResult)
+   at System.Net.Sockets.TcpClient.EndConnect(IAsyncResult asyncResult)
+   at System.Net.Mail.SmtpConnection.ConnectAndHandshakeAsyncResult.InitializeConnectionCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:46:25]
+customErrorString: 寄送 Email 失敗，Subject=【範例網站】二階段驗證碼
+Message: Failure sending mail.
+Source: System.Private.CoreLib
+StackTrace:
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+Message: 無法識別這台主機。
+Source: System.Net.Sockets
+StackTrace:
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Threading.Tasks.ValueTask.ValueTaskSourceAsTask.<>c.<.cctor>b__4_0(Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.Tasks.TaskToAsyncResult.End(IAsyncResult asyncResult)
+   at System.Net.Sockets.TcpClient.EndConnect(IAsyncResult asyncResult)
+   at System.Net.Mail.SmtpConnection.ConnectAndHandshakeAsyncResult.InitializeConnectionCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:46:25]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/Login/Login
+ClientIp: 127.0.0.1
+Message: Failure sending mail.
+Source: System.Private.CoreLib
+StackTrace:
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+   at BioMedDocManager.Controllers.LoginController.SendTwoFactorEmailCodeAsync(User user, String code) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 584
+   at BioMedDocManager.Controllers.LoginController.StartTwoFactorFlowAsync(User user, PasswordPolicy sec, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 495
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 188
+Message: 無法識別這台主機。
+Source: System.Net.Sockets
+StackTrace:
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Threading.Tasks.ValueTask.ValueTaskSourceAsTask.<>c.<.cctor>b__4_0(Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.Tasks.TaskToAsyncResult.End(IAsyncResult asyncResult)
+   at System.Net.Sockets.TcpClient.EndConnect(IAsyncResult asyncResult)
+   at System.Net.Mail.SmtpConnection.ConnectAndHandshakeAsyncResult.InitializeConnectionCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:46:33]
+customErrorString: 寄送 Email 失敗，Subject=【範例網站】二階段驗證碼
+Message: Failure sending mail.
+Source: System.Private.CoreLib
+StackTrace:
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+Message: 無法識別這台主機。
+Source: System.Net.Sockets
+StackTrace:
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Threading.Tasks.ValueTask.ValueTaskSourceAsTask.<>c.<.cctor>b__4_0(Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.Tasks.TaskToAsyncResult.End(IAsyncResult asyncResult)
+   at System.Net.Sockets.TcpClient.EndConnect(IAsyncResult asyncResult)
+   at System.Net.Mail.SmtpConnection.ConnectAndHandshakeAsyncResult.InitializeConnectionCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:46:34]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/Login/Login
+ClientIp: 127.0.0.1
+Message: Failure sending mail.
+Source: System.Private.CoreLib
+StackTrace:
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+   at BioMedDocManager.Controllers.LoginController.SendTwoFactorEmailCodeAsync(User user, String code) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 584
+   at BioMedDocManager.Controllers.LoginController.StartTwoFactorFlowAsync(User user, PasswordPolicy sec, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 495
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 188
+Message: 無法識別這台主機。
+Source: System.Net.Sockets
+StackTrace:
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Threading.Tasks.ValueTask.ValueTaskSourceAsTask.<>c.<.cctor>b__4_0(Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.Tasks.TaskToAsyncResult.End(IAsyncResult asyncResult)
+   at System.Net.Sockets.TcpClient.EndConnect(IAsyncResult asyncResult)
+   at System.Net.Mail.SmtpConnection.ConnectAndHandshakeAsyncResult.InitializeConnectionCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:47:19]
+customErrorString: 寄送 Email 失敗，Subject=【範例網站】二階段驗證碼
+Message: Syntax error, command unrecognized. The server response was: 
+Source: System.Private.CoreLib
+StackTrace:
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:47:19]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/Login/Login
+ClientIp: 127.0.0.1
+Message: Syntax error, command unrecognized. The server response was: 
+Source: System.Private.CoreLib
+StackTrace:
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+   at BioMedDocManager.Controllers.LoginController.SendTwoFactorEmailCodeAsync(User user, String code) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 584
+   at BioMedDocManager.Controllers.LoginController.StartTwoFactorFlowAsync(User user, PasswordPolicy sec, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 495
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 188
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:48:52]
+customErrorString: 寄送 Email 失敗，Subject=【範例網站】二階段驗證碼
+Message: Syntax error, command unrecognized. The server response was: 
+Source: System.Private.CoreLib
+StackTrace:
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:48:52]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/Login/Login
+ClientIp: 127.0.0.1
+Message: Syntax error, command unrecognized. The server response was: 
+Source: System.Private.CoreLib
+StackTrace:
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+   at BioMedDocManager.Controllers.LoginController.SendTwoFactorEmailCodeAsync(User user, String code) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 584
+   at BioMedDocManager.Controllers.LoginController.StartTwoFactorFlowAsync(User user, PasswordPolicy sec, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 495
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 188
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:49:16]
+customErrorString: 寄送 Email 失敗，Subject=【範例網站】二階段驗證碼
+Message: Syntax error, command unrecognized. The server response was: 
+Source: System.Private.CoreLib
+StackTrace:
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:49:16]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/Login/Login
+ClientIp: 127.0.0.1
+Message: Syntax error, command unrecognized. The server response was: 
+Source: System.Private.CoreLib
+StackTrace:
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+   at BioMedDocManager.Controllers.LoginController.SendTwoFactorEmailCodeAsync(User user, String code) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 584
+   at BioMedDocManager.Controllers.LoginController.StartTwoFactorFlowAsync(User user, PasswordPolicy sec, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 495
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 188
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:52:19]
+customErrorString: 寄送 Email 失敗，Subject=【範例網站】二階段驗證碼
+Message: Syntax error, command unrecognized. The server response was: 
+Source: System.Private.CoreLib
+StackTrace:
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:52:19]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/Login/Login
+ClientIp: 127.0.0.1
+Message: Syntax error, command unrecognized. The server response was: 
+Source: System.Private.CoreLib
+StackTrace:
+   at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+--- End of stack trace from previous location ---
+   at MailHelper.SendMailAsync(String subject, String body, List`1 toGroup, List`1 ccGroup, List`1 bccGroup, List`1 attachmentGroup, Boolean isBodyHtml) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\MailHelper.cs:line 122
+   at BioMedDocManager.Controllers.LoginController.SendTwoFactorEmailCodeAsync(User user, String code) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 584
+   at BioMedDocManager.Controllers.LoginController.StartTwoFactorFlowAsync(User user, PasswordPolicy sec, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 495
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 188
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:58:52]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:58:52]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 75
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:59:51]
+customErrorString: NewActionAsync，loginAccount為null
+Message: 新增操作紀錄時，登入帳號為null
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2025/12/18 14:59:51]
+customErrorString: 新增一筆操作紀錄 NewActionAsync() 的 Exception
+Message: 新增操作紀錄時，登入帳號為null
+Source: BioMedDocManager
+StackTrace:
+   at BioMedDocManager.Helpers.AccessLogService.NewActionAsync(User loginAccount, String functionName, String actionName, String description, Boolean isThrowError) in D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\Helpers\AccessLogHelper.cs:line 75
+
+### 紀錄結束 ###
+
+

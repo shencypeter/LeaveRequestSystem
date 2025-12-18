@@ -35,10 +35,8 @@ wwwroot\css\jstree\style.css
 wwwroot\css\jstree\style.min.css
 wwwroot\css\jstree\throbber.gif
 wwwroot\css\login.css
-wwwroot\css\main.css
 wwwroot\css\PR.css
 wwwroot\css\site.css
-wwwroot\css\style.css
 wwwroot\docs\供應商評核表6.0_套版.docx
 wwwroot\docs\初次供應商評核表6.0_套版.docx
 wwwroot\docs\品質紀錄領用入庫紀錄表4.0_套版.docx
