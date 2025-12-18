@@ -1,6 +1,7 @@
 ﻿using BioMedDocManager.Handler;
 using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
+using BioMedDocManager.Middleware;
 using BioMedDocManager.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -23,27 +24,27 @@ namespace BioMedDocManager
         public static async Task Main(string[] args)
         {
             // 產生web建立工具
-            var builderWeb = WebApplication.CreateBuilder(args);
+            var builder = WebApplication.CreateBuilder(args);
 
             // 存取系統設定值
-            AppSettings.Initialize(builderWeb.Configuration);
+            AppSettings.Initialize(builder.Configuration);
 
             // 移除 Kestrel Server Header
-            builderWeb.WebHost.ConfigureKestrel(options =>
+            builder.WebHost.ConfigureKestrel(options =>
             {
                 options.AddServerHeader = false;
             });
 
             // 用iis執行要加這行(部屬到正式環境)
-            builderWeb.WebHost.UseIISIntegration();
+            builder.WebHost.UseIISIntegration();
 
             // 授權 & 自訂 PolicyProvider/Handler
-            builderWeb.Services.AddAuthorization();
+            builder.Services.AddAuthorization();
 
-            builderWeb.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+            builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
-            //builderWeb.Services.AddControllersWithViews();
-            builderWeb.Services.AddControllersWithViews(options =>
+            //builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews(options =>
             {
                 // 所有沒有 [AllowAnonymous] 的 action，都套用這個授權規則
                 var policy = new AuthorizationPolicyBuilder()
@@ -54,23 +55,23 @@ namespace BioMedDocManager
                 options.Filters.Add(new AuthorizeFilter(policy));
             });
 
-            builderWeb.Services.AddHttpContextAccessor();
-            builderWeb.Services.AddDbContext<DocControlContext>(options =>
-                options.UseSqlServer(builderWeb.Configuration.GetConnectionString("DefaultConnection")));
-            builderWeb.Services.AddScoped<IAccessLogService, AccessLogService>();// 紀錄連線log
-            builderWeb.Services.AddDistributedMemoryCache();
-            builderWeb.Services.AddSession(options =>
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddDbContext<DocControlContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddScoped<IAccessLogService, AccessLogService>();// 紀錄連線log
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(20); // 20分鐘
             });
 
-            builderWeb.Services.AddAntiforgery(options =>
+            builder.Services.AddAntiforgery(options =>
             {
                 options.HeaderName = "RequestVerificationToken";
             });
 
             // 全站Cookie Policy：一律加Secure、設定SameSite與HttpOnly
-            builderWeb.Services.Configure<CookiePolicyOptions>(o =>
+            builder.Services.Configure<CookiePolicyOptions>(o =>
             {
                 // 一律要求 Secure（僅 HTTPS 傳輸）
                 o.Secure = CookieSecurePolicy.Always;
@@ -86,7 +87,7 @@ namespace BioMedDocManager
             });
 
             // 登入驗證
-            builderWeb.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
                 options.LoginPath = "/Login";
@@ -97,23 +98,25 @@ namespace BioMedDocManager
             });
 
 
-            builderWeb.Services.AddDataProtection()
+            builder.Services.AddDataProtection()
             .PersistKeysToFileSystem(new DirectoryInfo(@"C:\DataProtection-Keys"))
             .SetApplicationName("itriDoc");
 
 
-            builderWeb.Services.AddMemoryCache();
-            builderWeb.Services.AddScoped<IParameterService, ParameterHelper>();
+            builder.Services.AddMemoryCache();
+            builder.Services.AddScoped<IParameterService, ParameterHelper>();
+
+            builder.Services.AddScoped<IMailHelper, MailHelper>();
 
             // ==============================================
             // 建立web應用程式
-            var appWeb = builderWeb.Build();
+            var app = builder.Build();
 
             // 在Utilities設定網站運作環境變數
-            Utilities.ConfigurePaths(appWeb.Services.GetRequiredService<IWebHostEnvironment>());
+            Utilities.ConfigurePaths(app.Services.GetRequiredService<IWebHostEnvironment>());
 
             // 自訂Headers
-            appWeb.UseForwardedHeaders(new ForwardedHeadersOptions
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
                 // 視環境設定 KnownProxies/KnownNetworks 以避免安全警告
@@ -121,29 +124,29 @@ namespace BioMedDocManager
             });
 
             // 是否為開發環境
-            var isDev = appWeb.Environment.IsDevelopment();
+            var isDev = app.Environment.IsDevelopment();
 
             if (!isDev)
             {
                 // 正式環境
 
                 // 處理例外
-                appWeb.UseExceptionHandler("/Error/500");
+                app.UseExceptionHandler("/Error/500");
 
                 // 處理其他狀態碼錯誤（401, 403, 404）
-                appWeb.UseStatusCodePagesWithReExecute("/Error/{0}");
+                app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
                 // 使用HSTS技術
-                appWeb.UseHsts();
+                app.UseHsts();
             }
             else
             {
                 // 開發環境：顯示詳細錯誤頁
-                appWeb.UseDeveloperExceptionPage();
+                app.UseDeveloperExceptionPage();
             }
 
             // === Clickjacking Protection（全站） ===
-            appWeb.Use(async (context, next) =>
+            app.Use(async (context, next) =>
             {
                 // 1、防止Clickjacking
                 context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
@@ -164,7 +167,7 @@ namespace BioMedDocManager
 
 
             // Content Security Policy (CSP) 內容安全策略
-            appWeb.Use(async (context, next) =>
+            app.Use(async (context, next) =>
             {
                 // 1、為本次請求產生nonce，並存到Items給View/Controller用
                 var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
@@ -204,36 +207,39 @@ namespace BioMedDocManager
             });
 
             // 自動跳轉HTTP到HTTPS
-            appWeb.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             // 使用靜態檔案
-            appWeb.UseStaticFiles();
+            app.UseStaticFiles();
 
             // 使用路由
-            appWeb.UseRouting();
+            app.UseRouting();
 
             // 指定Cookie策略(一定要在UseSession、UseAuthentication前呼叫)
-            appWeb.UseCookiePolicy();
+            app.UseCookiePolicy();
 
             // 使用Session
-            appWeb.UseSession();
+            app.UseSession();
 
             // 使用認證(一定要先認證)
-            appWeb.UseAuthentication();
+            app.UseAuthentication();
+
+            // 檢查是否強制變更密碼(放在Auth後、Authorization前)
+            app.UseMiddleware<ForceChangePasswordMiddleware>();
 
             // 使用授權(授權在後)
-            appWeb.UseAuthorization();
+            app.UseAuthorization();
 
             // 使用控制器路由
-            appWeb.MapControllerRoute(
+            app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=control}/{action=Index}/{id?}");
 
             // 執行web應用程式
-            appWeb.Run();
+            app.Run();
 
         }
 
-       
+
     }
 }

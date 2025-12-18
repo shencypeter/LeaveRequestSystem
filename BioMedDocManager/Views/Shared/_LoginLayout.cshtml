@@ -1,0 +1,31 @@
+﻿@{
+    // 讓 LoginLayout 以 RootLayout 為底
+    Layout = "_RootLayout";
+
+    // 若你想讓登入頁 html tag 有不同 class（例如隱藏背景/不同色系）
+    ViewData["HtmlClass"] = (ViewData["HtmlClass"] as string ?? "") + " login-page";
+
+    // Title 也可以直接在 login view 設 ViewData["FullTitle"]/["Title"]
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+    @RenderSection("PageStyles", required: false)    
+}
+
+@RenderBody()
+
+<div class="banner-footer">
+    @await Html.PartialAsync("_Footer")
+</div>
+
+@section Scripts {
+    @RenderSection("PageScripts", required: false)
+
+    @if (TempData["_JSShowAlert"] != null)
+    {
+        <script nonce="@ViewBag.CspNonce">
+            alert('@Html.Raw(TempData["_JSShowAlert"])');
+        </script>
+    }
+}

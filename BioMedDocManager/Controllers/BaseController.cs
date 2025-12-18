@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;// HeaderUtilities
+using OtpNet;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
@@ -612,7 +613,76 @@ namespace BioMedDocManager.Controllers
             }
         }
 
+        /// <summary>
+        /// 驗證 TOTP 驗證碼（與 Google Authenticator 相容）
+        /// </summary>
+        /// <remarks>
+        /// 前提：
+        /// 1. 使用者的 TOTP Secret 以 Base32 格式儲存在 user.TotpSecret（你可以換成自己的欄位名稱）。
+        /// 2. Google Authenticator 預設使用：6 碼、30 秒一個 time step、SHA1。
+        /// 3. 這裡允許前後各 1 個 time step 的誤差（約 ±30 秒）。
+        /// </remarks>
+        [NonAction]
+        protected Task<bool> VerifyTotpCodeAsync(User user, string code)
+        {
+            // 基本輸入檢查
+            if (user == null)
+            {
+                return Task.FromResult(false);
+            }
 
+            if (string.IsNullOrWhiteSpace(user.UserTotpSecret))
+            {
+                // 沒有設定 TOTP 密鑰 → 無法驗證
+                return Task.FromResult(false);
+            }
+
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return Task.FromResult(false);
+            }
+
+            var trimmedCode = code.Trim();
+
+            // 僅接受 6 碼數字（Google Authenticator 預設）
+            if (trimmedCode.Length != 6 || !trimmedCode.All(char.IsDigit))
+            {
+                return Task.FromResult(false);
+            }
+
+            try
+            {
+                // user.TotpSecret 假設是 Base32 字串（例如 "JBSWY3DPEHPK3PXP" 這種）
+                var secretBase32 = user.UserTotpSecret.Trim();
+
+                // 轉成 bytes（Otp.NET 有 Base32Encoding）
+                byte[] secretBytes = Base32Encoding.ToBytes(secretBase32);
+
+                // 建立 TOTP 物件：6 碼、30 秒、SHA1 → 與 Google Authenticator 相同設定
+                var totp = new Totp(
+                    secretBytes,
+                    step: 30,                    // 30 秒一格
+                    mode: OtpHashMode.Sha1,      // Google Auth 預設 SHA1
+                    totpSize: 6                  // 6 碼
+                );
+
+                // 驗證時允許前後各 1 個 time window（避免裝置時間差）
+                long timeStepMatched;
+                var isValid = totp.VerifyTotp(
+                    trimmedCode,
+                    out timeStepMatched,
+                    new VerificationWindow(previous: 1, future: 1)
+                );
+
+                return Task.FromResult(isValid);
+            }
+            catch (Exception ex)
+            {
+                // 若 Secret 格式壞掉或其他錯誤，直接視為驗證失敗即可
+                Utilities.WriteExceptionIntoLogFile("VerifyTotpCodeAsync 錯誤", ex, this.HttpContext);
+                return Task.FromResult(false);
+            }
+        }
 
 
 

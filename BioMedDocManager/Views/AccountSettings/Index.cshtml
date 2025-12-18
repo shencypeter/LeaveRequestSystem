@@ -19,6 +19,8 @@
     queryModel.SortDir ??= "asc";
 
     var headers = ViewData["tableHeaders"] as Dictionary<string, string> ?? new Dictionary<string, string>();
+
+    var TwoFA_ENABLED = bool.Parse(ViewData["2FA_ENABLED"].ToString());
 }
 
 <form method="post" id="myForm">
@@ -135,10 +137,15 @@
                                 <i class="fas fa-search"></i>&ensp;查詢
                             </button>
 
-                            <a id="create_btn" href="@Url.Action("Create")"
-                               class="btn2 btn-success mt-2">
+                            <a id="create_btn" href="@Url.Action("Create")" class="btn2 btn-success mt-2">
                                 <i class="fas fa-user-plus"></i>&ensp;建立
                             </a>
+                            @if (TwoFA_ENABLED)
+                            {
+                                <a id="register_totp_btn" href="@Url.Action("RegisterTotp")" class="btn2 btn-info mt-2 detail">
+                                    <i class="fa-solid fa-qrcode"></i>&ensp;註冊TOTP
+                                </a>
+                            }
 
                             <button type="button" class="btn2 btn-secondary mt-2 clear_btn" data-form="myForm">
                                 <i class="fas fa-eraser"></i> 清除

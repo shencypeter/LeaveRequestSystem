@@ -771,7 +771,114 @@ namespace BioMedDocManager.Models
         public string SpecialCharSets { get; set; } = "!@#$%^&*()-_=+[]{}|;:'\",.<>/?`~\\";
         public int HistoryCount { get; set; }
         public int MinAgeDays { get; set; }
+
+        // 登入失敗鎖定
+        public int FailedLimit { get; set; }          // int.MaxValue = 不鎖定
+        public int LockMinutes { get; set; }          // 0 = 不鎖定
+
+        // 密碼過期 / 首次登入強制改密碼
+        public int? PasswordExpireDays { get; set; }  // >0 代表啟用過期機制
+        public bool ForceChangeFirstLoginFlag { get; set; }
+
+        // 2FA
+        public bool Sec2faEnabled { get; set; }
+        public bool Sec2faEmailEnabled { get; set; }
+        public bool Sec2faTotpEnabled { get; set; }
+
     }
+
+    /// <summary>
+    /// 二階段驗證暫存狀態（存在 Session）
+    /// </summary>
+    public class TwoFactorState
+    {
+        public int UserId { get; set; }
+        public string UserAccount { get; set; } = string.Empty;
+
+        public bool CanUseEmail { get; set; }
+        public bool CanUseTotp { get; set; }
+
+        // Email OTP 相關
+        public string? DefaultProvider { get; set; } //預設提供者
+        public string? EmailOtpHash { get; set; }        // OTP 的雜湊（避免明碼放 Session）
+        public DateTime? EmailOtpExpiresAt { get; set; } // 有效期限
+        public int EmailOtpSendCount { get; set; }       // 寄送次數（防濫用）
+        public int EmailOtpVerifyFailCount { get; set; } // 驗證失敗次數（防暴力破解）
+
+        // 之後用來 Redirect 回原頁
+        public string? ReturnUrl { get; set; }
+        
+
+        public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+
+        public bool MustChangePassword { get; set; }
+        public bool RequireFirstLoginChange { get; set; }
+        public bool RequireExpireChange { get; set; }
+    }
+
+    /// <summary>
+    /// TOTP 註冊流程用的 Session 暫存狀態
+    /// （避免還沒確認前就寫入 DB）
+    /// </summary>
+    public class TotpSetupState
+    {
+        public int UserId { get; set; }
+
+        /// <summary>
+        /// Base32 編碼的 TOTP Secret（給 Google Authenticator 用）
+        /// </summary>
+        public string Secret { get; set; } = string.Empty;
+
+        public string Issuer { get; set; } = string.Empty;
+
+        public string AccountLabel { get; set; } = string.Empty;
+
+        /// <summary>
+        /// otpauth://totp/... URI，用來產 QR Code
+        /// </summary>
+        public string OtpauthUri { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// TOTP 註冊頁的 ViewModel
+    /// </summary>
+    public class TotpSetupViewModel
+    {
+        public string UserAccount { get; set; } = string.Empty;
+
+        public string Issuer { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 顯示給使用者的 Base32 Secret（手動輸入用）
+        /// </summary>
+        public string Secret { get; set; } = string.Empty;
+
+        public string OtpauthUri { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 使用者用 Authenticator App 產生的 6 碼驗證碼
+        /// </summary>
+        [Required(ErrorMessage = "請輸入驗證碼")]
+        [Display(Name = "驗證碼")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "驗證碼必須為 6 位數字")]
+        public string Code { get; set; } = string.Empty;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

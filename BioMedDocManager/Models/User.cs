@@ -143,6 +143,12 @@ public class User : AuditableEntity, IAccount
     public string? UserRemarks { get; set; }
 
     /// <summary>
+    /// TOTP驗證碼
+    /// </summary>
+    [MaxLength(128)]
+    public string? UserTotpSecret { get; set; }
+
+    /// <summary>
     /// 部門
     /// </summary>
     [Display(Name = "部門")]

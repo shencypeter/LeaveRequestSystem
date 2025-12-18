@@ -14,7 +14,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class HomeController(ILogger<HomeController> logger, DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    public class HomeController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
     {
 
         /// <summary>

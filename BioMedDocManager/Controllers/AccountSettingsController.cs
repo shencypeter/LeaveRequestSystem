@@ -3,11 +3,15 @@ using BioMedDocManager.Factory;
 using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using OtpNet;
+using QRCoder;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace BioMedDocManager.Controllers
 {
@@ -39,6 +43,11 @@ namespace BioMedDocManager.Controllers
         );
 
         /// <summary>
+        /// TOTP狀態物件
+        /// </summary>
+        private const string TotpSetupSessionKey = "_TotpSetupState";
+
+        /// <summary>
         /// 顯示清單頁
         /// </summary>
         /// <param name="PageSize">單頁顯示筆數</param>
@@ -68,6 +77,8 @@ namespace BioMedDocManager.Controllers
 
             // 載入角色List
             ViewData["AllRoles"] = await GetRoles();
+
+            ViewData["2FA_ENABLED"] = _param.GetBool("SEC_2FA_ENABLED");
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
 
@@ -290,6 +301,35 @@ namespace BioMedDocManager.Controllers
                 UserFullName = User.FindFirst("UserFullName")?.Value ?? ""
             };
 
+            var flag = HttpContext.Session.GetString(AppSettings.ForceChangePasswordRequiredKey);
+            var isFirst = HttpContext.Session.GetString(AppSettings.ForceChangePasswordReasonFirstKey);
+            var isExpire = HttpContext.Session.GetString(AppSettings.ForceChangePasswordReasonExpireKey);
+
+            if (string.Equals(flag, "Y", StringComparison.OrdinalIgnoreCase))
+            {
+                string msg;
+                if (string.Equals(isFirst, "Y", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(isExpire, "Y", StringComparison.OrdinalIgnoreCase))
+                {
+                    msg = "密碼已過期且為首次登入，請先變更密碼後再使用系統。";
+                }
+                else if (string.Equals(isFirst, "Y", StringComparison.OrdinalIgnoreCase))
+                {
+                    msg = "首次登入必須先變更密碼，請先完成密碼變更。";
+                }
+                else if (string.Equals(isExpire, "Y", StringComparison.OrdinalIgnoreCase))
+                {
+                    msg = "您的密碼已超過使用期限，請先變更密碼後再使用系統。";
+                }
+                else
+                {
+                    msg = "目前安全策略要求您必須先變更密碼，才可繼續使用系統。";
+                }
+
+                // 這裡才塞 TempData，view 一樣用 _JSShowAlert 顯示
+                TempData["_JSShowAlert"] = msg;
+            }
+
             SetPasswordPolicyToViewBag();
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示變更密碼頁");
@@ -359,6 +399,11 @@ namespace BioMedDocManager.Controllers
                 UserId = user.UserId,
                 PasswordHash = user.UserPasswordHash,  // 這裡是剛剛「新密碼的 Hash」，下次變更密碼判斷用
             });
+
+            // 密碼變更成功後，清除強制改密碼 Session
+            HttpContext.Session.Remove(AppSettings.ForceChangePasswordRequiredKey);
+            HttpContext.Session.Remove(AppSettings.ForceChangePasswordReasonFirstKey);
+            HttpContext.Session.Remove(AppSettings.ForceChangePasswordReasonExpireKey);
 
             await _context.SaveChangesAsync();
 
@@ -904,6 +949,191 @@ namespace BioMedDocManager.Controllers
                 .ThenBy(p => actionOrderMap.TryGetValue(p.AppActionId, out var ord) ? ord : int.MaxValue)
                 .ToList();
         }
+
+        /// <summary>
+        /// 顯示註冊 TOTP (Google Authenticator) 頁面
+        /// </summary>
+        [HttpGet("RegisterTotp")]
+        public async Task<IActionResult> RegisterTotp()
+        {
+
+            bool TwoFA_ENABLED = _param.GetBool("SEC_2FA_ENABLED");
+
+            // 不用2FA
+            if (!TwoFA_ENABLED)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            // 1) 找出目前登入的使用者
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+            {
+                TempData["_JSShowAlert"] = "登入資訊已失效，請重新登入。";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                TempData["_JSShowAlert"] = "找不到使用者資料，請重新登入。";
+                return RedirectToAction("Index", "Home");
+            }
+
+            // 是否已經啟用 TOTP（已有 Secret）
+            ViewBag.IsAlreadyEnabled = !string.IsNullOrWhiteSpace(user.UserTotpSecret);
+
+            // 2) 嘗試從 Session 取出尚未完成的註冊狀態
+            var state = HttpContext.Session.GetObject<TotpSetupState>(TotpSetupSessionKey);
+            if (state == null || state.UserId != user.UserId)
+            {
+                // 3) 沒有就重新產生一組 Secret + otpauth URI
+
+                // Issuer 建議用系統名稱，可視情況改成 Parameter 取值
+                var issuer = _param.GetString("SITE_NAME") ?? "BioMedDocManager";
+                var accountLabel = user.UserAccount; // 也可以用 email，看你喜歡
+
+                // 產生 20 bytes 隨機 secret，轉成 Base32
+                var secretBytes = new byte[20];
+                RandomNumberGenerator.Fill(secretBytes);
+                var secretBase32 = Base32Encoding.ToString(secretBytes); // OtpNet 提供的 Base32
+
+                var encodedIssuer = Uri.EscapeDataString(issuer);
+                var encodedAccount = Uri.EscapeDataString(accountLabel);
+
+                // otpauth://totp/{issuer}:{account}?secret=...&issuer=...&digits=6&period=30
+                var otpauthUri =
+                    $"otpauth://totp/{encodedIssuer}:{encodedAccount}" +
+                    $"?secret={secretBase32}&issuer={encodedIssuer}&digits=6&period=30";
+
+                state = new TotpSetupState
+                {
+                    UserId = user.UserId,
+                    Secret = secretBase32,
+                    Issuer = issuer,
+                    AccountLabel = accountLabel,
+                    OtpauthUri = otpauthUri
+                };
+
+                HttpContext.Session.SetObject(TotpSetupSessionKey, state);
+            }
+
+            // 4) 組 ViewModel
+            var vm = new TotpSetupViewModel
+            {
+                UserAccount = user.UserAccount,
+                Issuer = state.Issuer,
+                Secret = state.Secret,
+                OtpauthUri = state.OtpauthUri
+            };
+
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示註冊 TOTP 頁面");
+
+            return View(vm);
+        }
+
+        /// <summary>
+        /// 註冊 TOTP 頁面送出（驗證使用者輸入的 6 碼）
+        /// </summary>
+        [HttpPost("RegisterTotp")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegisterTotp(TotpSetupViewModel model)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+            {
+                TempData["_JSShowAlert"] = "登入資訊已失效，請重新登入。";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                TempData["_JSShowAlert"] = "找不到使用者資料，請重新登入。";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var state = HttpContext.Session.GetObject<TotpSetupState>(TotpSetupSessionKey);
+            if (state == null || state.UserId != user.UserId)
+            {
+                TempData["_JSShowAlert"] = "TOTP 註冊流程已失效，請重新開始。";
+                return RedirectToAction(nameof(RegisterTotp));
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // 把狀態補回去（避免畫面無法顯示 QR / Secret）
+                model.UserAccount = user.UserAccount;
+                model.Issuer = state.Issuer;
+                model.Secret = state.Secret;
+                model.OtpauthUri = state.OtpauthUri;
+
+                return View(model);
+            }
+
+            // 用暫時 user 物件來驗證（VerifyTotpCodeAsync 只會用到 TotpSecret）
+            var tempUser = new User
+            {
+                UserTotpSecret = state.Secret
+            };
+
+            var ok = await VerifyTotpCodeAsync(tempUser, model.Code);
+            if (!ok)
+            {
+                ModelState.AddModelError(nameof(TotpSetupViewModel.Code), "驗證碼錯誤或已過期，請再次確認手機 App 顯示的數字。");
+
+                model.UserAccount = user.UserAccount;
+                model.Issuer = state.Issuer;
+                model.Secret = state.Secret;
+                model.OtpauthUri = state.OtpauthUri;
+
+                return View(model);
+            }
+
+            // 驗證成功 → 寫入 DB（正式啟用 TOTP）
+            user.UserTotpSecret = state.Secret;
+            await _context.SaveChangesAsync();
+
+            // 清除暫存狀態
+            HttpContext.Session.Remove(TotpSetupSessionKey);
+
+            TempData["_JSShowSuccess"] = "TOTP 兩步驟驗證已啟用，請妥善保管您的驗證器 App。";
+
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "註冊 TOTP 成功");
+
+            // 啟用後你可以選擇要導去哪裡：帳號明細 / 安全設定 / 首頁等
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// 輸出 TOTP 註冊用 QR Code 圖片 (PNG)
+        /// </summary>
+        [HttpGet("RegisterTotp/Qr")]
+        public IActionResult TotpQrCode()
+        {
+            var state = HttpContext.Session.GetObject<TotpSetupState>(TotpSetupSessionKey);
+            if (state == null || string.IsNullOrWhiteSpace(state.OtpauthUri))
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                using var qrGenerator = new QRCodeGenerator();
+                using var qrData = qrGenerator.CreateQrCode(state.OtpauthUri, QRCodeGenerator.ECCLevel.Q);
+                var pngQr = new PngByteQRCode(qrData);
+                var bytes = pngQr.GetGraphic(20); // 20: pixel size
+
+                return File(bytes, "image/png");
+            }
+            catch (Exception ex)
+            {
+                Utilities.WriteExceptionIntoLogFile("產生 TOTP QR Code 失敗", ex, this.HttpContext);
+                return NotFound();
+            }
+        }
+
+
 
         /// <summary>
         /// 建立查詢EF（帳號設定）

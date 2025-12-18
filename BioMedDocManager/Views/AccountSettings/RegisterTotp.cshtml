@@ -1,0 +1,116 @@
+﻿@model BioMedDocManager.Models.TotpSetupViewModel
+@{
+    ViewData["Title"] = "註冊 TOTP 兩步驟驗證";
+    Layout = "_NoNavLayout";
+
+    var alert = TempData["_JSShowAlert"] as string;
+    var success = TempData["_JSShowSuccess"] as string;
+    bool isAlreadyEnabled = (ViewBag.IsAlreadyEnabled as bool?) == true;
+}
+
+<div class="m-4">
+    <div class="pop">
+        <h4 class="m-3 px-2">
+            <i class="bi bi-shield-lock me-2"></i>@ViewData["Title"]
+        </h4>
+
+        @if (!string.IsNullOrEmpty(alert))
+        {
+            <div class="alert alert-danger mx-3 my-2">
+                <i class="fas fa-exclamation-triangle me-2"></i>@alert
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(success))
+        {
+            <div class="alert alert-success mx-3 my-2">
+                <i class="fas fa-check-circle me-2"></i>@success
+            </div>
+        }
+
+        @if (isAlreadyEnabled)
+        {
+            <div class="alert alert-warning mx-3 my-2">
+                <i class="fas fa-info-circle me-2"></i>
+                您的帳號已啟用 TOTP 驗證。重新註冊將會覆蓋原本的設定，請謹慎操作。
+            </div>
+        }
+
+        <div class="mx-3 my-3">
+            <ol>
+                <li>請先在手機安裝 <strong>Google Authenticator</strong> 或其他支援 TOTP 的驗證器 App。</li>
+                <li>使用 App 掃描下方 QR Code，或手動輸入「金鑰」。</li>
+                <li>App 會顯示 6 位數驗證碼，請輸入在下方欄位，按下「啟用 TOTP」。</li>
+            </ol>
+        </div>
+
+        <div class="row my-3 mx-2">
+            <div class="col-md-6 text-center mb-3">
+                <h5 class="mb-3">方式一：掃描 QR Code</h5>
+                <div class="d-inline-block p-2 bg-white border rounded">
+                    <img src="@Url.Action("TotpQrCode", "AccountSettings")" class="totp-qr-img" alt="TOTP QR Code" />
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <h5 class="mb-3">方式二：手動輸入金鑰（若無法掃描）</h5>
+
+                <div class="mb-2">
+                    <strong>帳號：</strong>
+                    <span>@Model.UserAccount</span>
+                </div>
+                <div class="mb-2">
+                    <strong>發行者 (Issuer)：</strong>
+                    <span>@Model.Issuer</span>
+                </div>
+                <div class="mb-2">
+                    <strong>金鑰 (Secret)：</strong>
+                    <code class="user-select-all">@Model.Secret</code>
+                </div>
+                <div class="text-muted small">
+                    建議只在必要時手動輸入，並避免洩漏此金鑰。
+                </div>
+            </div>
+        </div>
+
+        <hr />
+
+        <form asp-action="RegisterTotp" method="post" class="mx-3 my-3">
+            @Html.AntiForgeryToken()
+
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <span class="text-danger fw-bold">*</span>
+                    <strong>@Html.DisplayNameFor(m => m.Code)：</strong>
+                </div>
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <input asp-for="Code"
+                               class="form-control text-center text-uppercase"
+                               placeholder="請輸入 App 顯示的 6 位數"
+                               maxlength="6"
+                               inputmode="numeric"
+                               autocomplete="one-time-code" />
+                    </div>
+                    <span asp-validation-for="Code" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-md-12 d-flex justify-content-center">
+                    <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-check-circle"></i>&ensp;啟用 TOTP
+                    </button>                    
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        $(function () {
+            // 若要在這頁加上自訂 JS，可寫在這裡
+        });
+    </script>
+}

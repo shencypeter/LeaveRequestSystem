@@ -1,0 +1,199 @@
+﻿@{
+    ViewData["FullTitle"] = "兩步驟驗證";
+    Layout = "_LoginLayout";
+
+    var message = TempData["_JSShowAlert"] as string;
+
+    bool canUseEmail = ViewBag.CanUseEmail as bool? ?? false;
+    bool canUseTotp = ViewBag.CanUseTotp as bool? ?? false;
+
+    // 預設優先 Email，沒有 Email 就用 TOTP
+    string defaultProvider =
+        ViewBag.DefaultProvider as string
+        ?? (canUseEmail ? "Email" : "Totp");
+}
+
+<div class="Main flex-container" id="Main">
+    <div class="pt-5" id="Main_Page">
+
+        <div class="sub-div"></div>
+
+        <div class="login-div">
+            <div class="login-text">
+
+                <div class="fs-4 fw-bold my-3">
+                    兩步驟驗證
+                </div>
+
+                @if (!string.IsNullOrEmpty(message))
+                {
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        @message
+                    </div>
+                }
+
+                @if (!canUseEmail && !canUseTotp)
+                {
+                    <div class="alert alert-danger my-3">
+                        目前未啟用任何兩步驟驗證方式，請重新登入或洽系統管理者。
+                    </div>
+                }
+                else
+                {
+                    <!-- 方式選擇：Email / Authenticator -->
+                    <div class="row my-3">
+                        <label class="col-md-2 col-sm-3 col-12 col-form-label fw-bold">
+                            驗證方式
+                        </label>
+                        <div class="col-md-9 col-sm-8 col-12">
+
+                            @if (canUseEmail && canUseTotp)
+                            {
+                                <div class="btn-group" role="group" aria-label="Two factor provider">
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="providerChoice"
+                                           id="providerEmail"
+                                           value="Email"
+                                           @(defaultProvider == "Email" ? "checked" : "") />
+                                    <label class="btn btn-outline-primary" for="providerEmail">
+                                        <i class="fas fa-envelope me-1"></i>Email 驗證碼
+                                    </label>
+
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="providerChoice"
+                                           id="providerTotp"
+                                           value="Totp"
+                                           @(defaultProvider == "Totp" ? "checked" : "") />
+                                    <label class="btn btn-outline-primary" for="providerTotp">
+                                        <i class="fas fa-mobile-alt me-1"></i>Authenticator 驗證碼
+                                    </label>
+                                </div>
+                            }
+                            else if (canUseEmail)
+                            {
+                                <span class="fw-bold">
+                                    <i class="fas fa-envelope me-1"></i>Email 驗證碼
+                                </span>
+                            }
+                            else if (canUseTotp)
+                            {
+                                <span class="fw-bold">
+                                    <i class="fas fa-mobile-alt me-1"></i>Authenticator 驗證碼
+                                </span>
+                            }
+
+                            <!-- 說明文字（依方式切換） -->
+                            <div class="mt-2 text-muted small">
+                                <span id="emailHint"
+                                      class="@(defaultProvider == "Email" ? "" : "d-none")">
+                                    系統會寄送 6 碼驗證碼至您的註冊 Email，請在有效時間內輸入。
+                                </span>
+                                <span id="totpHint"
+                                      class="@(defaultProvider == "Totp" ? "" : "d-none")">
+                                    請打開手機的 Authenticator App（如 Google Authenticator），輸入目前顯示的 6 碼動態驗證碼。
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 取得 / 重寄 Email 驗證碼按鈕（只有 Email 方式可用 & 有啟用 Email 2FA 時顯示） -->
+                    @if (canUseEmail)
+                    {
+                        <div class="row my-2" id="emailSendRow"
+                             class="@(defaultProvider == "Email" ? "" : "d-none")">
+                            <div class="col-md-2 col-sm-3 col-12"></div>
+                            <div class="col-md-9 col-sm-8 col-12">
+                                <form method="post" action="@Url.Action("SendTwoFactorEmailCode", "Login")" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-paper-plane me-1"></i>寄送 / 重寄 Email 驗證碼
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- 驗證碼輸入 + 提交（共用一支 VerifyTwoFactor） -->
+                    <form method="post" action="@Url.Action("VerifyTwoFactor", "Login")" class="mt-3">
+                        @Html.AntiForgeryToken()
+
+                        <!-- 隱藏欄位：實際送到後端的 provider（Email / Totp） -->
+                        <input type="hidden"
+                               id="Provider"
+                               name="provider"
+                               value="@defaultProvider" />
+
+                        <div class="row my-3">
+                            <label class="col-md-2 col-sm-3 col-12 col-form-label fw-bold">
+                                驗證碼
+                            </label>
+                            <div class="col-md-9 col-sm-8 col-12">
+                                <input type="text"
+                                       class="form-control text-uppercase"
+                                       name="code"
+                                       maxlength="6"
+                                       inputmode="numeric"
+                                       autocomplete="one-time-code"
+                                       placeholder="請輸入 6 位數驗證碼"
+                                       required />
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary my-3 col-sm-6">
+                            驗證
+                        </button>
+                    </form>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        (function () {
+            var providerInput = document.getElementById('Provider');
+            var emailHint = document.getElementById('emailHint');
+            var totpHint = document.getElementById('totpHint');
+            var emailSendRow = document.getElementById('emailSendRow');
+
+            var emailRadio = document.getElementById('providerEmail');
+            var totpRadio = document.getElementById('providerTotp');
+
+            function updateProvider(provider) {
+                if (!providerInput) return;
+
+                providerInput.value = provider;
+
+                if (emailHint) {
+                    emailHint.classList.toggle('d-none', provider !== 'Email');
+                }
+                if (totpHint) {
+                    totpHint.classList.toggle('d-none', provider !== 'Totp');
+                }
+                if (emailSendRow) {
+                    emailSendRow.classList.toggle('d-none', provider !== 'Email');
+                }
+            }
+
+            if (emailRadio) {
+                emailRadio.addEventListener('change', function () {
+                    if (this.checked) {
+                        updateProvider('Email');
+                    }
+                });
+            }
+            if (totpRadio) {
+                totpRadio.addEventListener('change', function () {
+                    if (this.checked) {
+                        updateProvider('Totp');
+                    }
+                });
+            }
+        })();
+    </script>
+}

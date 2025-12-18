@@ -7,8 +7,30 @@ public static class AppSettings
 {
     private static IConfiguration _cfg = default!;
 
-    // 在 Program.cs 啟動時呼叫一次
+    /// <summary>
+    /// 2FA Session 狀態物件
+    /// </summary>
     public static void Initialize(IConfiguration configuration) => _cfg = configuration;
+
+    /// <summary>
+    /// 2FA Session 狀態物件
+    /// </summary>
+    public const string TwoFactorSessionKey = "TwoFactorState";
+
+    /// <summary>
+    /// 變更密碼狀態物件-強制改密碼
+    /// </summary>
+    public const string ForceChangePasswordRequiredKey = "ForceChangePasswordRequired";
+
+    /// <summary>
+    /// 變更密碼狀態物件-強制首次登入改密碼
+    /// </summary>
+    public const string ForceChangePasswordReasonFirstKey = "ForceChangePasswordReasonFirstLogin";
+
+    /// <summary>
+    /// 變更密碼狀態物件-密碼過期(過久未變更)
+    /// </summary>
+    public const string ForceChangePasswordReasonExpireKey = "ForceChangePasswordReasonExpire";
 
     /// <summary>
     /// Exception Log 的存放路徑(抓appsettings.json)

@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using Color = System.Drawing.Color;
 using Font = System.Drawing.Font;
 
@@ -26,7 +28,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
     [Route("[controller]")]
-    public class LoginController(IHttpContextAccessor httpAccessor, DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    public class LoginController(IHttpContextAccessor httpAccessor, DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IMailHelper _mailHelper) : BaseController(_context, _hostingEnvironment, _param)
     {
         /// <summary>
         /// 頁面名稱
@@ -89,12 +91,6 @@ namespace BioMedDocManager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        /// <summary>
-        /// 登入送出
-        /// </summary>
-        /// <param name="userAccount">帳號</param>
-        /// <param name="password">密碼</param>
-        /// <returns></returns>
         [HttpPost("Login")]
         [ValidateAntiForgeryToken]
         [AllowAnonymous]
@@ -102,27 +98,12 @@ namespace BioMedDocManager.Controllers
         {
             try
             {
-
-#if RELEASE
-        var storedCaptcha = httpAccessor.HttpContext.Session.GetString("CaptchaCode");
-        if (string.IsNullOrEmpty(captcha) || !string.Equals(captcha, storedCaptcha, StringComparison.OrdinalIgnoreCase))
-        {
-            TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
-
-            // 驗證碼錯誤 → 失敗紀錄
-            await accessLog.NewLoginFailedAsync(
-                AccountType.Admin,
-                userAccount ?? "",
-                0,
-                PageName,
-                "登入",
-                1,
-                "驗證碼錯誤"
-            );
-
-            return RedirectToAction(nameof(Index));
-        }
-#endif
+                // ================== 驗證碼檢查 ==================
+                var captchaResult = await ValidateCaptchaAsync(userAccount, captcha);
+                if (captchaResult != null)
+                {
+                    return captchaResult;
+                }
 
                 HttpContext.Session.SetString("try_login", userAccount);
 
@@ -147,271 +128,86 @@ namespace BioMedDocManager.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var now = DateTime.Now;
-
                 // ================== 讀取安全設定（全部由 Parameter 控制） ==================
-                var policyEnabled = _param.GetBool("SEC_PASSWORD_POLICY_ENABLED");
-
-                // 預設值（當 policyEnabled = false 或參數沒設好時的防呆）
-                // 這裡是「程式內建 fallback」，已經不再使用 AppSettings。
-                int failedLimit = int.MaxValue;  // 預設視為「不鎖定」
-                int lockMinutes = 0;            // 鎖定時間 0 = 不鎖定
-
-                int? passwordExpireDays = null; // 密碼過期天數（>0 才啟用）
-                bool forceChangeFirstLoginFlag = false;
-
-                bool sec2faEnabled = false;
-                bool sec2faEmailEnabled = false;
-                bool sec2faTotpEnabled = false;
-
-                if (policyEnabled)
-                {
-                    // ===== 登入失敗鎖定門檻 / 鎖定時間 =====
-                    var paramFailedLimit = _param.GetInt("SEC_PASSWORD_MAX_FAILED_ATTEMPTS");
-                    var paramLockMinutes = _param.GetInt("SEC_PASSWORD_LOCKOUT_MINUTES");
-
-                    if (paramFailedLimit > 0 && paramLockMinutes > 0)
-                    {
-                        failedLimit = paramFailedLimit.Value;
-                        lockMinutes = paramLockMinutes.Value;
-                    }
-                    else
-                    {
-                        // 若未正確設定，就維持「不鎖定」行為
-                        failedLimit = int.MaxValue;
-                        lockMinutes = 0;
-                    }
-
-                    // ===== 密碼過期 / 首次登入強制改密碼 =====
-                    var expDays = _param.GetInt("SEC_PASSWORD_EXPIRE_DAYS"); // 0=不過期
-                    if (expDays > 0)
-                    {
-                        passwordExpireDays = expDays;
-                    }
-
-                    forceChangeFirstLoginFlag = _param.GetBool("SEC_PASSWORD_FORCE_CHANGE_FIRST_LOGIN");
-
-                    // ===== 2FA 設定（目前只留 TODO，不改現行行為）=====
-                    sec2faEnabled = _param.GetBool("SEC_2FA_ENABLED");
-                    sec2faEmailEnabled = _param.GetBool("SEC_2FA_EMAIL_ENABLED");
-                    sec2faTotpEnabled = _param.GetBool("SEC_2FA_TOTP_ENABLED");
-                }
+                var sec = LoadSecuritySettingsFromParameter();
                 // ===================================================================
 
-                // 若已鎖定，檢查是否過期（policyEnabled + failedLimit/lockMinutes 正確才會有鎖定效果）
-                if (user.UserIsLocked)
+                // ================== 帳號是否被鎖定處理 ==================
+                var lockedResult = await HandleLockedUserIfNeededAsync(user, sec);
+                if (lockedResult != null)
                 {
-                    if (user.UserLockedUntil.HasValue && user.UserLockedUntil.Value > now)
-                    {
-                        // 尚在鎖定期
-                        TempData["_JSShowAlert"] = $"帳號或密碼錯誤次數達{(failedLimit == int.MaxValue ? 0 : failedLimit)}次以上，請於{lockMinutes}分鐘後重試(或洽管理者解除鎖定)";
-
-                        await _accessLog.NewLoginFailedAsync(
-                            AccountType.Admin,
-                            user.UserAccount,
-                            user.UserId,
-                            PageName,
-                            "登入",
-                            2,
-                            $"登入失敗：帳號鎖定中，直到 {user.UserLockedUntil:yyyy-MM-dd HH:mm:ss}"
-                        );
-
-                        return RedirectToAction(nameof(Index));
-                    }
-                    else
-                    {
-                        // 鎖定已過期 → 自動解鎖
-                        user.UserIsLocked = false;
-                        user.UserLockedUntil = null;
-                        user.UserLoginFailedCount = 0;
-                        await _context.SaveChangesAsync();
-                    }
+                    return lockedResult;
                 }
 
-                // 驗證密碼
-                var hasher = new PasswordHasher<User>();
-                var verify = hasher.VerifyHashedPassword(user, user.UserPasswordHash, password);
-
-                if (verify != PasswordVerificationResult.Success)
+                // ================== 驗證密碼 + 登入失敗計數 / 鎖定 ==================
+                var verifyResult = await VerifyPasswordAndHandleFailedAsync(user, password, sec);
+                if (verifyResult != null)
                 {
-                    // 失敗：累加計數
-                    user.UserLoginFailedCount = (user.UserLoginFailedCount < int.MaxValue)
-                        ? user.UserLoginFailedCount + 1
-                        : user.UserLoginFailedCount;
+                    return verifyResult;
+                }
 
-                    string failMessage = "登入失敗：密碼錯誤";
-                    int severity = 1;
+                // ================== 密碼驗證成功後：判斷過期 / 首次登入 / 2FA ==================
+                bool mustChangePassword;
+                bool requireFirstLoginChange;
+                bool requireExpireChange;
+                bool need2Fa;
 
-                    // 達門檻 → 鎖定一段時間（只有當 failedLimit != int.MaxValue 且 lockMinutes > 0 才有意義）
-                    if (failedLimit != int.MaxValue && lockMinutes > 0 && user.UserLoginFailedCount >= failedLimit)
+                EvaluatePostLoginFlags(
+                    user,
+                    sec,
+                    out mustChangePassword,
+                    out requireFirstLoginChange,
+                    out requireExpireChange,
+                    out need2Fa
+                );
+
+                // 用Session 記錄「必須先變更密碼」旗標，讓全域 Middleware 來控制 Redirect
+                if (mustChangePassword)
+                {
+                    SetForceChangePasswordSession(
+                        mustChangePassword,
+                        requireFirstLoginChange,
+                        requireExpireChange
+                    );
+                }
+
+
+                // ===== 5. 若需要 2FA：進入二階段驗證流程（此時尚未完整登入） =====
+                if (need2Fa)
+                {
+                    string? sanitizedReturnUrl = null;
+                    if (!string.IsNullOrEmpty(returnUrl)
+                        && Url.IsLocalUrl(returnUrl)
+                        && !returnUrl.Contains("Login", StringComparison.OrdinalIgnoreCase))
                     {
-                        user.UserIsLocked = true;
-                        user.UserLockedUntil = now.AddMinutes(lockMinutes);
-
-                        TempData["_JSShowAlert"] = $"帳號或密碼錯誤次數達{failedLimit}次以上，請於{lockMinutes}分鐘後重試(或洽管理者解除鎖定)";
-
-                        failMessage = $"密碼錯誤達 {failedLimit} 次以上，帳號鎖定至 {user.UserLockedUntil:yyyy-MM-dd HH:mm:ss}";
-                        severity = 2;
-
-                        // 達門檻後重設計數
-                        user.UserLoginFailedCount = 0;
-                    }
-                    else
-                    {
-                        // 一律回通用訊息（避免洩漏是帳號還是密碼問題）
-                        TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";
+                        sanitizedReturnUrl = returnUrl;
                     }
 
-                    // 密碼錯誤 → 記錄
-                    await _accessLog.NewLoginFailedAsync(
-                        AccountType.Admin,
-                        user.UserAccount,
-                        user.UserId,
-                        PageName,
-                        "登入",
-                        severity,
-                        failMessage
+                    // 這裡把「之後要不要強制改密碼」的資訊一起丟進 2FA 狀態，2FA 通過後才 SignIn + 設 Session
+                    await StartTwoFactorFlowAsync(
+                        user,
+                        sec,
+                        sanitizedReturnUrl
                     );
 
-                    await _context.SaveChangesAsync();
-
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(TwoFactor));
                 }
 
-                // ================== 密碼驗證成功後：判斷過期 / 首次登入 ==================
+                // ===== 6. 不需要 2FA：直接登入成功流程 =====
+                await SignInAndBuildSessionAsync(user, mustChangePassword);
 
-                bool mustChangePassword = false;
-                bool requireFirstLoginChange = false;
-                bool requireExpireChange = false;
-
-                if (policyEnabled)
+                // 不需要 2FA 的情況，剛剛已經 SetForceChangePasswordSession 了
+                // 如果為 false，這裡可以再保險清一次：
+                if (!mustChangePassword)
                 {
-                    // --- 首次登入強制改密碼 ---
-                    if (forceChangeFirstLoginFlag)
-                    {
-                        // 假設有 UserLastLoginAt（SetUserLoginAuditAsync 裡有更新）
-                        var isFirstLogin = !user.UserLastLoginAt.HasValue;
-                        if (isFirstLogin)
-                        {
-                            mustChangePassword = true;
-                            requireFirstLoginChange = true;
-                        }
-                    }
-
-                    // --- 密碼過期天數（0 = 不過期）---
-                    if (passwordExpireDays.HasValue && passwordExpireDays.Value > 0)
-                    {
-                        // 若沒記錄 UserPasswordChangedAt，就用 CreatedAt 當基準
-                        var lastChangeTime = user.UserPasswordChangedAt ?? user.CreatedAt;
-                        if (lastChangeTime.Value.AddDays(passwordExpireDays.Value) < now)
-                        {
-                            mustChangePassword = true;
-                            requireExpireChange = true;
-                        }
-                    }
+                    SetForceChangePasswordSession(false, false, false);
                 }
 
-                // ================== 2FA 判斷（目前只放 TODO，不改現有流程） ==================
-                bool need2Fa = false;
-                if (policyEnabled && sec2faEnabled && (sec2faEmailEnabled || sec2faTotpEnabled))
-                {
-                    need2Fa = true;
 
-                    // TODO: 這裡未來實作 2FA：
-                    //  - 若 sec2faEmailEnabled：產生 Email OTP，寄到 user.UserEmail，導到輸入 OTP 的畫面
-                    //  - 若 sec2faTotpEnabled：導到輸入 TOTP 的畫面，讓使用者用 Authenticator App 輸入
-                    // 目前僅保留 need2Fa flag，不影響現有登入流程。
-                }
-
-                // ================== 登入成功後的共同流程 ==================
-
-                // 成功：清除失敗與鎖定
-                user.UserLoginFailedCount = 0;
-                user.UserIsLocked = false;
-                user.UserLockedUntil = null;
-                await _context.SaveChangesAsync();
-
-                // 登入稽核（時間+IP，內部應會更新 UserLastLoginAt）
-                await SetUserLoginAuditAsync(user);
-
-                // ===== 1. 透過 UserGroupMember → UserGroupRole → Role 算出有效角色 =====
-                var rolesFromGroups = await _context.UserGroupMembers
-                    .Where(ugm => ugm.UserId == user.UserId)
-                    .SelectMany(ugm => ugm.UserGroup!.UserGroupRoles)
-                    .Where(ugr => ugr.Role != null)
-                    .Select(ugr => ugr.Role!)
-                    .Distinct()
-                    .ToListAsync();
-
-                var allRoles = rolesFromGroups;
-
-                // ===== 2. 建立 Claims =====
-                var claims = new List<Claim>
-                {
-                    new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                    new("UserFullName", user.UserFullName),
-                    new("UserAccount", user.UserAccount)
-                };
-
-                foreach (var r in allRoles)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, r.RoleName));
-                }
-
-                foreach (var g in allRoles
-                                     .Select(x => x.RoleGroup)
-                                     .Where(x => !string.IsNullOrEmpty(x))
-                                     .Distinct())
-                {
-                    claims.Add(new Claim("RoleGroup", g));
-                }
-
-                if (mustChangePassword)
-                {
-                    claims.Add(new Claim("MustChangePassword", "Y"));
-                }
-
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var principal = new ClaimsPrincipal(identity);
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-                // ===== 3. 建立選單樹(只做一次) =====
-                var menuTree = BuildMenuTreeForUser(principal);
-                HttpContext.Session.SetObject("MenuTree", menuTree);
-
-                await _accessLog.NewLoginSuccessAsync(user);
-
-                // ===== 4. 若需強制改密碼 → 直接轉跳到 AccountSettings/ChangePassword =====
-                if (mustChangePassword)
-                {
-                    if (requireFirstLoginChange && requireExpireChange)
-                    {
-                        TempData["_JSShowAlert"] = "密碼已過期且為首次登入，請先變更密碼後再使用系統。";
-                    }
-                    else if (requireFirstLoginChange)
-                    {
-                        TempData["_JSShowAlert"] = "首次登入必須先變更密碼，請先完成密碼變更。";
-                    }
-                    else if (requireExpireChange)
-                    {
-                        TempData["_JSShowAlert"] = "您的密碼已超過使用期限，請先變更密碼後再使用系統。";
-                    }
-                    else
-                    {
-                        TempData["_JSShowAlert"] = "請先變更密碼後再使用系統。";
-                    }
-
-                    return RedirectToAction("ChangePassword", "AccountSettings");
-                }
-
-                // ===== 5. TODO: 未來若啟用 2FA，可在這裡依 need2Fa 做轉跳 =====
-                // if (need2Fa)
-                // {
-                //     // e.g. return RedirectToAction("TwoFactorEmail", "Auth");
-                // }
-
-                // ===== 6. 一般成功登入 Redirect =====
-                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && !returnUrl.Contains("Login"))
+                // 一般成功登入 Redirect
+                if (!string.IsNullOrEmpty(returnUrl)
+                    && Url.IsLocalUrl(returnUrl)
+                    && !returnUrl.Contains("Login", StringComparison.OrdinalIgnoreCase))
                 {
                     var controller = returnUrl.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
                     return Redirect($"/{controller}");
@@ -434,258 +230,677 @@ namespace BioMedDocManager.Controllers
 
             return RedirectToAction("Index", "Home");
         }
-
-
 
 
         /// <summary>
-        /// 登入送出
+        /// 驗證碼檢查（RELEASE 模式才啟用）；
+        /// 驗證失敗時會寫登入失敗紀錄並回傳 RedirectResult，成功則回傳 null。
         /// </summary>
         /// <param name="userAccount">帳號</param>
-        /// <param name="password">密碼</param>
+        /// <param name="captcha">驗證碼</param>
         /// <returns></returns>
-        [HttpPost("Login0")]
-        [ValidateAntiForgeryToken]
-        [AllowAnonymous]
-        public async Task<IActionResult> Login0(string userAccount, string password, string? captcha, string? returnUrl)
+        [NonAction]
+        private async Task<IActionResult?> ValidateCaptchaAsync(string userAccount, string? captcha)
         {
-            try
-            {
-
 #if RELEASE
-                var storedCaptcha = httpAccessor.HttpContext.Session.GetString("CaptchaCode");
-                if (string.IsNullOrEmpty(captcha) || !string.Equals(captcha, storedCaptcha, StringComparison.OrdinalIgnoreCase))
-                {
-                    TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
+    var storedCaptcha = httpAccessor.HttpContext.Session.GetString("CaptchaCode");
+    if (string.IsNullOrEmpty(captcha) || !string.Equals(captcha, storedCaptcha, StringComparison.OrdinalIgnoreCase))
+    {
+        TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
 
-                    // 驗證碼錯誤 → 失敗紀錄
-                    await _accessLog.NewLoginFailedAsync(
-                        AccountType.Admin,                    // 後台登入
-                        userAccount ?? "",
-                        0,                                    // 沒 user
-                        PageName,
-                        "登入",
-                        1,
-                        "驗證碼錯誤"
-                    );
+        // 驗證碼錯誤 → 失敗紀錄
+        await _accessLog.NewLoginFailedAsync(
+            AccountType.Admin,                    // 後台登入
+            userAccount ?? "",
+            0,                                    // 沒 user
+            PageName,
+            "登入",
+            1,
+            "驗證碼錯誤"
+        );
 
-                    return RedirectToAction(nameof(Index));
-                }
+        return RedirectToAction(nameof(Index));
+    }
 #endif
+            return null;
+        }
 
-                HttpContext.Session.SetString("try_login", userAccount);
+        /// <summary>
+        /// 從 Parameter 讀取安全 / 密碼政策設定
+        /// </summary>
+        /// <returns>密碼政策設定</returns>
+        [NonAction]
+        private PasswordPolicy LoadSecuritySettingsFromParameter()
+        {
+            var sec = new PasswordPolicy();
 
-                // 取得使用者
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserAccount == userAccount);
+            // 是否啟用密碼政策
+            sec.PolicyEnabled = _param.GetBool("SEC_PASSWORD_POLICY_ENABLED");
 
-                // 不存在或未啟用（訊息仍給通用字樣）
-                if (user is null || !user.UserIsActive)
-                {
-                    TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";
+            // 預設值（當 policyEnabled = false 或參數沒設好時的防呆）
+            // 這裡是「程式內建 fallback」，已經不再使用 AppSettings。
+            sec.FailedLimit = int.MaxValue;  // 預設視為「不鎖定」
+            sec.LockMinutes = 0;             // 鎖定時間 0 = 不鎖定
+            sec.PasswordExpireDays = null;   // 密碼過期天數（>0 才啟用）
+            sec.ForceChangeFirstLoginFlag = false;
 
-                    await _accessLog.NewLoginFailedAsync(
-                        user is null ? AccountType.Unknow : AccountType.Admin,
-                        userAccount,
-                        user?.UserId ?? 0,
-                        PageName,
-                        "登入",
-                        1,
-                        user is null ? "登入失敗：帳號不存在" : "登入失敗：帳號未啟用"
-                    );
+            sec.Sec2faEnabled = false;
+            sec.Sec2faEmailEnabled = false;
+            sec.Sec2faTotpEnabled = false;
 
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // 讀取設定：預設先用 AppSettings
-                var failedLimit = AppSettings.LoginFailedLimit;   // 例如 3 次
-                var lockMinutes = AppSettings.LoginLockTime;      // 例如 15（分鐘）
-                var now = DateTime.Now;
-
-                // 若有啟用密碼政策，則改用 Parameter 的設定值
-                var policyEnabled = _param.GetBool("SEC_PASSWORD_POLICY_ENABLED");
-                if (policyEnabled)
-                {
-                    var paramFailedLimit = _param.GetInt("SEC_PASSWORD_MAX_FAILED_ATTEMPTS");
-                    var paramLockMinutes = _param.GetInt("SEC_PASSWORD_LOCKOUT_MINUTES");
-
-                    // 防呆：Parameter 若沒設好，就沿用 AppSettings 的值
-                    if (paramFailedLimit > 0)
-                    {
-                        failedLimit = paramFailedLimit.Value;
-                    }
-
-                    if (paramLockMinutes > 0)
-                    {
-                        lockMinutes = paramLockMinutes.Value;
-                    }
-                }
-
-
-                // 若已鎖定，檢查是否過期
-                if (user.UserIsLocked)
-                {
-                    if (user.UserLockedUntil.HasValue && user.UserLockedUntil.Value > now)
-                    {
-                        // 尚在鎖定期
-                        TempData["_JSShowAlert"] = $"帳號或密碼錯誤次數達{failedLimit}次以上，請於{lockMinutes}分鐘後重試(或洽管理者解除鎖定)";
-
-                        await _accessLog.NewLoginFailedAsync(
-                            AccountType.Admin,
-                            user.UserAccount,
-                            user.UserId,
-                            PageName,
-                            "登入",
-                            2,
-                            $"登入失敗：帳號鎖定中，直到 {user.UserLockedUntil:yyyy-MM-dd HH:mm:ss}"
-                        );
-
-
-                        return RedirectToAction(nameof(Index));
-                    }
-                    else
-                    {
-                        // 鎖定已過期 → 自動解鎖
-                        user.UserIsLocked = false;
-                        user.UserLockedUntil = null;
-                        user.UserLoginFailedCount = 0;
-                        await _context.SaveChangesAsync();
-                    }
-                }
-
-                // 驗證密碼
-                var hasher = new PasswordHasher<User>();
-                var verify = hasher.VerifyHashedPassword(user, user.UserPasswordHash, password);
-
-                if (verify != PasswordVerificationResult.Success)
-                {
-                    // 失敗：累加計數
-                    user.UserLoginFailedCount = (user.UserLoginFailedCount < int.MaxValue)
-                        ? user.UserLoginFailedCount + 1
-                        : user.UserLoginFailedCount;
-
-                    string failMessage = "登入失敗：密碼錯誤";
-                    int severity = 1;
-
-                    // 達門檻 → 鎖定一段時間
-                    if (user.UserLoginFailedCount >= failedLimit)
-                    {
-                        user.UserIsLocked = true;
-                        user.UserLockedUntil = now.AddMinutes(lockMinutes);
-
-                        TempData["_JSShowAlert"] = $"帳號或密碼錯誤次數達{failedLimit}次以上，請於{lockMinutes}分鐘後重試(或洽管理者解除鎖定)";
-
-                        failMessage = $"密碼錯誤達 {failedLimit} 次以上，帳號鎖定至 {user.UserLockedUntil:yyyy-MM-dd HH:mm:ss}";
-                        severity = 2;
-
-                        // 重設計數
-                        user.UserLoginFailedCount = 0;
-                    }
-                    else
-                    {
-                        // 一律回通用訊息（避免洩漏是帳號還是密碼問題）
-                        TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";
-                    }
-
-                    // 密碼錯誤 → 記錄
-                    await _accessLog.NewLoginFailedAsync(
-                        AccountType.Admin,
-                        user.UserAccount,
-                        user.UserId,
-                        PageName,
-                        "登入",
-                        severity,
-                        failMessage
-                    );
-
-                    await _context.SaveChangesAsync();
-
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // 成功：清除失敗與鎖定
-                user.UserLoginFailedCount = 0;
-                user.UserIsLocked = false;
-                user.UserLockedUntil = null;
-                await _context.SaveChangesAsync();
-
-                // 登入稽核（時間+IP）
-                await SetUserLoginAuditAsync(user);
-
-                // ===== 1. 透過 UserGroupMember → UserGroupRole → Role 算出有效角色 =====
-
-                // 用導覽屬性的版本（有設定好 navigation 的話建議用這個）
-                var rolesFromGroups = await _context.UserGroupMembers
-                    .Where(ugm => ugm.UserId == user.UserId)
-                    .SelectMany(ugm => ugm.UserGroup!.UserGroupRoles)   // 到 UserGroupRole
-                    .Where(ugr => ugr.Role != null)
-                    .Select(ugr => ugr.Role!)
-                    .Distinct()
-                    .ToListAsync();
-
-                var allRoles = rolesFromGroups;   // 單純用群組的話，就這行就好
-
-
-                // ===== 2. 建立 Claims =====
-                var claims = new List<Claim>
-                {
-                    new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                    new("UserFullName", user.UserFullName),
-                    new("UserAccount", user.UserAccount)
-                };
-
-                // 角色名稱 → 標準 Role Claim：之後 [Authorize(Roles = "xxx")] 會吃這個
-                foreach (var r in allRoles)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, r.RoleName));
-                }
-
-                // 角色群組（自訂 ClaimType，方便你之後用來分群或顯示）
-                foreach (var g in allRoles
-                                     .Select(x => x.RoleGroup)
-                                     .Where(x => !string.IsNullOrEmpty(x))
-                                     .Distinct())
-                {
-                    claims.Add(new Claim("RoleGroup", g));
-                }
-
-                // ===== 3. SignIn 寫 Cookie =====
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var principal = new ClaimsPrincipal(identity);
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-                // ===== 4. 建立選單樹(只做一次) =====
-                var menuTree = BuildMenuTreeForUser(principal);
-
-                HttpContext.Session.SetObject("MenuTree", menuTree);
-
-                await _accessLog.NewLoginSuccessAsync(user);
-
-                // ===== 5. Redirect =====
-                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && !returnUrl.Contains("Login"))
-                {
-                    var controller = returnUrl.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
-                    return Redirect($"/{controller}");
-                }
-            }
-            catch (Exception ex)
+            if (sec.PolicyEnabled)
             {
-                Utilities.WriteExceptionIntoLogFile("登入異常", ex, this.HttpContext);
+                // ===== 登入失敗鎖定門檻 / 鎖定時間 =====
+                var paramFailedLimit = _param.GetInt("SEC_PASSWORD_MAX_FAILED_ATTEMPTS");
+                var paramLockMinutes = _param.GetInt("SEC_PASSWORD_LOCKOUT_MINUTES");
 
-                // 系統錯誤也記一次失敗
+                if (paramFailedLimit > 0 && paramLockMinutes > 0)
+                {
+                    sec.FailedLimit = paramFailedLimit.Value;
+                    sec.LockMinutes = paramLockMinutes.Value;
+                }
+                else
+                {
+                    // 若未正確設定，就維持「不鎖定」行為
+                    sec.FailedLimit = int.MaxValue;
+                    sec.LockMinutes = 0;
+                }
+
+                // ===== 密碼過期 / 首次登入強制改密碼 =====
+                var expDays = _param.GetInt("SEC_PASSWORD_EXPIRE_DAYS"); // 0=不過期
+                if (expDays > 0)
+                {
+                    sec.PasswordExpireDays = expDays;
+                }
+
+                sec.ForceChangeFirstLoginFlag = _param.GetBool("SEC_PASSWORD_FORCE_CHANGE_FIRST_LOGIN");
+
+                // ===== 2FA 設定 =====
+                sec.Sec2faEnabled = _param.GetBool("SEC_2FA_ENABLED");
+                sec.Sec2faEmailEnabled = _param.GetBool("SEC_2FA_EMAIL_ENABLED");
+                sec.Sec2faTotpEnabled = _param.GetBool("SEC_2FA_TOTP_ENABLED");
+            }
+
+            return sec;
+        }
+
+        /// <summary>
+        /// 若使用者已被鎖定，檢查是否還在鎖定期；
+        /// 還在鎖定期則回傳 RedirectResult，否則自動解鎖並回傳 null。
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="sec"></param>
+        /// <param name="now"></param>
+        /// <returns></returns>
+        [NonAction]
+        private async Task<IActionResult?> HandleLockedUserIfNeededAsync(User user, PasswordPolicy sec)
+        {
+
+            DateTime now = DateTime.Now;
+
+            if (!user.UserIsLocked)
+            {
+                return null;
+            }
+
+            if (user.UserLockedUntil.HasValue && user.UserLockedUntil.Value > now)
+            {
+                // 尚在鎖定期
+                TempData["_JSShowAlert"] =
+                    $"帳號或密碼錯誤次數達{(sec.FailedLimit == int.MaxValue ? 0 : sec.FailedLimit)}次以上，請於{sec.LockMinutes}分鐘後重試(或洽管理者解除鎖定)";
+
                 await _accessLog.NewLoginFailedAsync(
                     AccountType.Admin,
-                    userAccount ?? "",
-                    0,
+                    user.UserAccount,
+                    user.UserId,
                     PageName,
                     "登入",
-                    3,
-                    $"登入異常：{ex.Message}"
+                    2,
+                    $"登入失敗：帳號鎖定中，直到 {user.UserLockedUntil:yyyy-MM-dd HH:mm:ss}"
                 );
 
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 鎖定已過期 → 自動解鎖
+            user.UserIsLocked = false;
+            user.UserLockedUntil = null;
+            user.UserLoginFailedCount = 0;
+            await _context.SaveChangesAsync();
+
+            return null;
+        }
+
+        /// <summary>
+        /// 驗證密碼；若失敗則依設定累加失敗次數 / 可能鎖定帳號 / 寫 log / 回傳 RedirectResult；
+        /// 若成功則回傳 null。
+        /// </summary>
+        [NonAction]
+        private async Task<IActionResult?> VerifyPasswordAndHandleFailedAsync(User user, string password, PasswordPolicy sec)
+        {
+            DateTime now = DateTime.Now;
+
+            // 驗證密碼
+            var hasher = new PasswordHasher<User>();
+            var verify = hasher.VerifyHashedPassword(user, user.UserPasswordHash, password);
+
+            if (verify == PasswordVerificationResult.Success)
+            {
+                return null;
+            }
+
+            // 失敗：累加計數
+            user.UserLoginFailedCount = (user.UserLoginFailedCount < int.MaxValue)
+                ? user.UserLoginFailedCount + 1
+                : user.UserLoginFailedCount;
+
+            string failMessage = "登入失敗：密碼錯誤";
+            int severity = 1;
+
+            // 達門檻 → 鎖定一段時間（只有當 FailedLimit != int.MaxValue 且 LockMinutes > 0 才有意義）
+            if (sec.FailedLimit != int.MaxValue &&
+                sec.LockMinutes > 0 &&
+                user.UserLoginFailedCount >= sec.FailedLimit)
+            {
+                user.UserIsLocked = true;
+                user.UserLockedUntil = now.AddMinutes(sec.LockMinutes);
+
+                TempData["_JSShowAlert"] =
+                    $"帳號或密碼錯誤次數達{sec.FailedLimit}次以上，請於{sec.LockMinutes}分鐘後重試(或洽管理者解除鎖定)";
+
+                failMessage =
+                    $"密碼錯誤達 {sec.FailedLimit} 次以上，帳號鎖定至 {user.UserLockedUntil:yyyy-MM-dd HH:mm:ss}";
+                severity = 2;
+
+                // 達門檻後重設計數
+                user.UserLoginFailedCount = 0;
+            }
+            else
+            {
+                // 一律回通用訊息（避免洩漏是帳號還是密碼問題）
+                TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";
+            }
+
+            // 密碼錯誤 → 記錄
+            await _accessLog.NewLoginFailedAsync(
+                AccountType.Admin,
+                user.UserAccount,
+                user.UserId,
+                PageName,
+                "登入",
+                severity,
+                failMessage
+            );
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// 開始二階段驗證流程：
+        /// - 將可用的 2FA 方法等資訊存入 Session
+        /// - 若只有 Email 且尚未產生 OTP，可在這裡先寄出一次
+        /// </summary>
+        [NonAction]
+        private async Task StartTwoFactorFlowAsync(User user, PasswordPolicy sec, string? returnUrl)
+        {
+            var now = DateTime.UtcNow;
+
+            // 這邊也要用「全域 + user 狀態」去算
+            bool canUseEmail =
+                sec.Sec2faEnabled &&
+                sec.Sec2faEmailEnabled &&
+                !string.IsNullOrWhiteSpace(user.UserEmail);
+
+            bool canUseTotp =
+                sec.Sec2faEnabled &&
+                sec.Sec2faTotpEnabled &&
+                !string.IsNullOrWhiteSpace(user.UserTotpSecret);
+
+            // 如果真的兩種都沒有，就不應該進來（保險起見再防呆一次）
+            if (!canUseEmail && !canUseTotp)
+            {
+                // 理論上 EvaluatePostLoginFlags 就不會把 need2Fa 設成 true
+                // 這裡就直接當作沒 2FA，什麼都不做。
+                return;
+            }
+
+            // 先決定預設 provider：有 Email 優先 Email，否則 Totp
+            var defaultProvider = canUseEmail ? "Email" : "Totp";
+
+            var state = new TwoFactorState
+            {
+                UserId = user.UserId,
+                CanUseEmail = canUseEmail,
+                CanUseTotp = canUseTotp,
+                DefaultProvider = defaultProvider,
+                MustChangePassword = false,           // 這三個是剛剛 EvaluatePostLoginFlags 的結果
+                RequireFirstLoginChange = false,
+                RequireExpireChange = false,
+                ReturnUrl = returnUrl,
+            };
+
+            // 如果 Email 方式可用，就順便產生 OTP & 寄信
+            if (canUseEmail)
+            {
+                // 產生 6 碼 OTP
+                var otp = GenerateRandomCode(6);              // 你可以自己實作，或用 RNGCryptoServiceProvider
+                state.EmailOtpHash = ComputeSha256(otp);
+                state.EmailOtpExpiresAt = now.AddMinutes(5);  // 例如 5 分鐘有效
+                state.EmailOtpVerifyFailCount = 0;
+
+                // 寄信給 user.UserEmail
+                await SendTwoFactorEmailCodeAsync(user, otp);
+            }
+
+            HttpContext.Session.SetObject(AppSettings.TwoFactorSessionKey, state);
+        }
+
+        /// <summary>
+        /// 重新寄送二階段驗證 Email OTP
+        /// </summary>
+        [HttpPost("SendTwoFactorEmailCode")]
+        [ValidateAntiForgeryToken]
+        [AllowAnonymous]
+        public async Task<IActionResult> SendTwoFactorEmailCode()
+        {
+            var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
+            if (state == null)
+            {
+                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (!state.CanUseEmail)
+            {
+                TempData["_JSShowAlert"] = "目前未啟用 Email 二階段驗證。";
+                return RedirectToAction(nameof(TwoFactor));
+            }
+
+            // 取得使用者
+            var user = await _context.Users.FindAsync(state.UserId);
+            if (user == null)
+            {
+                TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
+                HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 產生新 OTP
+            var otp = GenerateRandomCode(6);
+            var nowUtc = DateTime.UtcNow;
+
+            state.EmailOtpHash = ComputeSha256(otp);
+            state.EmailOtpExpiresAt = nowUtc.AddMinutes(5); // 你可以視需求調整有效時間
+            state.EmailOtpVerifyFailCount = 0;
+
+            // 寄信
+            await SendTwoFactorEmailCodeAsync(user, otp);
+
+            // 更新 Session
+            HttpContext.Session.SetObject(AppSettings.TwoFactorSessionKey, state);
+
+            TempData["_JSShowAlert"] = "已寄出 Email 驗證碼，請至信箱收信。";
+
+            // 回到二階段驗證畫面
+            return RedirectToAction(nameof(TwoFactor));
+        }
+
+        /// <summary>
+        /// 寄送二階段驗證 Email OTP 的實際動作。
+        /// </summary>
+        /// <param name="user">使用者</param>
+        /// <param name="otp">OTP驗證碼</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        [NonAction]
+        private async Task SendTwoFactorEmailCodeAsync(User user, string code)
+        {
+            if (string.IsNullOrWhiteSpace(user.UserEmail))
+            {
+                // 沒 Email 就不寄，必要時寫 log
+                Utilities.WriteExceptionIntoLogFile(
+                    $"使用者 {user.UserAccount} 沒有設定 Email，無法寄送 2FA 驗證碼。",
+                    new Exception("UserEmail is empty")
+                );
+                return;
+            }
+
+            var to = new List<string> { user.UserEmail };
+
+            var SiteName = _param.GetString("SITE_NAME") ?? "範例網站";
+
+            var subject = $"【{SiteName}】二階段驗證碼";
+            var body = $@"
+                <p>親愛的 {user.UserFullName} 您好：</p>
+                <p>您的登入二階段驗證碼如下：</p>
+                <p style=""font-size:20px;font-weight:bold;"">{code}</p>
+                <p>此驗證碼有效時間為 5 分鐘，請勿告知他人。</p>
+                <p>若非您本人操作，請盡快聯絡系統管理員。</p>
+                ";
+
+            await _mailHelper.SendMailAsync(
+                subject: subject,
+                body: body,
+                toGroup: to,
+                ccGroup: null,
+                bccGroup: null,
+                attachmentGroup: null,
+                isBodyHtml: true
+            );
+        }
+
+        /// <summary>
+        /// 密碼驗證成功後，依「首次登入」、「密碼過期」與 2FA 設定算出後續旗標。
+        /// </summary>
+        [NonAction]
+        private void EvaluatePostLoginFlags(
+            User user,
+            PasswordPolicy sec,
+            out bool mustChangePassword,
+            out bool requireFirstLoginChange,
+            out bool requireExpireChange,
+            out bool need2Fa)
+        {
+
+
+            DateTime now = DateTime.Now;
+
+            mustChangePassword = false;
+            requireFirstLoginChange = false;
+            requireExpireChange = false;
+            need2Fa = false;
+
+            if (!sec.PolicyEnabled)
+            {
+                return;
+            }
+
+            // --- 首次登入強制改密碼 ---
+            if (sec.ForceChangeFirstLoginFlag)
+            {
+                var isFirstLogin = !user.UserLastLoginAt.HasValue;
+                if (isFirstLogin)
+                {
+                    mustChangePassword = true;
+                    requireFirstLoginChange = true;
+                }
+            }
+
+            // --- 密碼過期天數（0 = 不過期）---
+            if (sec.PasswordExpireDays.HasValue && sec.PasswordExpireDays.Value > 0)
+            {
+                var lastChangeTime = user.UserPasswordChangedAt ?? user.CreatedAt;
+                if (lastChangeTime.Value.AddDays(sec.PasswordExpireDays.Value) < now)
+                {
+                    mustChangePassword = true;
+                    requireExpireChange = true;
+                }
+            }
+
+            // --- 2FA 判斷：同時看「全域」＋「這個使用者是否真的有東西可用」 ---
+            if (sec.Sec2faEnabled)
+            {
+                // 對「這個 user」而言，Email / TOTP 是否真的可用
+                bool canUseEmail =
+                    sec.Sec2faEmailEnabled &&
+                    !string.IsNullOrWhiteSpace(user.UserEmail);   // 需要有 Email
+
+                bool canUseTotp =
+                    sec.Sec2faTotpEnabled &&
+                    !string.IsNullOrWhiteSpace(user.UserTotpSecret);  // 需要有 TOTP Secret（已綁定過）
+
+                if (canUseEmail || canUseTotp)
+                {
+                    need2Fa = true;
+                }
+                else
+                {
+                    // 全域雖然開了 2FA，但這個帳號完全沒有 2FA 方法 → 視為「暫時不啟用 2FA」
+                    need2Fa = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 登入成功後的共通流程：
+        /// - 清除失敗次數與鎖定狀態
+        /// - 登入稽核（時間 + IP）
+        /// - 計算有效角色，建立 Claims 與 Cookie
+        /// - 建立選單樹存入 Session
+        /// - 寫登入成功紀錄
+        /// </summary>
+        [NonAction]
+        private async Task SignInAndBuildSessionAsync(User user, bool mustChangePassword)
+        {
+            // 成功：清除失敗與鎖定
+            user.UserLoginFailedCount = 0;
+            user.UserIsLocked = false;
+            user.UserLockedUntil = null;
+            await _context.SaveChangesAsync();
+
+            // 登入稽核（時間+IP，內部應會更新 UserLastLoginAt）
+            await SetUserLoginAuditAsync(user);
+
+            // ===== 1. 透過 UserGroupMember → UserGroupRole → Role 算出有效角色 =====
+            var rolesFromGroups = await _context.UserGroupMembers
+                .Where(ugm => ugm.UserId == user.UserId)
+                .SelectMany(ugm => ugm.UserGroup!.UserGroupRoles)   // 到 UserGroupRole
+                .Where(ugr => ugr.Role != null)
+                .Select(ugr => ugr.Role!)
+                .Distinct()
+                .ToListAsync();
+
+            var allRoles = rolesFromGroups;
+
+            // ===== 2. 建立 Claims =====
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new("UserFullName", user.UserFullName),
+                new("UserAccount", user.UserAccount)
+            };
+
+            // 角色名稱 → 標準 Role Claim：之後 [Authorize(Roles = "xxx")] 會吃這個
+            foreach (var r in allRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, r.RoleName));
+            }
+
+            // 角色群組（自訂 ClaimType，方便你之後用來分群或顯示）
+            foreach (var g in allRoles
+                                 .Select(x => x.RoleGroup)
+                                 .Where(x => !string.IsNullOrEmpty(x))
+                                 .Distinct())
+            {
+                claims.Add(new Claim("RoleGroup", g));
+            }
+
+            if (mustChangePassword)
+            {
+                claims.Add(new Claim("MustChangePassword", "Y"));
+            }
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            // ===== 3. 建立選單樹(只做一次) =====
+            var menuTree = BuildMenuTreeForUser(principal);
+            HttpContext.Session.SetObject("MenuTree", menuTree);
+
+            await _accessLog.NewLoginSuccessAsync(user);
+        }
+
+        /// <summary>
+        /// 2FA 驗證頁（讓使用者選 Email / TOTP，並輸入驗證碼）
+        /// </summary>
+        [HttpGet("TwoFactor")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TwoFactor()
+        {
+            var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
+            if (state == null)
+            {
+                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 可用的 2FA 方法資訊傳給 View
+            ViewBag.CanUseEmail = state.CanUseEmail;
+            ViewBag.CanUseTotp = state.CanUseTotp;
+
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示二階段驗證頁");
+
+            return View();
+        }
+
+        /// <summary>
+        /// 二階段驗證送出（Email / TOTP 共用）
+        /// </summary>
+        /// <param name="code">驗證碼</param>
+        /// <param name="provider">驗證方式：Email / Totp</param>
+        [HttpPost("VerifyTwoFactor")]
+        [ValidateAntiForgeryToken]
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyTwoFactor(string code, string provider)
+        {
+            // 從 Session 取出先前 Login 建立的 2FA 狀態
+            var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
+            if (state == null)
+            {
+                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (string.IsNullOrWhiteSpace(provider))
+            {
+                TempData["_JSShowAlert"] = "請選擇驗證方式。";
+                return RedirectToAction(nameof(TwoFactor));
+            }
+
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                TempData["_JSShowAlert"] = "請輸入驗證碼。";
+                return RedirectToAction(nameof(TwoFactor));
+            }
+
+            // 正規化 provider
+            var mode = provider.Trim();
+            bool isEmail = mode.Equals("Email", StringComparison.OrdinalIgnoreCase);
+            bool isTotp = mode.Equals("Totp", StringComparison.OrdinalIgnoreCase);
+
+            if (!isEmail && !isTotp)
+            {
+                TempData["_JSShowAlert"] = "驗證方式不正確，請重新選擇。";
+                return RedirectToAction(nameof(TwoFactor));
+            }
+
+            // ===== 1) Email OTP 驗證流程 =====
+            if (isEmail)
+            {
+                if (!state.CanUseEmail)
+                {
+                    TempData["_JSShowAlert"] = "目前未啟用 Email 二階段驗證。";
+                    return RedirectToAction(nameof(TwoFactor));
+                }
+
+                if (!state.EmailOtpExpiresAt.HasValue || state.EmailOtpExpiresAt.Value < DateTime.UtcNow)
+                {
+                    TempData["_JSShowAlert"] = "驗證碼已過期，請重新取得。";
+                    return RedirectToAction(nameof(TwoFactor));
+                }
+
+                if (state.EmailOtpVerifyFailCount >= 5)
+                {
+                    TempData["_JSShowAlert"] = "驗證失敗次數過多，請重新登入。";
+                    HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var inputHash = ComputeSha256(code.Trim());
+                if (!SecureEqualsHash(state.EmailOtpHash, inputHash))
+                {
+                    state.EmailOtpVerifyFailCount++;
+                    HttpContext.Session.SetObject(AppSettings.TwoFactorSessionKey, state);
+
+                    TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
+                    return RedirectToAction(nameof(TwoFactor));
+                }
+
+                // Email OTP 驗證成功，往下走共用成功流程
+            }
+
+            // ===== 2) TOTP 驗證流程 =====
+            if (isTotp)
+            {
+                if (!state.CanUseTotp)
+                {
+                    TempData["_JSShowAlert"] = "目前未啟用 TOTP 二階段驗證。";
+                    return RedirectToAction(nameof(TwoFactor));
+                }
+                var userForTotp = await _context.Users.FindAsync(state.UserId);
+                if (userForTotp == null)
+                {
+                    TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
+                    HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var totpOk = await VerifyTotpCodeAsync(userForTotp, code);
+                if (!totpOk)
+                {
+                    TempData["_JSShowAlert"] = "驗證碼錯誤或已過期，請重新輸入。";
+                    return RedirectToAction(nameof(TwoFactor));
+                }
+
+                // TOTP 驗證成功，往下走共用成功流程
+            }
+
+            // ===== 3) 驗證成功：清除 2FA 狀態，正式登入 =====
+            var user = await _context.Users.FindAsync(state.UserId);
+            if (user == null)
+            {
+                TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
+                HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 驗證成功 → 不再需要 2FA 狀態
+            HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
+
+            // 2FA 通過後才真正建立 Claims / Cookie / Menu / LoginSuccessLog
+            // 第二個參數仍然帶入 mustChangePassword（這樣 Claims 可帶 MustChangePassword 或其他資訊）
+            await SignInAndBuildSessionAsync(user, state.MustChangePassword);
+
+            // 回原本的 returnUrl（若有），否則到首頁
+            if (!string.IsNullOrEmpty(state.ReturnUrl) &&
+                Url.IsLocalUrl(state.ReturnUrl) &&
+                !state.ReturnUrl.Contains("Login", StringComparison.OrdinalIgnoreCase))
+            {
+                var controller = state.ReturnUrl.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
+                return Redirect($"/{controller}");
             }
 
             return RedirectToAction("Index", "Home");
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         /// <summary>
         /// 登出
@@ -713,6 +928,160 @@ namespace BioMedDocManager.Controllers
 
             byte[] imageBytes = GenerateCaptchaImage(code);
             return File(imageBytes, "image/png");
+        }
+
+        /// <summary>
+        /// 簡單的 SHA256 雜湊（用來儲存 OTP，不放明碼）
+        /// </summary>
+        [NonAction]
+        private static string ComputeSha256(string input)
+        {
+            using var sha = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(input ?? string.Empty);
+            var hash = sha.ComputeHash(bytes);
+            return BitConverter.ToString(hash).Replace("-", string.Empty);
+        }
+
+        /// <summary>
+        /// 簡單的雜湊比對（避免大小寫問題）
+        /// </summary>
+        [NonAction]
+        private static bool SecureEqualsHash(string? leftHash, string? rightHash)
+        {
+            if (string.IsNullOrEmpty(leftHash) || string.IsNullOrEmpty(rightHash))
+                return false;
+
+            var a = leftHash.ToUpperInvariant();
+            var b = rightHash.ToUpperInvariant();
+
+            if (a.Length != b.Length)
+                return false;
+
+            var result = 0;
+            for (int i = 0; i < a.Length; i++)
+            {
+                result |= a[i] ^ b[i];
+            }
+            return result == 0;
+        }
+
+        /// <summary>
+        /// 驗證 TOTP 驗證碼（Google Authenticator 類）
+        /// secretBase32：Base32 編碼的密鑰
+        /// code：使用者輸入的 6 碼數字
+        /// </summary>
+        [NonAction]
+        private static bool VerifyTotpCode(string secretBase32, string code, int timestepSeconds = 30, int allowedDriftSteps = 1)
+        {
+            if (string.IsNullOrWhiteSpace(secretBase32) || string.IsNullOrWhiteSpace(code))
+                return false;
+
+            code = code.Trim().Replace(" ", "");
+            if (code.Length != 6 || !code.All(char.IsDigit))
+                return false;
+
+            var secret = Base32Decode(secretBase32);
+            if (secret == null || secret.Length == 0)
+                return false;
+
+            var unixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var counter = unixTime / timestepSeconds;
+
+            for (long offset = -allowedDriftSteps; offset <= allowedDriftSteps; offset++)
+            {
+                var totp = ComputeHotp(secret, (ulong)(counter + offset));
+                if (totp == code)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// HOTP：HMAC-based One-Time Password
+        /// </summary>
+        [NonAction]
+        private static string ComputeHotp(byte[] key, ulong counter, int digits = 6)
+        {
+            var counterBytes = BitConverter.GetBytes(counter);
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(counterBytes);
+            }
+
+            using var hmac = new HMACSHA1(key);
+            var hash = hmac.ComputeHash(counterBytes);
+
+            int offset = hash[hash.Length - 1] & 0x0F;
+            int binaryCode =
+                ((hash[offset] & 0x7f) << 24) |
+                ((hash[offset + 1] & 0xff) << 16) |
+                ((hash[offset + 2] & 0xff) << 8) |
+                (hash[offset + 3] & 0xff);
+
+            int otp = binaryCode % (int)Math.Pow(10, digits);
+            return otp.ToString(new string('0', digits));
+        }
+
+        /// <summary>
+        /// Base32 解碼（RFC4648，不含 padding）
+        /// </summary>
+        [NonAction]
+        private static byte[] Base32Decode(string base32)
+        {
+            if (string.IsNullOrWhiteSpace(base32))
+                return Array.Empty<byte>();
+
+            const string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+            var input = base32.Trim().Replace(" ", "").TrimEnd('=').ToUpperInvariant();
+
+            var bits = 0;
+            var value = 0;
+            var output = new List<byte>();
+
+            foreach (var c in input)
+            {
+                int idx = alphabet.IndexOf(c);
+                if (idx < 0)
+                {
+                    continue; // 忽略不在字表內的字元
+                }
+
+                value = (value << 5) | idx;
+                bits += 5;
+
+                if (bits >= 8)
+                {
+                    bits -= 8;
+                    output.Add((byte)((value >> bits) & 0xFF));
+                }
+            }
+
+            return output.ToArray();
+        }
+
+        /// <summary>
+        /// 設定「登入後必須先變更密碼」的 Session 旗標（全域檢查用）
+        /// </summary>
+        [NonAction]
+        private void SetForceChangePasswordSession(
+            bool mustChangePassword,
+            bool requireFirstLoginChange,
+            bool requireExpireChange)
+        {
+            if (!mustChangePassword)
+            {
+                HttpContext.Session.Remove(AppSettings.ForceChangePasswordRequiredKey);
+                HttpContext.Session.Remove(AppSettings.ForceChangePasswordReasonFirstKey);
+                HttpContext.Session.Remove(AppSettings.ForceChangePasswordReasonExpireKey);
+                return;
+            }
+
+            HttpContext.Session.SetString(AppSettings.ForceChangePasswordRequiredKey, "Y");
+            HttpContext.Session.SetString(AppSettings.ForceChangePasswordReasonFirstKey, requireFirstLoginChange ? "Y" : "N");
+            HttpContext.Session.SetString(AppSettings.ForceChangePasswordReasonExpireKey, requireExpireChange ? "Y" : "N");
         }
 
         [NonAction]
