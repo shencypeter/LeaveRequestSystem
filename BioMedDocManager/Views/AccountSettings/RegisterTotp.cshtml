@@ -39,8 +39,9 @@
         <div class="mx-3 my-3">
             <ol>
                 <li>請先在手機安裝 <strong>Google Authenticator</strong> 或其他支援 TOTP 的驗證器 App。</li>
-                <li>使用 App 掃描下方 QR Code，或手動輸入「金鑰」。</li>
-                <li>App 會顯示 6 位數驗證碼，請輸入在下方欄位，按下「啟用 TOTP」。</li>
+                <li>Chrome瀏覽器的外掛套件：<a href="https://chromewebstore.google.com/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai?hl=zh-TW">Authenticator</a></li>
+                <li>使用【驗證器】掃描下方的QR Code，或手動輸入「金鑰」。</li>
+                <li>【驗證器】會顯示6位數驗證碼，請在下方欄位輸入後，按下「啟用 TOTP」。</li>
             </ol>
         </div>
 
@@ -87,7 +88,7 @@
                     <div class="input-group">
                         <input asp-for="Code"
                                class="form-control text-center text-uppercase"
-                               placeholder="請輸入 App 顯示的 6 位數"
+                               placeholder="請輸入【驗證器】顯示的6位數驗證碼"
                                maxlength="6"
                                inputmode="numeric"
                                autocomplete="one-time-code" />

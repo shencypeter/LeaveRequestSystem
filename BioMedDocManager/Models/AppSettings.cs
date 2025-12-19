@@ -33,6 +33,11 @@ public static class AppSettings
     public const string ForceChangePasswordReasonExpireKey = "ForceChangePasswordReasonExpire";
 
     /// <summary>
+    /// 2FA Email OTP 過期時間(分鐘)
+    /// </summary>
+    public const int TwoFactorEmailOtpExpireTime = 5;
+
+    /// <summary>
     /// Exception Log 的存放路徑(抓appsettings.json)
     /// </summary>
     private static readonly Lazy<string> _exceptionLogPath =

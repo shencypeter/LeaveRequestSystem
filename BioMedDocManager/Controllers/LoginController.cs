@@ -532,7 +532,7 @@ namespace BioMedDocManager.Controllers
             var nowUtc = DateTime.UtcNow;
 
             state.EmailOtpHash = ComputeSha256(otp);
-            state.EmailOtpExpiresAt = nowUtc.AddMinutes(5); // 你可以視需求調整有效時間
+            state.EmailOtpExpiresAt = nowUtc.AddMinutes(AppSettings.TwoFactorEmailOtpExpireTime);
             state.EmailOtpVerifyFailCount = 0;
 
             // 寄信
@@ -576,7 +576,7 @@ namespace BioMedDocManager.Controllers
                 <p>親愛的 {user.UserFullName} 您好：</p>
                 <p>您的登入二階段驗證碼如下：</p>
                 <p style=""font-size:20px;font-weight:bold;"">{code}</p>
-                <p>此驗證碼有效時間為 5 分鐘，請勿告知他人。</p>
+                <p>此驗證碼有效時間為 {AppSettings.TwoFactorEmailOtpExpireTime} 分鐘，請勿告知他人。</p>
                 <p>若非您本人操作，請盡快聯絡系統管理員。</p>
                 ";
 
