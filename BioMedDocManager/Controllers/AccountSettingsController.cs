@@ -78,8 +78,6 @@ namespace BioMedDocManager.Controllers
             // 載入角色List
             ViewData["AllRoles"] = await GetRoles();
 
-            ViewData["2FA_ENABLED"] = _param.GetBool("SEC_2FA_ENABLED");
-
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
 
             return await BuildQueryAccountSettings(queryModel, ct);

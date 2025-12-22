@@ -64,33 +64,6 @@ namespace BioMedDocManager.Controllers
             return View();
         }
 
-        /// <summary>
-        /// 初次遷移用：將所有明碼密碼轉換成hash密碼
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet("Migrate")]
-        public async Task<IActionResult> Migrate()
-        {
-
-#if DEBUG
-            //只有DEBUG模式才可以使用
-            var users = await _context.Users
-                .ToListAsync();
-
-            foreach (var user in users)
-            {
-                user.UserPasswordHash = HashPassword(user, "Abcd" + user.UserAccount);
-            }
-
-            await _context.SaveChangesAsync();
-
-            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "初次遷移密碼");
-#endif
-
-
-            return RedirectToAction(nameof(Index));
-        }
-
         [HttpPost("Login")]
         [ValidateAntiForgeryToken]
         [AllowAnonymous]
@@ -231,6 +204,450 @@ namespace BioMedDocManager.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        /// <summary>
+        /// 2FA 驗證頁（讓使用者選 Email / TOTP，並輸入驗證碼）
+        /// </summary>
+        [HttpGet("TwoFactor")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TwoFactor()
+        {
+            var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
+            if (state == null)
+            {
+                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 可用的 2FA 方法資訊傳給 View
+            ViewBag.CanUseEmail = state.CanUseEmail;
+            ViewBag.CanUseTotp = state.CanUseTotp;
+
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示二階段驗證頁");
+
+            return View();
+        }
+
+        /// <summary>
+        /// 二階段驗證送出（Email / TOTP 共用）
+        /// </summary>
+        /// <param name="code">驗證碼</param>
+        /// <param name="provider">驗證方式：Email / Totp</param>
+        [HttpPost("VerifyTwoFactor")]
+        [ValidateAntiForgeryToken]
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyTwoFactor(string code, string provider)
+        {
+            // 從 Session 取出先前 Login 建立的 2FA 狀態
+            var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
+            if (state == null)
+            {
+                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (string.IsNullOrWhiteSpace(provider))
+            {
+                TempData["_JSShowAlert"] = "請選擇驗證方式。";
+                return RedirectToAction(nameof(TwoFactor));
+            }
+
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                TempData["_JSShowAlert"] = "請輸入驗證碼。";
+                return RedirectToAction(nameof(TwoFactor));
+            }
+
+            // 正規化 provider
+            var mode = provider.Trim();
+            var codeUpper = code.Trim().ToUpper();
+            bool isEmail = mode.Equals("Email", StringComparison.OrdinalIgnoreCase);
+            bool isTotp = mode.Equals("Totp", StringComparison.OrdinalIgnoreCase);
+
+            if (!isEmail && !isTotp)
+            {
+                TempData["_JSShowAlert"] = "驗證方式不正確，請重新選擇。";
+                return RedirectToAction(nameof(TwoFactor));
+            }
+
+            // ===== 1) Email OTP 驗證流程 =====
+            if (isEmail)
+            {
+                if (!state.CanUseEmail)
+                {
+                    TempData["_JSShowAlert"] = "目前未啟用 Email 二階段驗證。";
+                    return RedirectToAction(nameof(TwoFactor));
+                }
+
+                if (!state.EmailOtpExpiresAt.HasValue || state.EmailOtpExpiresAt.Value < DateTime.UtcNow)
+                {
+                    TempData["_JSShowAlert"] = "驗證碼已過期，請重新取得。";
+                    return RedirectToAction(nameof(TwoFactor));
+                }
+
+                if (state.EmailOtpVerifyFailCount >= 5)
+                {
+                    TempData["_JSShowAlert"] = "驗證失敗次數過多，請重新登入。";
+                    HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var inputHash = ComputeSha256(codeUpper);
+                if (!SecureEqualsHash(state.EmailOtpHash, inputHash))
+                {
+                    state.EmailOtpVerifyFailCount++;
+                    HttpContext.Session.SetObject(AppSettings.TwoFactorSessionKey, state);
+
+                    TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
+                    return RedirectToAction(nameof(TwoFactor));
+                }
+
+                // Email OTP 驗證成功，往下走共用成功流程
+            }
+
+            // ===== 2) TOTP 驗證流程 =====
+            if (isTotp)
+            {
+                if (!state.CanUseTotp)
+                {
+                    TempData["_JSShowAlert"] = "目前未啟用 TOTP 二階段驗證。";
+                    return RedirectToAction(nameof(TwoFactor));
+                }
+                var userForTotp = await _context.Users.FindAsync(state.UserId);
+                if (userForTotp == null)
+                {
+                    TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
+                    HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var totpOk = await VerifyTotpCodeAsync(userForTotp, code);
+                if (!totpOk)
+                {
+                    TempData["_JSShowAlert"] = "驗證碼錯誤或已過期，請重新輸入。";
+                    return RedirectToAction(nameof(TwoFactor));
+                }
+
+                // TOTP 驗證成功，往下走共用成功流程
+            }
+
+            // ===== 3) 驗證成功：清除 2FA 狀態，正式登入 =====
+            var user = await _context.Users.FindAsync(state.UserId);
+            if (user == null)
+            {
+                TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
+                HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 驗證成功 → 不再需要 2FA 狀態
+            HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
+
+            // 2FA 通過後才真正建立 Claims / Cookie / Menu / LoginSuccessLog
+            // 第二個參數仍然帶入 mustChangePassword（這樣 Claims 可帶 MustChangePassword 或其他資訊）
+            await SignInAndBuildSessionAsync(user, state.MustChangePassword);
+
+            // 回原本的 returnUrl（若有），否則到首頁
+            if (!string.IsNullOrEmpty(state.ReturnUrl) &&
+                Url.IsLocalUrl(state.ReturnUrl) &&
+                !state.ReturnUrl.Contains("Login", StringComparison.OrdinalIgnoreCase))
+            {
+                var controller = state.ReturnUrl.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
+                return Redirect($"/{controller}");
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        /// <summary>
+        /// 重新寄送二階段驗證 Email OTP
+        /// </summary>
+        [HttpPost("SendTwoFactorEmailCode")]
+        [ValidateAntiForgeryToken]
+        [AllowAnonymous]
+        public async Task<IActionResult> SendTwoFactorEmailCode()
+        {
+            var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
+            if (state == null)
+            {
+                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (!state.CanUseEmail)
+            {
+                TempData["_JSShowAlert"] = "目前未啟用 Email 二階段驗證。";
+                return RedirectToAction(nameof(TwoFactor));
+            }
+
+            // 取得使用者
+            var user = await _context.Users.FindAsync(state.UserId);
+            if (user == null)
+            {
+                TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
+                HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 產生新 OTP
+            var otp = GenerateRandomCode(6);
+            var nowUtc = DateTime.UtcNow;
+
+            state.EmailOtpHash = ComputeSha256(otp);
+            state.EmailOtpExpiresAt = nowUtc.AddMinutes(AppSettings.TwoFactorEmailOtpExpireTime);
+            state.EmailOtpVerifyFailCount = 0;
+
+            // 寄信
+            await SendTwoFactorEmailCodeAsync(user, otp);
+
+            // 更新 Session
+            HttpContext.Session.SetObject(AppSettings.TwoFactorSessionKey, state);
+
+            TempData["_JSShowAlert"] = "已寄出 Email 驗證碼，請至信箱收信。";
+
+            // 回到二階段驗證畫面
+            return RedirectToAction(nameof(TwoFactor));
+        }
+
+        /// <summary>
+        /// 登出
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("Logout")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Logout()
+        {
+            HttpContext.Session.Remove("try_login");
+            HttpContext.Session.Remove("MenuTree");
+            TempData["_JSShowAlert"] = "您已登出系統，謝謝您的使用";
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await _accessLog.NewLogoutAsync(GetLoginUser());
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet("GetCaptcha")]
+        public IActionResult GetCaptcha()
+        {
+            string code = GenerateRandomCode(5); // e.g., "A3X9B"
+            httpAccessor.HttpContext.Session.SetString("CaptchaCode", code);
+
+            byte[] imageBytes = GenerateCaptchaImage(code);
+            return File(imageBytes, "image/png");
+        }
+
+        /// <summary>
+        /// 初次遷移用：將所有明碼密碼轉換成hash密碼
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("Migrate")]
+        public async Task<IActionResult> Migrate()
+        {
+
+#if DEBUG
+            //只有DEBUG模式才可以使用
+            var users = await _context.Users
+                .ToListAsync();
+
+            foreach (var user in users)
+            {
+                user.UserPasswordHash = HashPassword(user, "Abcd" + user.UserAccount);
+            }
+
+            await _context.SaveChangesAsync();
+
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "初次遷移密碼");
+#endif
+
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// 登入成功後的共通流程：
+        /// - 清除失敗次數與鎖定狀態
+        /// - 登入稽核（時間 + IP）
+        /// - 計算有效角色，建立 Claims 與 Cookie
+        /// - 建立選單樹存入 Session
+        /// - 寫登入成功紀錄
+        /// </summary>
+        [NonAction]
+        private async Task SignInAndBuildSessionAsync(User user, bool mustChangePassword)
+        {
+            // 成功：清除失敗與鎖定
+            user.UserLoginFailedCount = 0;
+            user.UserIsLocked = false;
+            user.UserLockedUntil = null;
+            await _context.SaveChangesAsync();
+
+            // 登入稽核（時間+IP，內部應會更新 UserLastLoginAt）
+            await SetUserLoginAuditAsync(user);
+
+            // ===== 1. 透過 UserGroupMember → UserGroupRole → Role 算出有效角色 =====
+            var rolesFromGroups = await _context.UserGroupMembers
+                .Where(ugm => ugm.UserId == user.UserId)
+                .SelectMany(ugm => ugm.UserGroup!.UserGroupRoles)   // 到 UserGroupRole
+                .Where(ugr => ugr.Role != null)
+                .Select(ugr => ugr.Role!)
+                .Distinct()
+                .ToListAsync();
+
+            var allRoles = rolesFromGroups;
+
+            // ===== 2. 建立 Claims =====
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new("UserFullName", user.UserFullName),
+                new("UserAccount", user.UserAccount)
+            };
+
+            // 角色名稱 → 標準 Role Claim：之後 [Authorize(Roles = "xxx")] 會吃這個
+            foreach (var r in allRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, r.RoleName));
+            }
+
+            // 角色群組（自訂 ClaimType，方便你之後用來分群或顯示）
+            foreach (var g in allRoles
+                                 .Select(x => x.RoleGroup)
+                                 .Where(x => !string.IsNullOrEmpty(x))
+                                 .Distinct())
+            {
+                claims.Add(new Claim("RoleGroup", g));
+            }
+
+            if (mustChangePassword)
+            {
+                claims.Add(new Claim("MustChangePassword", "Y"));
+            }
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            // ===== 3. 建立選單樹(只做一次) =====
+            var menuTree = BuildMenuTreeForUser(principal);
+            HttpContext.Session.SetObject("MenuTree", menuTree);
+
+            await _accessLog.NewLoginSuccessAsync(user);
+        }
+
+        /// <summary>
+        /// 寄送二階段驗證 Email OTP 的實際動作。
+        /// </summary>
+        /// <param name="user">使用者</param>
+        /// <param name="otp">OTP驗證碼</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        [NonAction]
+        private async Task SendTwoFactorEmailCodeAsync(User user, string code)
+        {
+            if (string.IsNullOrWhiteSpace(user.UserEmail))
+            {
+                // 沒 Email 就不寄，必要時寫 log
+                Utilities.WriteExceptionIntoLogFile(
+                    $"使用者 {user.UserAccount} 沒有設定 Email，無法寄送 2FA 驗證碼。",
+                    new Exception("UserEmail is empty")
+                );
+                return;
+            }
+
+            var to = new List<string> { user.UserEmail };
+
+            var SiteName = _param.GetString("SITE_NAME") ?? "範例網站";
+
+            var subject = $"【{SiteName}】二階段驗證碼";
+            var body = string.Format(
+                AppSettings.TwoFactorEmailBodyTemplate,
+                user.UserFullName,
+                code,
+                AppSettings.TwoFactorEmailOtpExpireTime
+            );
+
+
+            await _mailHelper.SendMailAsync(
+                subject: subject,
+                body: body,
+                toGroup: to,
+                ccGroup: null,
+                bccGroup: null,
+                attachmentGroup: null,
+                isBodyHtml: true
+            );
+        }
+
+        /// <summary>
+        /// 密碼驗證成功後，依「首次登入」、「密碼過期」與 2FA 設定算出後續旗標。
+        /// </summary>
+        [NonAction]
+        private void EvaluatePostLoginFlags(
+            User user,
+            PasswordPolicy sec,
+            out bool mustChangePassword,
+            out bool requireFirstLoginChange,
+            out bool requireExpireChange,
+            out bool need2Fa)
+        {
+
+
+            DateTime now = DateTime.Now;
+
+            mustChangePassword = false;
+            requireFirstLoginChange = false;
+            requireExpireChange = false;
+            need2Fa = false;
+
+            if (!sec.PolicyEnabled)
+            {
+                return;
+            }
+
+            // --- 首次登入強制改密碼 ---
+            if (sec.ForceChangeFirstLoginFlag)
+            {
+                var isFirstLogin = !user.UserLastLoginAt.HasValue;
+                if (isFirstLogin)
+                {
+                    mustChangePassword = true;
+                    requireFirstLoginChange = true;
+                }
+            }
+
+            // --- 密碼過期天數（0 = 不過期）---
+            if (sec.PasswordExpireDays.HasValue && sec.PasswordExpireDays.Value > 0)
+            {
+                var lastChangeTime = user.UserPasswordChangedAt ?? user.CreatedAt;
+                if (lastChangeTime.Value.AddDays(sec.PasswordExpireDays.Value) < now)
+                {
+                    mustChangePassword = true;
+                    requireExpireChange = true;
+                }
+            }
+
+            // --- 2FA 判斷：同時看「全域」＋「這個使用者是否真的有東西可用」 ---
+            if (sec.Sec2faEnabled)
+            {
+                // 對「這個 user」而言，Email / TOTP 是否真的可用
+                bool canUseEmail =
+                    sec.Sec2faEmailEnabled &&
+                    !string.IsNullOrWhiteSpace(user.UserEmail);   // 需要有 Email
+
+                bool canUseTotp =
+                    sec.Sec2faTotpEnabled &&
+                    !string.IsNullOrWhiteSpace(user.UserTotpSecret);  // 需要有 TOTP Secret（已綁定過）
+
+                if (canUseEmail || canUseTotp)
+                {
+                    need2Fa = true;
+                }
+                else
+                {
+                    // 全域雖然開了 2FA，但這個帳號完全沒有 2FA 方法 → 視為「暫時不啟用 2FA」
+                    need2Fa = false;
+                }
+            }
+        }
 
         /// <summary>
         /// 驗證碼檢查（RELEASE 模式才啟用）；
@@ -263,65 +680,6 @@ namespace BioMedDocManager.Controllers
     }
 #endif
             return null;
-        }
-
-        /// <summary>
-        /// 從 Parameter 讀取安全 / 密碼政策設定
-        /// </summary>
-        /// <returns>密碼政策設定</returns>
-        [NonAction]
-        private PasswordPolicy LoadSecuritySettingsFromParameter()
-        {
-            var sec = new PasswordPolicy();
-
-            // 是否啟用密碼政策
-            sec.PolicyEnabled = _param.GetBool("SEC_PASSWORD_POLICY_ENABLED");
-
-            // 預設值（當 policyEnabled = false 或參數沒設好時的防呆）
-            // 這裡是「程式內建 fallback」，已經不再使用 AppSettings。
-            sec.FailedLimit = int.MaxValue;  // 預設視為「不鎖定」
-            sec.LockMinutes = 0;             // 鎖定時間 0 = 不鎖定
-            sec.PasswordExpireDays = null;   // 密碼過期天數（>0 才啟用）
-            sec.ForceChangeFirstLoginFlag = false;
-
-            sec.Sec2faEnabled = false;
-            sec.Sec2faEmailEnabled = false;
-            sec.Sec2faTotpEnabled = false;
-
-            if (sec.PolicyEnabled)
-            {
-                // ===== 登入失敗鎖定門檻 / 鎖定時間 =====
-                var paramFailedLimit = _param.GetInt("SEC_PASSWORD_MAX_FAILED_ATTEMPTS");
-                var paramLockMinutes = _param.GetInt("SEC_PASSWORD_LOCKOUT_MINUTES");
-
-                if (paramFailedLimit > 0 && paramLockMinutes > 0)
-                {
-                    sec.FailedLimit = paramFailedLimit.Value;
-                    sec.LockMinutes = paramLockMinutes.Value;
-                }
-                else
-                {
-                    // 若未正確設定，就維持「不鎖定」行為
-                    sec.FailedLimit = int.MaxValue;
-                    sec.LockMinutes = 0;
-                }
-
-                // ===== 密碼過期 / 首次登入強制改密碼 =====
-                var expDays = _param.GetInt("SEC_PASSWORD_EXPIRE_DAYS"); // 0=不過期
-                if (expDays > 0)
-                {
-                    sec.PasswordExpireDays = expDays;
-                }
-
-                sec.ForceChangeFirstLoginFlag = _param.GetBool("SEC_PASSWORD_FORCE_CHANGE_FIRST_LOGIN");
-
-                // ===== 2FA 設定 =====
-                sec.Sec2faEnabled = _param.GetBool("SEC_2FA_ENABLED");
-                sec.Sec2faEmailEnabled = _param.GetBool("SEC_2FA_EMAIL_ENABLED");
-                sec.Sec2faTotpEnabled = _param.GetBool("SEC_2FA_TOTP_ENABLED");
-            }
-
-            return sec;
         }
 
         /// <summary>
@@ -481,7 +839,8 @@ namespace BioMedDocManager.Controllers
                 ReturnUrl = returnUrl,
             };
 
-            // 如果 Email 方式可用，就順便產生 OTP & 寄信
+            // 如果 Email 方式可用，就順便產生 OTP & 寄信 -> 先註解，如果選Authenticator驗證碼，但是每次進入頁面還是都會發email，浪費資源
+            /*
             if (canUseEmail)
             {
                 // 產生 6 碼 OTP
@@ -493,441 +852,9 @@ namespace BioMedDocManager.Controllers
                 // 寄信給 user.UserEmail
                 await SendTwoFactorEmailCodeAsync(user, otp);
             }
+            */
 
             HttpContext.Session.SetObject(AppSettings.TwoFactorSessionKey, state);
-        }
-
-        /// <summary>
-        /// 重新寄送二階段驗證 Email OTP
-        /// </summary>
-        [HttpPost("SendTwoFactorEmailCode")]
-        [ValidateAntiForgeryToken]
-        [AllowAnonymous]
-        public async Task<IActionResult> SendTwoFactorEmailCode()
-        {
-            var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
-            if (state == null)
-            {
-                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
-                return RedirectToAction(nameof(Index));
-            }
-
-            if (!state.CanUseEmail)
-            {
-                TempData["_JSShowAlert"] = "目前未啟用 Email 二階段驗證。";
-                return RedirectToAction(nameof(TwoFactor));
-            }
-
-            // 取得使用者
-            var user = await _context.Users.FindAsync(state.UserId);
-            if (user == null)
-            {
-                TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
-                HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
-                return RedirectToAction(nameof(Index));
-            }
-
-            // 產生新 OTP
-            var otp = GenerateRandomCode(6);
-            var nowUtc = DateTime.UtcNow;
-
-            state.EmailOtpHash = ComputeSha256(otp);
-            state.EmailOtpExpiresAt = nowUtc.AddMinutes(AppSettings.TwoFactorEmailOtpExpireTime);
-            state.EmailOtpVerifyFailCount = 0;
-
-            // 寄信
-            await SendTwoFactorEmailCodeAsync(user, otp);
-
-            // 更新 Session
-            HttpContext.Session.SetObject(AppSettings.TwoFactorSessionKey, state);
-
-            TempData["_JSShowAlert"] = "已寄出 Email 驗證碼，請至信箱收信。";
-
-            // 回到二階段驗證畫面
-            return RedirectToAction(nameof(TwoFactor));
-        }
-
-        /// <summary>
-        /// 寄送二階段驗證 Email OTP 的實際動作。
-        /// </summary>
-        /// <param name="user">使用者</param>
-        /// <param name="otp">OTP驗證碼</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        [NonAction]
-        private async Task SendTwoFactorEmailCodeAsync(User user, string code)
-        {
-            if (string.IsNullOrWhiteSpace(user.UserEmail))
-            {
-                // 沒 Email 就不寄，必要時寫 log
-                Utilities.WriteExceptionIntoLogFile(
-                    $"使用者 {user.UserAccount} 沒有設定 Email，無法寄送 2FA 驗證碼。",
-                    new Exception("UserEmail is empty")
-                );
-                return;
-            }
-
-            var to = new List<string> { user.UserEmail };
-
-            var SiteName = _param.GetString("SITE_NAME") ?? "範例網站";
-
-            var subject = $"【{SiteName}】二階段驗證碼";
-            var body = $@"
-                <p>親愛的 {user.UserFullName} 您好：</p>
-                <p>您的登入二階段驗證碼如下：</p>
-                <p style=""font-size:20px;font-weight:bold;"">{code}</p>
-                <p>此驗證碼有效時間為 {AppSettings.TwoFactorEmailOtpExpireTime} 分鐘，請勿告知他人。</p>
-                <p>若非您本人操作，請盡快聯絡系統管理員。</p>
-                ";
-
-            await _mailHelper.SendMailAsync(
-                subject: subject,
-                body: body,
-                toGroup: to,
-                ccGroup: null,
-                bccGroup: null,
-                attachmentGroup: null,
-                isBodyHtml: true
-            );
-        }
-
-        /// <summary>
-        /// 密碼驗證成功後，依「首次登入」、「密碼過期」與 2FA 設定算出後續旗標。
-        /// </summary>
-        [NonAction]
-        private void EvaluatePostLoginFlags(
-            User user,
-            PasswordPolicy sec,
-            out bool mustChangePassword,
-            out bool requireFirstLoginChange,
-            out bool requireExpireChange,
-            out bool need2Fa)
-        {
-
-
-            DateTime now = DateTime.Now;
-
-            mustChangePassword = false;
-            requireFirstLoginChange = false;
-            requireExpireChange = false;
-            need2Fa = false;
-
-            if (!sec.PolicyEnabled)
-            {
-                return;
-            }
-
-            // --- 首次登入強制改密碼 ---
-            if (sec.ForceChangeFirstLoginFlag)
-            {
-                var isFirstLogin = !user.UserLastLoginAt.HasValue;
-                if (isFirstLogin)
-                {
-                    mustChangePassword = true;
-                    requireFirstLoginChange = true;
-                }
-            }
-
-            // --- 密碼過期天數（0 = 不過期）---
-            if (sec.PasswordExpireDays.HasValue && sec.PasswordExpireDays.Value > 0)
-            {
-                var lastChangeTime = user.UserPasswordChangedAt ?? user.CreatedAt;
-                if (lastChangeTime.Value.AddDays(sec.PasswordExpireDays.Value) < now)
-                {
-                    mustChangePassword = true;
-                    requireExpireChange = true;
-                }
-            }
-
-            // --- 2FA 判斷：同時看「全域」＋「這個使用者是否真的有東西可用」 ---
-            if (sec.Sec2faEnabled)
-            {
-                // 對「這個 user」而言，Email / TOTP 是否真的可用
-                bool canUseEmail =
-                    sec.Sec2faEmailEnabled &&
-                    !string.IsNullOrWhiteSpace(user.UserEmail);   // 需要有 Email
-
-                bool canUseTotp =
-                    sec.Sec2faTotpEnabled &&
-                    !string.IsNullOrWhiteSpace(user.UserTotpSecret);  // 需要有 TOTP Secret（已綁定過）
-
-                if (canUseEmail || canUseTotp)
-                {
-                    need2Fa = true;
-                }
-                else
-                {
-                    // 全域雖然開了 2FA，但這個帳號完全沒有 2FA 方法 → 視為「暫時不啟用 2FA」
-                    need2Fa = false;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 登入成功後的共通流程：
-        /// - 清除失敗次數與鎖定狀態
-        /// - 登入稽核（時間 + IP）
-        /// - 計算有效角色，建立 Claims 與 Cookie
-        /// - 建立選單樹存入 Session
-        /// - 寫登入成功紀錄
-        /// </summary>
-        [NonAction]
-        private async Task SignInAndBuildSessionAsync(User user, bool mustChangePassword)
-        {
-            // 成功：清除失敗與鎖定
-            user.UserLoginFailedCount = 0;
-            user.UserIsLocked = false;
-            user.UserLockedUntil = null;
-            await _context.SaveChangesAsync();
-
-            // 登入稽核（時間+IP，內部應會更新 UserLastLoginAt）
-            await SetUserLoginAuditAsync(user);
-
-            // ===== 1. 透過 UserGroupMember → UserGroupRole → Role 算出有效角色 =====
-            var rolesFromGroups = await _context.UserGroupMembers
-                .Where(ugm => ugm.UserId == user.UserId)
-                .SelectMany(ugm => ugm.UserGroup!.UserGroupRoles)   // 到 UserGroupRole
-                .Where(ugr => ugr.Role != null)
-                .Select(ugr => ugr.Role!)
-                .Distinct()
-                .ToListAsync();
-
-            var allRoles = rolesFromGroups;
-
-            // ===== 2. 建立 Claims =====
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new("UserFullName", user.UserFullName),
-                new("UserAccount", user.UserAccount)
-            };
-
-            // 角色名稱 → 標準 Role Claim：之後 [Authorize(Roles = "xxx")] 會吃這個
-            foreach (var r in allRoles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, r.RoleName));
-            }
-
-            // 角色群組（自訂 ClaimType，方便你之後用來分群或顯示）
-            foreach (var g in allRoles
-                                 .Select(x => x.RoleGroup)
-                                 .Where(x => !string.IsNullOrEmpty(x))
-                                 .Distinct())
-            {
-                claims.Add(new Claim("RoleGroup", g));
-            }
-
-            if (mustChangePassword)
-            {
-                claims.Add(new Claim("MustChangePassword", "Y"));
-            }
-
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-            // ===== 3. 建立選單樹(只做一次) =====
-            var menuTree = BuildMenuTreeForUser(principal);
-            HttpContext.Session.SetObject("MenuTree", menuTree);
-
-            await _accessLog.NewLoginSuccessAsync(user);
-        }
-
-        /// <summary>
-        /// 2FA 驗證頁（讓使用者選 Email / TOTP，並輸入驗證碼）
-        /// </summary>
-        [HttpGet("TwoFactor")]
-        [AllowAnonymous]
-        public async Task<IActionResult> TwoFactor()
-        {
-            var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
-            if (state == null)
-            {
-                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
-                return RedirectToAction(nameof(Index));
-            }
-
-            // 可用的 2FA 方法資訊傳給 View
-            ViewBag.CanUseEmail = state.CanUseEmail;
-            ViewBag.CanUseTotp = state.CanUseTotp;
-
-            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示二階段驗證頁");
-
-            return View();
-        }
-
-        /// <summary>
-        /// 二階段驗證送出（Email / TOTP 共用）
-        /// </summary>
-        /// <param name="code">驗證碼</param>
-        /// <param name="provider">驗證方式：Email / Totp</param>
-        [HttpPost("VerifyTwoFactor")]
-        [ValidateAntiForgeryToken]
-        [AllowAnonymous]
-        public async Task<IActionResult> VerifyTwoFactor(string code, string provider)
-        {
-            // 從 Session 取出先前 Login 建立的 2FA 狀態
-            var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
-            if (state == null)
-            {
-                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
-                return RedirectToAction(nameof(Index));
-            }
-
-            if (string.IsNullOrWhiteSpace(provider))
-            {
-                TempData["_JSShowAlert"] = "請選擇驗證方式。";
-                return RedirectToAction(nameof(TwoFactor));
-            }
-
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                TempData["_JSShowAlert"] = "請輸入驗證碼。";
-                return RedirectToAction(nameof(TwoFactor));
-            }
-
-            // 正規化 provider
-            var mode = provider.Trim();
-            bool isEmail = mode.Equals("Email", StringComparison.OrdinalIgnoreCase);
-            bool isTotp = mode.Equals("Totp", StringComparison.OrdinalIgnoreCase);
-
-            if (!isEmail && !isTotp)
-            {
-                TempData["_JSShowAlert"] = "驗證方式不正確，請重新選擇。";
-                return RedirectToAction(nameof(TwoFactor));
-            }
-
-            // ===== 1) Email OTP 驗證流程 =====
-            if (isEmail)
-            {
-                if (!state.CanUseEmail)
-                {
-                    TempData["_JSShowAlert"] = "目前未啟用 Email 二階段驗證。";
-                    return RedirectToAction(nameof(TwoFactor));
-                }
-
-                if (!state.EmailOtpExpiresAt.HasValue || state.EmailOtpExpiresAt.Value < DateTime.UtcNow)
-                {
-                    TempData["_JSShowAlert"] = "驗證碼已過期，請重新取得。";
-                    return RedirectToAction(nameof(TwoFactor));
-                }
-
-                if (state.EmailOtpVerifyFailCount >= 5)
-                {
-                    TempData["_JSShowAlert"] = "驗證失敗次數過多，請重新登入。";
-                    HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
-                    return RedirectToAction(nameof(Index));
-                }
-
-                var inputHash = ComputeSha256(code.Trim());
-                if (!SecureEqualsHash(state.EmailOtpHash, inputHash))
-                {
-                    state.EmailOtpVerifyFailCount++;
-                    HttpContext.Session.SetObject(AppSettings.TwoFactorSessionKey, state);
-
-                    TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
-                    return RedirectToAction(nameof(TwoFactor));
-                }
-
-                // Email OTP 驗證成功，往下走共用成功流程
-            }
-
-            // ===== 2) TOTP 驗證流程 =====
-            if (isTotp)
-            {
-                if (!state.CanUseTotp)
-                {
-                    TempData["_JSShowAlert"] = "目前未啟用 TOTP 二階段驗證。";
-                    return RedirectToAction(nameof(TwoFactor));
-                }
-                var userForTotp = await _context.Users.FindAsync(state.UserId);
-                if (userForTotp == null)
-                {
-                    TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
-                    HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
-                    return RedirectToAction(nameof(Index));
-                }
-
-                var totpOk = await VerifyTotpCodeAsync(userForTotp, code);
-                if (!totpOk)
-                {
-                    TempData["_JSShowAlert"] = "驗證碼錯誤或已過期，請重新輸入。";
-                    return RedirectToAction(nameof(TwoFactor));
-                }
-
-                // TOTP 驗證成功，往下走共用成功流程
-            }
-
-            // ===== 3) 驗證成功：清除 2FA 狀態，正式登入 =====
-            var user = await _context.Users.FindAsync(state.UserId);
-            if (user == null)
-            {
-                TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
-                HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
-                return RedirectToAction(nameof(Index));
-            }
-
-            // 驗證成功 → 不再需要 2FA 狀態
-            HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
-
-            // 2FA 通過後才真正建立 Claims / Cookie / Menu / LoginSuccessLog
-            // 第二個參數仍然帶入 mustChangePassword（這樣 Claims 可帶 MustChangePassword 或其他資訊）
-            await SignInAndBuildSessionAsync(user, state.MustChangePassword);
-
-            // 回原本的 returnUrl（若有），否則到首頁
-            if (!string.IsNullOrEmpty(state.ReturnUrl) &&
-                Url.IsLocalUrl(state.ReturnUrl) &&
-                !state.ReturnUrl.Contains("Login", StringComparison.OrdinalIgnoreCase))
-            {
-                var controller = state.ReturnUrl.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
-                return Redirect($"/{controller}");
-            }
-
-            return RedirectToAction("Index", "Home");
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /// <summary>
-        /// 登出
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet("Logout")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Logout()
-        {
-            HttpContext.Session.Remove("try_login");
-            HttpContext.Session.Remove("MenuTree");
-            TempData["_JSShowAlert"] = "您已登出系統，謝謝您的使用";
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-            await _accessLog.NewLogoutAsync(GetLoginUser());
-
-            return RedirectToAction("Index", "Home");
-        }
-
-        [HttpGet("GetCaptcha")]
-        public IActionResult GetCaptcha()
-        {
-            string code = GenerateRandomCode(5); // e.g., "A3X9B"
-            httpAccessor.HttpContext.Session.SetString("CaptchaCode", code);
-
-            byte[] imageBytes = GenerateCaptchaImage(code);
-            return File(imageBytes, "image/png");
         }
 
         /// <summary>
@@ -1084,6 +1011,65 @@ namespace BioMedDocManager.Controllers
             HttpContext.Session.SetString(AppSettings.ForceChangePasswordReasonExpireKey, requireExpireChange ? "Y" : "N");
         }
 
+        /// <summary>
+        /// 從 Parameter 讀取安全 / 密碼政策設定
+        /// </summary>
+        /// <returns>密碼政策設定</returns>
+        [NonAction]
+        private PasswordPolicy LoadSecuritySettingsFromParameter()
+        {
+            var sec = new PasswordPolicy();
+
+            // 是否啟用密碼政策
+            sec.PolicyEnabled = _param.GetBool("SEC_PASSWORD_POLICY_ENABLED");
+
+            // 預設值（當 policyEnabled = false 或參數沒設好時的防呆）
+            // 這裡是「程式內建 fallback」，已經不再使用 AppSettings。
+            sec.FailedLimit = int.MaxValue;  // 預設視為「不鎖定」
+            sec.LockMinutes = 0;             // 鎖定時間 0 = 不鎖定
+            sec.PasswordExpireDays = null;   // 密碼過期天數（>0 才啟用）
+            sec.ForceChangeFirstLoginFlag = false;
+
+            sec.Sec2faEnabled = false;
+            sec.Sec2faEmailEnabled = false;
+            sec.Sec2faTotpEnabled = false;
+
+            if (sec.PolicyEnabled)
+            {
+                // ===== 登入失敗鎖定門檻 / 鎖定時間 =====
+                var paramFailedLimit = _param.GetInt("SEC_PASSWORD_MAX_FAILED_ATTEMPTS");
+                var paramLockMinutes = _param.GetInt("SEC_PASSWORD_LOCKOUT_MINUTES");
+
+                if (paramFailedLimit > 0 && paramLockMinutes > 0)
+                {
+                    sec.FailedLimit = paramFailedLimit.Value;
+                    sec.LockMinutes = paramLockMinutes.Value;
+                }
+                else
+                {
+                    // 若未正確設定，就維持「不鎖定」行為
+                    sec.FailedLimit = int.MaxValue;
+                    sec.LockMinutes = 0;
+                }
+
+                // ===== 密碼過期 / 首次登入強制改密碼 =====
+                var expDays = _param.GetInt("SEC_PASSWORD_EXPIRE_DAYS"); // 0=不過期
+                if (expDays > 0)
+                {
+                    sec.PasswordExpireDays = expDays;
+                }
+
+                sec.ForceChangeFirstLoginFlag = _param.GetBool("SEC_PASSWORD_FORCE_CHANGE_FIRST_LOGIN");
+
+                // ===== 2FA 設定 =====
+                sec.Sec2faEnabled = _param.GetBool("SEC_2FA_ENABLED");
+                sec.Sec2faEmailEnabled = _param.GetBool("SEC_2FA_EMAIL_ENABLED");
+                sec.Sec2faTotpEnabled = _param.GetBool("SEC_2FA_TOTP_ENABLED");
+            }
+
+            return sec;
+        }
+
         [NonAction]
         private string GenerateRandomCode(int length)
         {
@@ -1167,4 +1153,3 @@ namespace BioMedDocManager.Controllers
 
     }
 }
-

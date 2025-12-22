@@ -108,6 +108,9 @@ namespace BioMedDocManager.Controllers
             // 問候語
             ViewData["Greeting"] = GreetingByHour(DateTime.Now.Hour);
 
+            // 是否啟用2FA
+            ViewData["2FA_ENABLED"] = _param.GetBool("SEC_2FA_ENABLED");
+
             base.OnActionExecuting(context);
         }
 

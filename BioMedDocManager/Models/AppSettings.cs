@@ -38,6 +38,20 @@ public static class AppSettings
     public const int TwoFactorEmailOtpExpireTime = 5;
 
     /// <summary>
+    /// 二階段驗證 Email HTML 範本
+    /// {0} 使用者姓名
+    /// {1} 驗證碼
+    /// {2} 有效分鐘
+    /// </summary>
+    public const string TwoFactorEmailBodyTemplate = @"
+        <p>親愛的 {0} 您好：</p>
+        <p>您的登入二階段驗證碼如下：</p>
+        <p style=""font-size:20px;font-weight:bold;"">{1}</p>
+        <p>此驗證碼有效時間為 {2} 分鐘，請勿告知他人。</p>
+        <p>若非您本人操作，請盡快聯絡系統管理員。</p>";
+
+
+    /// <summary>
     /// Exception Log 的存放路徑(抓appsettings.json)
     /// </summary>
     private static readonly Lazy<string> _exceptionLogPath =

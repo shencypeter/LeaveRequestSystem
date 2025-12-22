@@ -87,6 +87,7 @@
                     @Model.User.UserMobile
                 }
             </div>
+
             <div class="col-md-2 col-form-label text-md-end text-start">
                 <strong>@Html.DisplayNameFor(m => m.User.UserIsActive)：</strong>
             </div>
@@ -95,14 +96,24 @@
             </div>
         </div>
 
+        <!-- 狀態類資訊（不留空） -->
         <div class="row align-items-center my-3">
+            <div class="col-md-2 col-form-label text-md-end text-start">
+                <strong>是否已綁定 TOTP：</strong>
+            </div>
+            <div class="col-md-4 pt-1">
+                @(string.IsNullOrWhiteSpace(Model.User.UserTotpSecret) ? "否" : "是")
+            </div>
+
             <div class="col-md-2 col-form-label text-md-end text-start">
                 <strong>@Html.DisplayNameFor(m => m.User.UserIsLocked)：</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @Model.User.UserIsLockedText
             </div>
+        </div>
 
+        <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
                 <strong>@Html.DisplayNameFor(m => m.User.UserLockedUntil)：</strong>
             </div>
@@ -112,9 +123,7 @@
                 }
                 @lockedText
             </div>
-        </div>
 
-        <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
                 <strong>@Html.DisplayNameFor(m => m.User.UserLastLoginAt)：</strong>
             </div>
@@ -124,7 +133,9 @@
                 }
                 @lastLogin
             </div>
+        </div>
 
+        <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
                 <strong>@Html.DisplayNameFor(m => m.User.UserLastLoginIp)：</strong>
             </div>
@@ -138,9 +149,7 @@
                     @Model.User.UserLastLoginIp
                 }
             </div>
-        </div>
 
-        <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
                 <strong>@Html.DisplayNameFor(m => m.User.UserPasswordChangedAt)：</strong>
             </div>
@@ -150,10 +159,13 @@
                 }
                 @pwdChanged
             </div>
+        </div>
+
+        <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
                 <strong>@Html.DisplayNameFor(m => m.User.UserRemarks)：</strong>
             </div>
-            <div class="col-md-4 pt-1">
+            <div class="col-md-10 pt-1">
                 @if (string.IsNullOrWhiteSpace(Model.User.UserRemarks))
                 {
                     <span class="text-muted">(無)</span>

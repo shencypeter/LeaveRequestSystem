@@ -31,6 +31,8 @@
     }
 
     var hasMenu = menuTree.Any();
+
+    var TwoFA_ENABLED = bool.Parse(ViewData["2FA_ENABLED"].ToString());
 }
 
 <nav class="navbar sticky-top navbar-dark text-light">
@@ -56,8 +58,12 @@
             }
             else
             {
-                <a class="btn btn-link px-1 me-3 py-1 logout change_password_btn" href="~/AccountSettings/ChangePassword" target="_blank">更改密碼</a>
-                <a class="btn btn-link px-1 me-3 py-1 logout" href="~/Login/Logout">登出</a>
+                <a class="btn btn-link px-1 me-3 py-1 logout change_password_btn" href="@Url.Action("RegisterTotp", "ChangePassword")" target="_blank">更改密碼</a>
+                @if (TwoFA_ENABLED)
+                {
+                    <a class="btn btn-link px-1 me-3 py-1 logout register_totp_btn" href="@Url.Action("RegisterTotp", "AccountSettings")" target="_blank">註冊TOTP</a>
+                }
+                <a class="btn btn-link px-1 me-3 py-1 logout" href="@Url.Action("Logout", "Login")">登出</a>
             }
         </div>
 
@@ -80,7 +86,7 @@
                         if (UserFullName == "訪客")
                         {
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration" href="~/Login/Login">登入</a>
+                                <a class="nav-link active text-decoration" href="@Url.Action("Login", "Login")">登入</a>
                             </li>
                         }
                         else
@@ -91,7 +97,7 @@
                                 </span>
                             </li>
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration" href="~/Login/Logout">登出</a>
+                                <a class="nav-link active text-decoration" href="@Url.Action("Logout", "Login")">登出</a>
                             </li>
                         }
                     }
@@ -187,16 +193,22 @@
                         @if (UserFullName == "訪客")
                         {
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration" href="~/Login/Login">登入</a>
+                                <a class="nav-link active text-decoration" href="@Url.Action("Login", "Login")">登入</a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration change_password_btn" href="~/AccountSettings/ChangePassword" target="_blank">更改密碼</a>
+                                <a class="nav-link active text-decoration change_password_btn" href="@Url.Action("ChangePassword", "AccountSettings")" target="_blank">更改密碼</a>
                             </li>
+
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration" href="~/Login/Logout">登出</a>
+                                <a class="nav-link active text-decoration register_totp_btn" href="@Url.Action("RegisterTotp", "AccountSettings")" target="_blank">註冊TOTP</a>
+                            </li>
+
+
+                            <li class="nav-item py-1 px-5">
+                                <a class="nav-link active text-decoration" href="@Url.Action("Logout", "Login")">登出</a>
                             </li>
                         }
                     }

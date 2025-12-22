@@ -825,6 +825,11 @@ function changePasswordModalListener() {
     modalListener(".change_password_btn");
 }
 
+// [一般頁面]註冊TOTP
+function registerTotpModalListener() {
+    modalListener(".register_totp_btn");
+}
+
 // 重設iframe高度
 function resizeIframe(height) {
     $('#iframeLoader').height(height);

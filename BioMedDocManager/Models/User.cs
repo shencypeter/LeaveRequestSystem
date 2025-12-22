@@ -145,6 +145,7 @@ public class User : AuditableEntity, IAccount
     /// <summary>
     /// TOTP驗證碼
     /// </summary>
+    [Display(Name = "綁定TOTP")]
     [MaxLength(128)]
     public string? UserTotpSecret { get; set; }
 
