@@ -6,7 +6,7 @@ CREATE TABLE [dbo].[Parameter] (
     [Parameter_Value] NVARCHAR(MAX) NULL,         -- 參數值（文字 / HTML / JSON）
     [Parameter_Format] NVARCHAR(20) NOT NULL,     -- 參數格式（text / int / html / json）
     [Parameter_IsActive] BIT NOT NULL CONSTRAINT DF_Parameter_IsActive DEFAULT (1), -- 是否啟用
-    [CreatedAt] DATETIME2(0) NOT NULL CONSTRAINT DF_Parameter_CreatedAt DEFAULT (SYSDATETIME()),
+    [CreatedAt] DATETIME2(0) NOT NULL DEFAULT (SYSDATETIME()),
     [CreatedBy] INT NULL,
     [UpdatedAt] DATETIME2(0) NULL,
     [UpdatedBy] INT NULL,

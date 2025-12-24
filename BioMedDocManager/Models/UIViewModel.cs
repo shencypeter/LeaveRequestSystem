@@ -162,7 +162,7 @@ namespace BioMedDocManager.Models
         [Required(ErrorMessage = "請輸入「確認密碼」")]
         [Display(Name = "確認密碼")]
         [Compare(nameof(UserPasswordHash), ErrorMessage = "「密碼」與「確認密碼」不一致")]
-        public string UserConfirmPassword{ get; set; } = null!;
+        public string UserConfirmPasswordHash { get; set; } = null!;
 
         /// <summary>
         /// 是否啟用
@@ -189,13 +189,6 @@ namespace BioMedDocManager.Models
         [Display(Name = "備註")]
         [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
         public string? UserRemarks { get; set; }
-
-        /// <summary>
-        /// 建立時間
-        /// </summary>
-        [Display(Name = "建立時間")]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true, NullDisplayText = "無")]
-        public DateTime? CreatedAt { get; set; }
 
         /// <summary>
         /// 部門-關聯
@@ -239,15 +232,15 @@ namespace BioMedDocManager.Models
         [Required(ErrorMessage = "請輸入「新密碼」")]
         [DataType(DataType.Password)]
         [Display(Name = "新密碼")]
-        public string UserNewPassword { get; set; }
+        public string UserNewPasswordHash { get; set; }
 
         /// <summary>
         /// 確認新密碼
         /// </summary>
         [Required(ErrorMessage = "請輸入「確認新密碼」")]
         [Display(Name = "確認新密碼")]
-        [Compare(nameof(UserNewPassword), ErrorMessage = "「新密碼」與「確認新密碼」不一致")]
-        public string UserConfirmPassword { get; set; } = null!;
+        [Compare(nameof(UserNewPasswordHash), ErrorMessage = "「新密碼」與「確認新密碼」不一致")]
+        public string UserConfirmPasswordHash { get; set; } = null!;
     }
 
     /// <summary>

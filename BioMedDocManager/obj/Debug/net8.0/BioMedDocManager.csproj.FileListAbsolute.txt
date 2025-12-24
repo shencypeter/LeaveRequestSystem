@@ -692,3 +692,4 @@ D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\ref\BioMedDocManager.dll
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\bin\Debug\net8.0\Otp.NET.dll
 D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\bin\Debug\net8.0\QRCoder.dll
+D:\系統資料\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\scopedcss\Views\Shared\_Language.cshtml.rz.scp.css
