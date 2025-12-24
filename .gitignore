@@ -38,7 +38,6 @@ wwwroot/dist/
 .DS_Store
 Thumbs.db
 *.swp
-*.bak
 
 # Preserve appsettings.json files (NOT ignored)
 /mobileheroMang/obj/Debug/net8.0
