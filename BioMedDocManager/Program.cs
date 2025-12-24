@@ -8,8 +8,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Identity.Client;
 using System.Globalization;
@@ -28,6 +31,33 @@ namespace BioMedDocManager
 
             // 存取系統設定值
             AppSettings.Initialize(builder.Configuration);
+
+            // (第1階段) 啟用 Localization（就算你暫時還沒用 resx / DB，也先開）
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+            // (第1階段) 設定 RequestLocalizationOptions
+            builder.Services.Configure<RequestLocalizationOptions>(options =>
+            {
+                var supportedCultures = new[]
+                {
+                    new CultureInfo("zh-TW"),
+                    new CultureInfo("en-US"),
+                };
+
+                options.DefaultRequestCulture = new RequestCulture("zh-TW");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+
+                // Culture用Route判斷
+                options.RequestCultureProviders = new List<IRequestCultureProvider>
+                {
+                    new RouteDataRequestCultureProvider
+                    {
+                        RouteDataStringKey = "culture",
+                        UIRouteDataStringKey = "culture"
+                    }
+                };
+            });
 
             // 移除 Kestrel Server Header
             builder.WebHost.ConfigureKestrel(options =>
@@ -105,6 +135,7 @@ namespace BioMedDocManager
 
             builder.Services.AddMemoryCache();
             builder.Services.AddScoped<IParameterService, ParameterHelper>();
+            builder.Services.AddScoped<IDbLocalizer, DbLocalizer>();
 
             builder.Services.AddScoped<IMailHelper, MailHelper>();
 
@@ -215,6 +246,10 @@ namespace BioMedDocManager
             // 使用路由
             app.UseRouting();
 
+            // 語系切換
+            var locOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
+            app.UseRequestLocalization(locOptions);
+
             // 指定Cookie策略(一定要在UseSession、UseAuthentication前呼叫)
             app.UseCookiePolicy();
 
@@ -231,9 +266,153 @@ namespace BioMedDocManager
             app.UseAuthorization();
 
             // 使用控制器路由
+            // 先處理多語系
+            app.MapControllerRoute(
+                name: "localized_root",
+                pattern: "{culture}/",
+                defaults: new { controller = "Home", action = "Index" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // 特殊路由：CIssueTables Details（含 culture，雙參數）
+            // Details: /{culture}/CIssueTables/Details/{docNo}/{docVer}
+            app.MapControllerRoute(
+                name: "localized_issue_details",
+                pattern: "{culture}/CIssueTables/Details/{docNo}/{docVer}",
+                defaults: new { controller = "CIssueTables", action = "Details" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // Edit (GET/POST 同一路徑): /{culture}/CIssueTables/Edit/{docNo}/{docVer}
+            app.MapControllerRoute(
+                name: "localized_issue_edit",
+                pattern: "{culture}/CIssueTables/Edit/{docNo}/{docVer}",
+                defaults: new { controller = "CIssueTables", action = "Edit" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // Delete (GET): /{culture}/CIssueTables/Delete/{docNo}/{docVer}
+            app.MapControllerRoute(
+                name: "localized_issue_delete",
+                pattern: "{culture}/CIssueTables/Delete/{docNo}/{docVer}",
+                defaults: new { controller = "CIssueTables", action = "Delete" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // DeleteConfirmed (POST): /{culture}/CIssueTables/DeleteConfirmed/{docNo}/{docVer}
+            app.MapControllerRoute(
+                name: "localized_issue_delete_confirmed",
+                pattern: "{culture}/CIssueTables/DeleteConfirmed/{docNo}/{docVer}",
+                defaults: new { controller = "CIssueTables", action = "DeleteConfirmed" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // History: /{culture}/CIssueTables/History/{docNo}/{docVer}
+            app.MapControllerRoute(
+                name: "localized_issue_history",
+                pattern: "{culture}/CIssueTables/History/{docNo}/{docVer}",
+                defaults: new { controller = "CIssueTables", action = "History" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // NewVersion (0 params): /{culture}/CIssueTables/NewVersion
+            app.MapControllerRoute(
+                name: "localized_issue_newversion_empty",
+                pattern: "{culture}/CIssueTables/NewVersion",
+                defaults: new { controller = "CIssueTables", action = "NewVersion" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // NewVersion (2 params): /{culture}/CIssueTables/NewVersion/{docNo}/{docVer}
+            app.MapControllerRoute(
+                name: "localized_issue_newversion_with_keys",
+                pattern: "{culture}/CIssueTables/NewVersion/{docNo}/{docVer}",
+                defaults: new { controller = "CIssueTables", action = "NewVersion" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // 特殊路由：Error（含 culture，參數）
+            app.MapControllerRoute(
+                name: "localized_error",
+                pattern: "{culture}/Error/{statusCode?}",
+                defaults: new { controller = "Error", action = "Index" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // 特殊路由：File（含 culture，參數）
+            // GetClaimFile
+            app.MapControllerRoute(
+                name: "localized_file_getclaim",
+                pattern: "{culture}/File/GetClaimFile/{idNo}",
+                defaults: new { controller = "File", action = "GetClaimFile" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // GetClaimFileByAdmin
+            app.MapControllerRoute(
+                name: "localized_file_getclaim_admin",
+                pattern: "{culture}/File/GetClaimFileByAdmin/{idNo}",
+                defaults: new { controller = "File", action = "GetClaimFileByAdmin" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // 特殊路由：Role（含 culture，參數）
+            // EditPermission
+            app.MapControllerRoute(
+                name: "localized_role_edit_permission",
+                pattern: "{culture}/Role/EditPermission/{id}",
+                defaults: new { controller = "Role", action = "EditPermission" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+
+
+
+
+
+
+
+
+            // 特殊路由：Tree（含 culture，參數）
+            // GetTreeDataVerLatest
+            app.MapControllerRoute(
+                name: "localized_tree_get_tree_data_ver_latest",
+                pattern: "{culture}/Tree/GetTreeDataVerLatest",
+                defaults: new { controller = "Tree", action = "GetTreeDataVerLatestAsync" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // SearchAll
+            app.MapControllerRoute(
+                name: "localized_tree_search_all",
+                pattern: "{culture}/Tree/SearchAll",
+                defaults: new { controller = "Tree", action = "SearchAll" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // GetTreeDataVer
+            app.MapControllerRoute(
+                name: "localized_tree_get_tree_data_ver",
+                pattern: "{culture}/Tree/GetTreeDataVer",
+                defaults: new { controller = "Tree", action = "GetTreeDataVer" },
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+
+            // 一般多語系路由
+            app.MapControllerRoute(
+                name: "localized",
+                pattern: "{culture}/{controller=Home}/{action=Index}/{id?}",
+                constraints: new { culture = "zh-TW|en-US" }
+            );
+
+            // 一般預設路由（不含 culture）
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=control}/{action=Index}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}"
+            );
+
+
 
             // 執行web應用程式
             app.Run();
