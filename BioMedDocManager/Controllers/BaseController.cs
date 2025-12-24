@@ -29,7 +29,7 @@ namespace BioMedDocManager.Controllers
     /// 預設建構子
     /// </remarks>
     /// <param name="context">資料物件</param>
-    public class BaseController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param) : Controller
+    public class BaseController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param, IDbLocalizer _loc) : Controller
     {
 
         #region 靜態屬性
@@ -217,7 +217,7 @@ namespace BioMedDocManager.Controllers
                 .FirstOrDefault(m => m.Resource != null
                                      && m.Resource.ResourceKey == controllerKey);
 
-            var baseTitle = "文管與電子採購系統(範例)";
+            var baseTitle = _loc.T("Home.Welcome.Title");
 
             if (menuItem == null)
             {
@@ -362,7 +362,7 @@ namespace BioMedDocManager.Controllers
                 UserFullName = model.UserFullName,
                 UserPasswordHash = HashPassword(model, model.UserPasswordHash),
                 UserIsActive = model.UserIsActive,
-                CreatedAt = model.CreatedAt
+                CreatedAt = DateTime.Now,
             };
         }
 

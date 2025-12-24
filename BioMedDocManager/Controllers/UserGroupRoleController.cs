@@ -12,8 +12,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class UserGroupRoleController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class UserGroupRoleController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
         /// 頁面名稱
@@ -23,10 +23,9 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示群組角色設定頁（指定某個 UserGroup）
         /// </summary>
-        [HttpGet("Edit/{userGroupId:int}")]
-        public async Task<IActionResult> Edit([FromRoute] int? userGroupId)
+        public async Task<IActionResult> Edit([FromRoute] int? id)
         {
-            if (userGroupId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
@@ -36,7 +35,7 @@ namespace BioMedDocManager.Controllers
                 .Include(g => g.UserGroupRoles)
                 .ThenInclude(ugr => ugr.Role)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(g => g.UserGroupId == userGroupId);
+                .FirstOrDefaultAsync(g => g.UserGroupId == id);
 
             if (group == null)
             {
@@ -123,11 +122,11 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 更新群組角色設定（批次勾選角色）
         /// </summary>
-        [HttpPost("Edit/{userGroupId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? userGroupId, UserGroupRoleEditViewModel posted)
+        public async Task<IActionResult> Edit([FromRoute] int? id, UserGroupRoleEditViewModel posted)
         {
-            if (posted == null || userGroupId.GetValueOrDefault() <= 0 || userGroupId != posted.UserGroupId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserGroupId)
             {
                 return NotFound();
             }
@@ -211,7 +210,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 預覽某群組在目前勾選角色下的有效權限變化
         /// </summary>
-        [HttpPost("PreviewPermissions")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PreviewPermissions([FromBody] PreviewPermissionsViewModel req)
         {

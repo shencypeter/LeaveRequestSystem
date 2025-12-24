@@ -27,8 +27,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class LoginController(IHttpContextAccessor httpAccessor, DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IMailHelper _mailHelper) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class LoginController(IHttpContextAccessor httpAccessor, DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IMailHelper _mailHelper, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
         /// 頁面名稱
@@ -39,12 +39,9 @@ namespace BioMedDocManager.Controllers
         /// 登入畫面
         /// </summary>
         /// <param name="returnUrl">導回原始頁面的URL</param>
-        /// <returns></returns>
-        [HttpGet("")]
-        [HttpGet("Index")]
-        [HttpGet("Login")]
+        /// <returns></returns>       
         [AllowAnonymous]
-        public async Task<IActionResult> Index(string? returnUrl)
+        public IActionResult Index(string? returnUrl)
         {
             //密碼錯誤退回來時, 記得剛才的帳號
             TempData["lastUserId"] = HttpContext.Session.GetString("try_login");
@@ -60,11 +57,10 @@ namespace BioMedDocManager.Controllers
 
             TempData["Messages"] = "登入公告文字";
 
-
             return View();
         }
 
-        [HttpPost("Login")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         [AllowAnonymous]
         public async Task<IActionResult> Login(string userAccount, string password, string? captcha, string? returnUrl)
@@ -144,7 +140,6 @@ namespace BioMedDocManager.Controllers
                     );
                 }
 
-
                 // ===== 5. 若需要 2FA：進入二階段驗證流程（此時尚未完整登入） =====
                 if (need2Fa)
                 {
@@ -207,7 +202,6 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 2FA 驗證頁（讓使用者選 Email / TOTP，並輸入驗證碼）
         /// </summary>
-        [HttpGet("TwoFactor")]
         [AllowAnonymous]
         public async Task<IActionResult> TwoFactor()
         {
@@ -232,7 +226,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="code">驗證碼</param>
         /// <param name="provider">驗證方式：Email / Totp</param>
-        [HttpPost("VerifyTwoFactor")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         [AllowAnonymous]
         public async Task<IActionResult> VerifyTwoFactor(string code, string provider)
@@ -361,7 +355,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 重新寄送二階段驗證 Email OTP
         /// </summary>
-        [HttpPost("SendTwoFactorEmailCode")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         [AllowAnonymous]
         public async Task<IActionResult> SendTwoFactorEmailCode()
@@ -412,7 +406,6 @@ namespace BioMedDocManager.Controllers
         /// 登出
         /// </summary>
         /// <returns></returns>
-        [HttpGet("Logout")]
         [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
@@ -426,7 +419,10 @@ namespace BioMedDocManager.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        [HttpGet("GetCaptcha")]
+        /// <summary>
+        /// 取得驗證碼
+        /// </summary>
+        /// <returns></returns>
         public IActionResult GetCaptcha()
         {
             string code = GenerateRandomCode(5); // e.g., "A3X9B"
@@ -440,7 +436,6 @@ namespace BioMedDocManager.Controllers
         /// 初次遷移用：將所有明碼密碼轉換成hash密碼
         /// </summary>
         /// <returns></returns>
-        [HttpGet("Migrate")]
         public async Task<IActionResult> Migrate()
         {
 
@@ -1150,6 +1145,9 @@ namespace BioMedDocManager.Controllers
             bmp.Save(ms, ImageFormat.Png);
             return ms.ToArray();
         }
+
+
+
 
     }
 }

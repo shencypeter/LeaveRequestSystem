@@ -14,8 +14,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class ResourceController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class ResourceController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
 
         /// <summary>
@@ -45,8 +45,6 @@ namespace BioMedDocManager.Controllers
         );
 
         // ======================= Index（清單頁） =======================
-
-        [HttpGet("")]
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             var queryModel = GetSessionQueryModel<ResourceQueryViewModel>();
@@ -68,7 +66,7 @@ namespace BioMedDocManager.Controllers
             return await BuildQueryResource(queryModel, ct);
         }
 
-        [HttpPost("")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(ResourceQueryViewModel queryModel)
         {
@@ -81,8 +79,6 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Create =======================
-
-        [HttpGet("Create")]
         public async Task<IActionResult> Create()
         {
             var model = new Resource
@@ -96,7 +92,7 @@ namespace BioMedDocManager.Controllers
             return View(model);
         }
 
-        [HttpPost("Create")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Resource posted)
         {
@@ -134,16 +130,14 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Edit =======================
-
-        [HttpGet("Edit/{resourceId:int}")]
-        public async Task<IActionResult> Edit([FromRoute] int? resourceId)
+        public async Task<IActionResult> Edit([FromRoute] int? id)
         {
-            if (resourceId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
-            var entity = await _context.Resources.FirstOrDefaultAsync(r => r.ResourceId == resourceId);
+            var entity = await _context.Resources.FirstOrDefaultAsync(r => r.ResourceId == id);
             if (entity == null)
             {
                 return NotFound();
@@ -153,18 +147,18 @@ namespace BioMedDocManager.Controllers
             return View(entity);
         }
 
-        [HttpPost("Edit/{resourceId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? resourceId, Resource posted)
+        public async Task<IActionResult> Edit([FromRoute] int? id, Resource posted)
         {
-            if (posted == null || resourceId != posted.ResourceId)
+            if (posted == null || id != posted.ResourceId)
             {
                 return NotFound();
             }
 
             QueryableExtensions.TrimStringProperties(posted);
 
-            var dbEntity = await _context.Resources.FirstOrDefaultAsync(r => r.ResourceId == resourceId);
+            var dbEntity = await _context.Resources.FirstOrDefaultAsync(r => r.ResourceId == id);
             if (dbEntity == null)
             {
                 return NotFound();
@@ -196,18 +190,16 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Details =======================
-
-        [HttpGet("Details/{resourceId:int}")]
-        public async Task<IActionResult> Details([FromRoute] int? resourceId)
+        public async Task<IActionResult> Details([FromRoute] int? id)
         {
-            if (resourceId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
             var entity = await _context.Resources
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.ResourceId == resourceId);
+                .FirstOrDefaultAsync(r => r.ResourceId == id);
 
             if (entity == null)
             {
@@ -296,18 +288,16 @@ namespace BioMedDocManager.Controllers
 
 
         // ======================= Delete =======================
-
-        [HttpGet("Delete/{resourceId:int}")]
-        public async Task<IActionResult> Delete([FromRoute] int? resourceId)
+        public async Task<IActionResult> Delete([FromRoute] int? id)
         {
-            if (resourceId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
             var entity = await _context.Resources
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.ResourceId == resourceId);
+                .FirstOrDefaultAsync(r => r.ResourceId == id);
 
             if (entity == null)
             {
@@ -396,12 +386,11 @@ namespace BioMedDocManager.Controllers
             return View(entity);
         }
 
-
-        [HttpPost("Delete/{resourceId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete([FromRoute] int? resourceId, Resource posted)
+        public async Task<IActionResult> Delete([FromRoute] int? id, Resource posted)
         {
-            if (posted == null || resourceId.GetValueOrDefault() <= 0 || resourceId != posted.ResourceId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.ResourceId)
             {
                 return NotFound();
             }

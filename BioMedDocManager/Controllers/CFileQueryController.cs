@@ -13,8 +13,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class CFileQueryController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class CFileQueryController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
         /// 頁面名稱
@@ -40,8 +40,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="PageSize">單頁顯示筆數</param>
         /// <param name="PageNumber">第幾頁</param>
-        /// <returns></returns>
-        [HttpGet("")]
+        /// <returns></returns>        
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             // 從Session中找出查詢model或建立預設查詢model
@@ -80,7 +79,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="queryModel">查詢model</param>
         /// <returns></returns>
-        [HttpPost("")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(FormQueryModel queryModel)
         {
@@ -113,19 +112,18 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="IdNo">文件編號</param>
         /// <returns></returns>
-        [HttpGet("Details/{IdNo}")]
-        public async Task<IActionResult> Details([FromRoute] string IdNo)
+        public async Task<IActionResult> Details([FromRoute] string id)
         {
-            if (string.IsNullOrEmpty(IdNo))
+            if (string.IsNullOrEmpty(id))
             {
                 return NotFound();
             }
 
             // 過濾文字
-            QueryableExtensions.TrimStringProperties(IdNo);
+            QueryableExtensions.TrimStringProperties(id);
 
             var formDocControlMaintable = await _context.DocControlMaintables.Include(d => d.Person)
-                .FirstOrDefaultAsync(m => m.IdNo == IdNo);
+                .FirstOrDefaultAsync(m => m.IdNo == id);
 
             if (formDocControlMaintable == null)
             {
@@ -142,7 +140,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="queryModel">查詢model</param>
         /// <returns>查詢結果Excel檔</returns>
-        [HttpPost("Export")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Export(FormQueryModel queryModel, CancellationToken ct)
         {
@@ -303,6 +301,8 @@ namespace BioMedDocManager.Controllers
 
             return View(result);
         }
+
+
 
 
     }

@@ -14,8 +14,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class RoleController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class RoleController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
         /// 頁面名稱
@@ -42,8 +42,6 @@ namespace BioMedDocManager.Controllers
         );
 
         // ======================= Index =======================
-
-        [HttpGet("")]
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             var queryModel = GetSessionQueryModel<RoleQueryViewModel>();
@@ -66,7 +64,7 @@ namespace BioMedDocManager.Controllers
             return await BuildQueryRole(queryModel, ct);
         }
 
-        [HttpPost("")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(RoleQueryViewModel queryModel)
         {
@@ -79,8 +77,6 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Create =======================
-
-        [HttpGet("Create")]
         public async Task<IActionResult> Create()
         {
             var model = new Role
@@ -93,7 +89,7 @@ namespace BioMedDocManager.Controllers
             return View(model);
         }
 
-        [HttpPost("Create")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Role posted)
         {
@@ -131,16 +127,14 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Edit =======================
-
-        [HttpGet("Edit/{roleId:int}")]
-        public async Task<IActionResult> Edit([FromRoute] int? roleId)
+        public async Task<IActionResult> Edit([FromRoute] int? id)
         {
-            if (roleId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
-            var entity = await _context.Roles.FirstOrDefaultAsync(r => r.RoleId == roleId);
+            var entity = await _context.Roles.FirstOrDefaultAsync(r => r.RoleId == id);
 
             if (entity == null)
             {
@@ -152,11 +146,11 @@ namespace BioMedDocManager.Controllers
             return View(entity);
         }
 
-        [HttpPost("Edit/{roleId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? roleId, Role posted)
+        public async Task<IActionResult> Edit([FromRoute] int? id, Role posted)
         {
-            if (posted == null || roleId != posted.RoleId)
+            if (posted == null || id != posted.RoleId)
             {
                 return NotFound();
             }
@@ -164,7 +158,7 @@ namespace BioMedDocManager.Controllers
             QueryableExtensions.TrimStringProperties(posted);
 
             var dbEntity = await _context.Roles
-                .FirstOrDefaultAsync(r => r.RoleId == roleId);
+                .FirstOrDefaultAsync(r => r.RoleId == id);
 
             if (dbEntity == null)
             {
@@ -195,18 +189,16 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= EditPermission =======================
-
-        [HttpGet("EditPermission/{roleId:int}")]
-        public async Task<IActionResult> EditPermission([FromRoute] int? roleId)
+        public async Task<IActionResult> EditPermission([FromRoute] int? id)
         {
-            if (roleId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
             var role = await _context.Roles
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.RoleId == roleId);
+                .FirstOrDefaultAsync(r => r.RoleId == id);
 
             if (role == null)
             {
@@ -230,7 +222,7 @@ namespace BioMedDocManager.Controllers
 
             // 目前這個角色既有的 RolePermission
             var existingPerms = await _context.RolePermissions
-                .Where(rp => rp.RoleId == roleId)
+                .Where(rp => rp.RoleId == id)
                 .Select(rp => new
                 {
                     rp.ResourceId,
@@ -256,11 +248,11 @@ namespace BioMedDocManager.Controllers
             return View(vm);
         }
 
-        [HttpPost("EditPermission/{roleId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditPermission([FromRoute] int? roleId, RolePermissionEditViewModel posted)
+        public async Task<IActionResult> EditPermission([FromRoute] int? id, RolePermissionEditViewModel posted)
         {
-            if (posted == null || roleId.GetValueOrDefault() <= 0 || roleId != posted.RoleId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.RoleId)
             {
                 return NotFound();
             }
@@ -363,23 +355,21 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Details =======================
-
-        [HttpGet("Details/{roleId:int}")]
-        public async Task<IActionResult> Details([FromRoute] int? roleId)
+        public async Task<IActionResult> Details([FromRoute] int? id)
         {
-            if (roleId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
                 return NotFound();
 
             var entity = await _context.Roles
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.RoleId == roleId);
+                .FirstOrDefaultAsync(r => r.RoleId == id);
 
             if (entity == null)
                 return NotFound();
 
             // 取有效權限（ResourceIsActive = 1）
             var perms = await _context.RolePermissions
-                .Where(rp => rp.RoleId == roleId)
+                .Where(rp => rp.RoleId == id)
                 .Include(rp => rp.Resource)
                 .Include(rp => rp.AppAction)
                 .Where(rp => rp.Resource != null && rp.Resource.ResourceIsActive)
@@ -404,14 +394,10 @@ namespace BioMedDocManager.Controllers
             return View(entity);
         }
 
-
-
         // ======================= Delete =======================
-
-        [HttpGet("Delete/{roleId:int}")]
-        public async Task<IActionResult> Delete([FromRoute] int? roleId)
+        public async Task<IActionResult> Delete([FromRoute] int? id)
         {
-            if (roleId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
                 return NotFound();
 
             var role = await _context.Roles
@@ -420,7 +406,7 @@ namespace BioMedDocManager.Controllers
                 .Include(r => r.UserGroupRoles)
                     .ThenInclude(ugr => ugr.UserGroup)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.RoleId == roleId);
+                .FirstOrDefaultAsync(r => r.RoleId == id);
 
             if (role == null)
                 return NotFound();
@@ -453,7 +439,7 @@ namespace BioMedDocManager.Controllers
 
             // ==== 有效權限（ResourceIsActive = 1） ====
             var perms = await _context.RolePermissions
-                .Where(rp => rp.RoleId == roleId)
+                .Where(rp => rp.RoleId == id)
                 .Include(rp => rp.Resource)
                 .Include(rp => rp.AppAction)
                 .Where(rp => rp.Resource != null && rp.Resource.ResourceIsActive)
@@ -468,11 +454,11 @@ namespace BioMedDocManager.Controllers
             return View(role);
         }
 
-        [HttpPost("Delete/{roleId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed([FromRoute] int? roleId, Role posted)
+        public async Task<IActionResult> DeleteConfirmed([FromRoute] int? id, Role posted)
         {
-            if (posted == null || roleId != posted.RoleId)
+            if (posted == null || id != posted.RoleId)
             {
                 return NotFound();
             }

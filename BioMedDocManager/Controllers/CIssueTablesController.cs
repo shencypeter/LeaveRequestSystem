@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BioMedDocManager.Controllers
 {
-    [Route("[controller]")]
-    public class CIssueTablesController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class CIssueTablesController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         public const string PageName = "表單發行";
         public const string InitSort = nameof(IssueTable.OriginalDocNo);
@@ -30,8 +30,7 @@ namespace BioMedDocManager.Controllers
 
         // ===========================
         // Index
-        // ===========================
-        [HttpGet("")]
+        // ===========================        
         public async Task<IActionResult> Index(int? PageSize, int? PageNumber, CancellationToken ct)
         {
             var queryModel = GetSessionQueryModel<FormQueryModel>(SessionKey);
@@ -50,7 +49,7 @@ namespace BioMedDocManager.Controllers
             return await BuildQueryDocs(queryModel, ct);
         }
 
-        [HttpPost("")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(FormQueryModel queryModel)
         {
@@ -62,7 +61,6 @@ namespace BioMedDocManager.Controllers
         // ===========================
         // Details
         // ===========================
-        [HttpGet("Details/{DocNo}/{DocVer}")]
         public async Task<IActionResult> Details(string DocNo, string DocVer)
         {
             if (string.IsNullOrWhiteSpace(DocNo) || string.IsNullOrWhiteSpace(DocVer))
@@ -79,8 +77,7 @@ namespace BioMedDocManager.Controllers
 
         // ===========================
         // NewVersion
-        // ===========================
-        [HttpGet("NewVersion/{DocNo?}/{DocVer?}")]
+        // ===========================        
         public async Task<IActionResult> NewVersion(string? DocNo, string? DocVer)
         {
             IssueTable model = new();
@@ -120,7 +117,7 @@ namespace BioMedDocManager.Controllers
         /// <param name="nextVersion">新版本(因下拉式選單要個別處理)</param>
         /// <param name="mockFileUpload">新版本檔案</param>
         /// <returns></returns>
-        [HttpPost("Create")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(IssueTable model, string nextVersion, IFormFile? FileUpload)
         {
@@ -194,61 +191,9 @@ namespace BioMedDocManager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        /// <summary>
-        /// 儲存表單檔案到指定路徑
-        /// </summary>
-        /// <param name="file">上傳的檔案 (IFormFile)</param>
-        /// <param name="model">IssueTable 物件，用於命名與寫入副檔名</param>
-        /// <returns>成功儲存後的完整檔案路徑；若失敗則回傳 null</returns>
-        protected string SaveFormFile(IFormFile file, IssueTable model)
-        {
-            if (file == null || file.Length == 0 || model == null)
-                return null;
-
-            try
-            {
-                // 取得儲存路徑
-                var savePath = GetFormPath();
-
-                // 確保資料夾存在
-                if (!Directory.Exists(savePath))
-                {
-                    Directory.CreateDirectory(savePath);
-                }
-
-                // 取得副檔名與儲存檔名
-                var fileExt = Path.GetExtension(file.FileName); // e.g., ".docx"
-
-                // 更新模型的副檔名
-                model.FileExtension = fileExt.TrimStart('.'); // e.g., "docx"
-
-                var fileName = $"{model.OriginalDocNo}(v{model.DocVer}).{model.FileExtension}";
-
-                // 組成完整路徑
-                var fullPath = Path.Combine(savePath, fileName);
-
-                // 儲存檔案
-                using (var stream = new FileStream(fullPath, FileMode.Create))
-                {
-                    file.CopyTo(stream);
-                }
-
-                return model.FileExtension;
-            }
-            catch (Exception ex)
-            {
-                // 這裡可以加上 log 或錯誤處理
-                Console.WriteLine("檔案儲存失敗：" + ex.Message);
-                return "";
-            }
-        }
-
-
-
         // ===========================
         // Edit
         // ===========================
-        [HttpGet("Edit/{DocNo}/{DocVer}")]
         public async Task<IActionResult> Edit(string DocNo, string DocVer)
         {
             var entity = await _context.IssueTables
@@ -258,7 +203,7 @@ namespace BioMedDocManager.Controllers
             return entity == null ? NotFound() : View(entity);
         }
 
-        [HttpPost("Edit/{DocNo}/{DocVer}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string DocNo, string DocVer, IssueTable model, IFormFile? FileUpload)
         {
@@ -297,7 +242,7 @@ namespace BioMedDocManager.Controllers
         // ===========================
         // Delete
         // ===========================
-        [HttpGet("Delete/{DocNo}/{DocVer}")]
+        [HttpGet]
         public async Task<IActionResult> Delete(string DocNo, string DocVer)
         {
             if (!IsLatest(DocNo, DocVer)) return NotFound();
@@ -309,7 +254,7 @@ namespace BioMedDocManager.Controllers
             return entity == null ? NotFound() : View(entity);
         }
 
-        [HttpPost("Delete/{DocNo}/{DocVer}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string DocNo, string DocVer)
         {
@@ -340,7 +285,6 @@ namespace BioMedDocManager.Controllers
         // ===========================
         // History
         // ===========================
-        [HttpGet("History/{DocNo}/{DocVer}")]
         public async Task<IActionResult> History(
             string DocNo,
             string DocVer,
@@ -421,6 +365,58 @@ namespace BioMedDocManager.Controllers
         // ===========================
         // BuildQueryDocs（主清單）
         // ===========================
+
+        /// <summary>
+        /// 儲存表單檔案到指定路徑
+        /// </summary>
+        /// <param name="file">上傳的檔案 (IFormFile)</param>
+        /// <param name="model">IssueTable 物件，用於命名與寫入副檔名</param>
+        /// <returns>成功儲存後的完整檔案路徑；若失敗則回傳 null</returns>
+        [NonAction]
+        protected string SaveFormFile(IFormFile file, IssueTable model)
+        {
+            if (file == null || file.Length == 0 || model == null)
+                return null;
+
+            try
+            {
+                // 取得儲存路徑
+                var savePath = GetFormPath();
+
+                // 確保資料夾存在
+                if (!Directory.Exists(savePath))
+                {
+                    Directory.CreateDirectory(savePath);
+                }
+
+                // 取得副檔名與儲存檔名
+                var fileExt = Path.GetExtension(file.FileName); // e.g., ".docx"
+
+                // 更新模型的副檔名
+                model.FileExtension = fileExt.TrimStart('.'); // e.g., "docx"
+
+                var fileName = $"{model.OriginalDocNo}(v{model.DocVer}).{model.FileExtension}";
+
+                // 組成完整路徑
+                var fullPath = Path.Combine(savePath, fileName);
+
+                // 儲存檔案
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                }
+
+                return model.FileExtension;
+            }
+            catch (Exception ex)
+            {
+                // 這裡可以加上 log 或錯誤處理
+                Console.WriteLine("檔案儲存失敗：" + ex.Message);
+                return "";
+            }
+        }
+
+
         // ---------- 查詢清單（主畫面） ----------
         [NonAction]
         public async Task<IActionResult> BuildQueryDocs(FormQueryModel queryModel, CancellationToken ct)

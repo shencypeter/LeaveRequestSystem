@@ -14,8 +14,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class MenuItemController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class MenuItemController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
         /// 頁面名稱
@@ -44,9 +44,7 @@ namespace BioMedDocManager.Controllers
             }
         );
 
-        // ======================= Index（清單頁） =======================
-
-        [HttpGet("")]
+        // ======================= Index（清單頁） =======================        
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             var queryModel = GetSessionQueryModel<MenuItemQueryViewModel>();
@@ -69,7 +67,7 @@ namespace BioMedDocManager.Controllers
             return await BuildQueryMenuItem(queryModel, ct);
         }
 
-        [HttpPost("")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(MenuItemQueryViewModel queryModel)
         {
@@ -81,9 +79,7 @@ namespace BioMedDocManager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ======================= Create =======================
-
-        [HttpGet("Create")]
+        // ======================= Create =======================       
         public async Task<IActionResult> Create()
         {
             var model = new MenuItem
@@ -101,7 +97,7 @@ namespace BioMedDocManager.Controllers
             return View(model);
         }
 
-        [HttpPost("Create")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(MenuItem posted)
         {
@@ -139,17 +135,15 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Edit =======================
-
-        [HttpGet("Edit/{menuItemId:int}")]
-        public async Task<IActionResult> Edit([FromRoute] int? menuItemId)
+        public async Task<IActionResult> Edit([FromRoute] int? id)
         {
-            if (menuItemId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
             var entity = await _context.MenuItems
-                .FirstOrDefaultAsync(m => m.MenuItemId == menuItemId);
+                .FirstOrDefaultAsync(m => m.MenuItemId == id);
 
             if (entity == null)
             {
@@ -164,11 +158,11 @@ namespace BioMedDocManager.Controllers
             return View(entity);
         }
 
-        [HttpPost("Edit/{menuItemId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? menuItemId, MenuItem posted)
+        public async Task<IActionResult> Edit([FromRoute] int? id, MenuItem posted)
         {
-            if (posted == null || menuItemId != posted.MenuItemId)
+            if (posted == null || id != posted.MenuItemId)
             {
                 return NotFound();
             }
@@ -176,7 +170,7 @@ namespace BioMedDocManager.Controllers
             QueryableExtensions.TrimStringProperties(posted);
 
             var dbEntity = await _context.MenuItems
-                .FirstOrDefaultAsync(m => m.MenuItemId == menuItemId);
+                .FirstOrDefaultAsync(m => m.MenuItemId == id);
 
             if (dbEntity == null)
             {
@@ -211,11 +205,9 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Details =======================
-
-        [HttpGet("Details/{menuItemId:int}")]
-        public async Task<IActionResult> Details([FromRoute] int? menuItemId)
+        public async Task<IActionResult> Details([FromRoute] int? id)
         {
-            if (menuItemId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
@@ -224,7 +216,7 @@ namespace BioMedDocManager.Controllers
                 .Include(m => m.Parent)
                 .Include(m => m.Resource)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.MenuItemId == menuItemId);
+                .FirstOrDefaultAsync(m => m.MenuItemId == id);
 
             if (entity == null)
             {
@@ -237,11 +229,9 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Delete =======================
-
-        [HttpGet("Delete/{menuItemId:int}")]
-        public async Task<IActionResult> Delete([FromRoute] int? menuItemId)
+        public async Task<IActionResult> Delete([FromRoute] int? id)
         {
-            if (menuItemId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
@@ -250,7 +240,7 @@ namespace BioMedDocManager.Controllers
                 .Include(m => m.Parent)
                 .Include(m => m.Resource)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.MenuItemId == menuItemId);
+                .FirstOrDefaultAsync(m => m.MenuItemId == id);
 
             if (entity == null)
             {
@@ -277,11 +267,11 @@ namespace BioMedDocManager.Controllers
             return View(entity);
         }
 
-        [HttpPost("Delete/{menuItemId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete([FromRoute] int? menuItemId, MenuItem posted)
+        public async Task<IActionResult> Delete([FromRoute] int? id, MenuItem posted)
         {
-            if (posted == null || menuItemId.GetValueOrDefault() <= 0 || menuItemId != posted.MenuItemId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.MenuItemId)
             {
                 return NotFound();
             }

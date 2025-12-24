@@ -12,10 +12,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="logger">log紀錄器</param>
     /// <param name="context">資料庫查詢物件</param>
     [AllowAnonymous]
-    public class ErrorController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    public class ErrorController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
-
-        [Route("Error/{statusCode?}")]
         public IActionResult Index(int? statusCode)
         {
             var sc = statusCode ?? HttpContext.Response?.StatusCode ?? 500;

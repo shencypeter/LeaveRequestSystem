@@ -14,8 +14,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class AppActionController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class AppActionController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
         /// 頁面名稱
@@ -43,11 +43,7 @@ namespace BioMedDocManager.Controllers
         );
 
         // ======================= Index（清單頁） =======================
-
-        [HttpGet("")]
-        public async Task<IActionResult> Index([FromQuery] int? PageSize,
-                                               [FromQuery] int? PageNumber,
-                                               CancellationToken ct)
+        public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             var queryModel = GetSessionQueryModel<AppActionQueryViewModel>();
 
@@ -68,7 +64,7 @@ namespace BioMedDocManager.Controllers
             return await BuildQueryAppAction(queryModel, ct);
         }
 
-        [HttpPost("")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(AppActionQueryViewModel queryModel)
         {
@@ -80,9 +76,7 @@ namespace BioMedDocManager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ======================= Create =======================
-
-        [HttpGet("Create")]
+        // ======================= Create =======================        
         public async Task<IActionResult> Create()
         {
             var model = new AppAction
@@ -96,7 +90,7 @@ namespace BioMedDocManager.Controllers
             return View(model);
         }
 
-        [HttpPost("Create")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AppAction posted)
         {
@@ -134,17 +128,15 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Edit =======================
-
-        [HttpGet("Edit/{appActionId:int}")]
-        public async Task<IActionResult> Edit([FromRoute] int? appActionId)
+        public async Task<IActionResult> Edit([FromRoute] int? id)
         {
-            if (appActionId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
             var entity = await _context.AppActions
-                .FirstOrDefaultAsync(a => a.AppActionId == appActionId);
+                .FirstOrDefaultAsync(a => a.AppActionId == id);
 
             if (entity == null)
             {
@@ -156,11 +148,11 @@ namespace BioMedDocManager.Controllers
             return View(entity);
         }
 
-        [HttpPost("Edit/{appActionId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? appActionId, AppAction posted)
+        public async Task<IActionResult> Edit([FromRoute] int? id, AppAction posted)
         {
-            if (posted == null || appActionId != posted.AppActionId)
+            if (posted == null || id != posted.AppActionId)
             {
                 return NotFound();
             }
@@ -168,7 +160,7 @@ namespace BioMedDocManager.Controllers
             QueryableExtensions.TrimStringProperties(posted);
 
             var dbEntity = await _context.AppActions
-                .FirstOrDefaultAsync(a => a.AppActionId == appActionId);
+                .FirstOrDefaultAsync(a => a.AppActionId == id);
 
             if (dbEntity == null)
             {
@@ -200,18 +192,16 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Details =======================
-
-        [HttpGet("Details/{appActionId:int}")]
-        public async Task<IActionResult> Details([FromRoute] int? appActionId)
+        public async Task<IActionResult> Details([FromRoute] int? id)
         {
-            if (appActionId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
             var entity = await _context.AppActions
                 .AsNoTracking()
-                .FirstOrDefaultAsync(a => a.AppActionId == appActionId);
+                .FirstOrDefaultAsync(a => a.AppActionId == id);
 
             if (entity == null)
             {
@@ -276,18 +266,16 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Delete =======================
-
-        [HttpGet("Delete/{appActionId:int}")]
-        public async Task<IActionResult> Delete([FromRoute] int? appActionId)
+        public async Task<IActionResult> Delete([FromRoute] int? id)
         {
-            if (appActionId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
             var entity = await _context.AppActions
                 .AsNoTracking()
-                .FirstOrDefaultAsync(a => a.AppActionId == appActionId);
+                .FirstOrDefaultAsync(a => a.AppActionId == id);
 
             if (entity == null)
             {
@@ -349,11 +337,11 @@ namespace BioMedDocManager.Controllers
             return View(entity);
         }
 
-        [HttpPost("Delete/{appActionId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete([FromRoute] int? appActionId, AppAction posted)
+        public async Task<IActionResult> Delete([FromRoute] int? id, AppAction posted)
         {
-            if (posted == null || appActionId.GetValueOrDefault() <= 0 || appActionId != posted.AppActionId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.AppActionId)
             {
                 return NotFound();
             }
@@ -408,7 +396,6 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= 查詢邏輯 =======================
-
         [NonAction]
         public async Task<IActionResult> BuildQueryAppAction(AppActionQueryViewModel queryModel, CancellationToken ct)
         {
@@ -457,5 +444,8 @@ namespace BioMedDocManager.Controllers
 
             return View(result);
         }
+
+
+
     }
 }

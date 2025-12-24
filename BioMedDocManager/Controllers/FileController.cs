@@ -12,8 +12,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class FileController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class FileController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
 
         /// <summary>
@@ -35,7 +35,6 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="IdNo">文件編號</param>
         /// <returns>檔案</returns>
-        [HttpGet("GetClaimFile/{IdNo}")]
         public async Task<IActionResult> GetClaimFile(string IdNo)
         {
 
@@ -65,7 +64,6 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="IdNo">文件編號</param>
         /// <returns>檔案</returns>
-        [HttpGet("GetClaimFileByAdmin/{IdNo}")]
         public async Task<IActionResult> GetClaimFileByAdmin(string IdNo)
         {
             // 不需要登入者資料工號

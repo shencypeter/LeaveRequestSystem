@@ -13,9 +13,8 @@ namespace BioMedDocManager.Controllers
     /// </summary>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
-    /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class ParameterController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    /// <param name="accessLog">紀錄連線Log</param>   
+    public class ParameterController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
         /// 頁面名稱
@@ -39,8 +38,6 @@ namespace BioMedDocManager.Controllers
         );
 
         // ======================= Index（清單頁） =======================
-
-        [HttpGet("")]
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             var queryModel = GetSessionQueryModel<ParameterQueryViewModel>();
@@ -62,7 +59,7 @@ namespace BioMedDocManager.Controllers
             return await BuildQueryParameter(queryModel, ct);
         }
 
-        [HttpPost("")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(ParameterQueryViewModel queryModel)
         {
@@ -75,8 +72,6 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Create =======================
-
-        [HttpGet("Create")]
         public async Task<IActionResult> Create()
         {
             var model = new Parameter
@@ -90,7 +85,7 @@ namespace BioMedDocManager.Controllers
             return View(model);
         }
 
-        [HttpPost("Create")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Parameter posted)
         {
@@ -136,8 +131,6 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Edit =======================
-
-        [HttpGet("Edit/{id:int}")]
         public async Task<IActionResult> Edit([FromRoute] int? id)
         {
             if (id.GetValueOrDefault() <= 0)
@@ -155,7 +148,7 @@ namespace BioMedDocManager.Controllers
             return View(entity);
         }
 
-        [HttpPost("Edit/{id:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([FromRoute] int? id, Parameter posted)
         {
@@ -212,8 +205,6 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Details =======================
-
-        [HttpGet("Details/{id:int}")]
         public async Task<IActionResult> Details([FromRoute] int? id)
         {
             if (id.GetValueOrDefault() <= 0)
@@ -236,8 +227,6 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Delete（不檢查關聯，直接刪） =======================
-
-        [HttpGet("Delete/{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int? id)
         {
             if (id.GetValueOrDefault() <= 0)
@@ -259,7 +248,7 @@ namespace BioMedDocManager.Controllers
             return View(entity);
         }
 
-        [HttpPost("Delete/{id:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete([FromRoute] int? id, Parameter posted)
         {
@@ -296,7 +285,6 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= 查詢邏輯 =======================
-
         [NonAction]
         public async Task<IActionResult> BuildQueryParameter(ParameterQueryViewModel queryModel, CancellationToken ct)
         {
@@ -361,5 +349,9 @@ namespace BioMedDocManager.Controllers
 
             return View(result);
         }
+
+
+
+
     }
 }

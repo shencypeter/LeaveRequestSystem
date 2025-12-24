@@ -13,8 +13,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class TreeController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class TreeController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
         /// 頁面名稱
@@ -25,7 +25,7 @@ namespace BioMedDocManager.Controllers
         /// double click tree 版次階層加上表單發行日期 只抓最新一筆version
         /// </summary>
         /// <returns></returns>
-        [HttpGet("")]
+        
         public async Task<IActionResult> Index()
         {
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示最新版本的查詢樹");
@@ -38,7 +38,6 @@ namespace BioMedDocManager.Controllers
         /// <param name="date">資料</param>
         /// <param name="search">關鍵字</param>
         /// <returns>json資料物件</returns>
-        [HttpGet("GetTreeDataVerLatest")]
         public JsonResult GetTreeDataVerLatestAsync(string? date = null, string? search = null)
         {
             // 過濾文字
@@ -54,7 +53,6 @@ namespace BioMedDocManager.Controllers
         /// double click tree 版次階層加上表單發行日期 顯示所有版本
         /// </summary>
         /// <returns></returns>
-        [HttpGet("SearchAll")]
         public async Task<IActionResult> SearchAll()
         {
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示所有版本的查詢樹");
@@ -67,7 +65,6 @@ namespace BioMedDocManager.Controllers
         /// <param name="date">資料</param>
         /// <param name="search">關鍵字</param>
         /// <returns>json資料物件</returns>
-        [HttpGet("GetTreeDataVer")]
         public JsonResult GetTreeDataVer(string? date = null, string? search = null)
         {
             // 過濾文字

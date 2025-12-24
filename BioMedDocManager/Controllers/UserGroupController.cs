@@ -14,8 +14,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class UserGroupController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class UserGroupController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
         /// 頁面名稱
@@ -43,8 +43,7 @@ namespace BioMedDocManager.Controllers
 
         /// <summary>
         /// 顯示使用者群組清單（GET）
-        /// </summary>
-        [HttpGet("")]
+        /// </summary>        
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             // 從 Session 抓查詢 model
@@ -74,7 +73,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 使用者群組清單頁送出查詢（POST）
         /// </summary>
-        [HttpPost("")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(UserGroupQueryViewModel queryModel)
         {
@@ -92,8 +91,7 @@ namespace BioMedDocManager.Controllers
 
         /// <summary>
         /// 顯示新增群組頁面
-        /// </summary>
-        [HttpGet("Create")]
+        /// </summary>        
         public async Task<IActionResult> Create()
         {
             var model = new UserGroup
@@ -109,7 +107,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 新增群組（POST）
         /// </summary>
-        [HttpPost("Create")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserGroup posted)
         {
@@ -150,16 +148,15 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示編輯群組頁面
         /// </summary>
-        [HttpGet("Edit/{userGroupId:int}")]
-        public async Task<IActionResult> Edit([FromRoute] int? userGroupId)
+        public async Task<IActionResult> Edit([FromRoute] int? id)
         {
-            if (userGroupId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
 
             var group = await _context.UserGroups
-                .FirstOrDefaultAsync(g => g.UserGroupId == userGroupId);
+                .FirstOrDefaultAsync(g => g.UserGroupId == id);
 
             if (group == null)
             {
@@ -174,11 +171,11 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 編輯群組（POST）
         /// </summary>
-        [HttpPost("Edit/{userGroupId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? userGroupId, UserGroup posted)
+        public async Task<IActionResult> Edit([FromRoute] int? id, UserGroup posted)
         {
-            if (posted == null || userGroupId.GetValueOrDefault() <= 0 || userGroupId != posted.UserGroupId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserGroupId)
             {
                 return NotFound();
             }
@@ -222,10 +219,9 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示明細頁
         /// </summary>
-        [HttpGet("Details/{userGroupId:int}")]
-        public async Task<IActionResult> Details([FromRoute] int? userGroupId)
+        public async Task<IActionResult> Details([FromRoute] int? id)
         {
-            if (userGroupId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
@@ -236,7 +232,7 @@ namespace BioMedDocManager.Controllers
                 .Include(g => g.UserGroupRoles)
                 .ThenInclude(gr => gr.Role)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(g => g.UserGroupId == userGroupId);
+                .FirstOrDefaultAsync(g => g.UserGroupId == id);
 
             if (group == null)
             {
@@ -251,10 +247,9 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示刪除頁
         /// </summary>
-        [HttpGet("Delete/{userGroupId:int}")]
-        public async Task<IActionResult> Delete([FromRoute] int? userGroupId)
+        public async Task<IActionResult> Delete([FromRoute] int? id)
         {
-            if (userGroupId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
                 return NotFound();
             }
@@ -265,7 +260,7 @@ namespace BioMedDocManager.Controllers
                 .Include(g => g.UserGroupRoles)
                 .ThenInclude(gr => gr.Role)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(g => g.UserGroupId == userGroupId);
+                .FirstOrDefaultAsync(g => g.UserGroupId == id);
 
             if (group == null)
             {
@@ -280,11 +275,11 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 確認刪除（軟刪除）
         /// </summary>
-        [HttpPost("Delete/{userGroupId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed([FromRoute] int? userGroupId, UserGroup posted)
+        public async Task<IActionResult> DeleteConfirmed([FromRoute] int? id, UserGroup posted)
         {
-            if (posted == null || userGroupId.GetValueOrDefault() <= 0 || userGroupId != posted.UserGroupId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserGroupId)
             {
                 return NotFound();
             }

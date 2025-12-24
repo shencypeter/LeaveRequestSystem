@@ -21,8 +21,8 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    [Route("[controller]")]
-    public class AccountSettingsController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param) : BaseController(_context, _hostingEnvironment, _param)
+    
+    public class AccountSettingsController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
         /// 頁面名稱
@@ -52,8 +52,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="PageSize">單頁顯示筆數</param>
         /// <param name="PageNumber">第幾頁</param>
-        /// <returns></returns>
-        [HttpGet("")]
+        /// <returns></returns>        
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
             // 從Session抓queryModel查詢物件
@@ -87,8 +86,8 @@ namespace BioMedDocManager.Controllers
         /// 清單頁送出查詢
         /// </summary>
         /// <param name="queryModel">查詢model</param>
-        /// <returns></returns>
-        [HttpPost("")]
+        /// <returns></returns>        
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(AccountViewModel queryModel)
         {
@@ -104,17 +103,19 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示新增頁
         /// </summary>
-        /// <returns></returns>
-        [HttpGet("Create")]
+        /// <returns></returns>        
         public async Task<IActionResult> Create()
         {
-            var AccountViewModel = new CreateUserViewModel
-            {
-                CreatedAt = DateTime.Now,
-            };
+            var AccountViewModel = new CreateUserViewModel();
 
             // 載入角色List
             ViewData["AllRoles"] = await GetRoles();
+
+            // 載入部門List
+            ViewBag.DepartmentOptions = DepartmentNameOptions(onlyActive: true);
+
+            // 讀取密碼政策資料
+            SetPasswordPolicyToViewBag();
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
 
@@ -126,8 +127,8 @@ namespace BioMedDocManager.Controllers
         /// 新增頁儲存
         /// </summary>
         /// <param name="user">資料</param>
-        /// <returns></returns>
-        [HttpPost("Create")]
+        /// <returns></returns>        
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateUserViewModel PostedUser)
         {
@@ -149,7 +150,7 @@ namespace BioMedDocManager.Controllers
                 if (!ModelState.IsValid)
                 {
                     await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，必填資料未填寫");
-                    return View(PostedUser);
+                    return RedirectToAction(nameof(Index));
                 }
 
                 var newUser = ToUserEntity(PostedUser);
@@ -177,20 +178,19 @@ namespace BioMedDocManager.Controllers
         /// 顯示編輯頁
         /// </summary>
         /// <param name="UserId">使用者Id</param>
-        /// <returns></returns>
-        [HttpGet("Edit/{userId:int}")]
-        public async Task<IActionResult> Edit([FromRoute] int? UserId)
+        /// <returns></returns>        
+        public async Task<IActionResult> Edit([FromRoute] int? id)
         {
-            if (UserId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，UserId小於等於0");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
             var user = await _context.Users
                 .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
-                .FirstOrDefaultAsync(s => s.UserId == UserId);
+                .FirstOrDefaultAsync(s => s.UserId == id);
 
             if (user == null)
             {
@@ -226,14 +226,14 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="id">工號</param>
         /// <param name="user">資料</param>
-        /// <returns></returns>
-        [HttpPost("Edit/{userId:int}")]
+        /// <returns></returns>        
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? UserId, AccountViewModel user)
+        public async Task<IActionResult> Edit([FromRoute] int? id, AccountViewModel user)
         {
-            if (user == null || UserId.GetValueOrDefault() <= 0 || UserId != user.UserId)
+            if (user == null || id.GetValueOrDefault() <= 0 || id != user.UserId)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，user為null 或 UserId小於等於0 或 UserId與user不符");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，user為null 或 id小於等於0 或 id與user不符");
                 return NotFound();
             }
 
@@ -288,8 +288,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示變更密碼頁
         /// </summary>
-        /// <returns></returns>
-        [HttpGet("ChangePassword")]
+        /// <returns></returns>        
         public async Task<IActionResult> ChangePassword()
         {
             // 產生變更密碼模型
@@ -340,7 +339,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="model">資料</param>
         /// <returns></returns>
-        [HttpPost("ChangePassword")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
@@ -348,7 +347,7 @@ namespace BioMedDocManager.Controllers
             var policy = GetPasswordPolicy();
 
             // 先做「新密碼強度檢核」：先加 ModelState，再走原本流程
-            ValidateNewPasswordByPolicy("UserNewPassword", model.UserNewPassword, policy);
+            ValidateNewPasswordByPolicy("UserNewPasswordHash", model.UserNewPasswordHash, policy);
 
             if (!ModelState.IsValid)
             {
@@ -369,7 +368,7 @@ namespace BioMedDocManager.Controllers
             }
 
             // 歷史密碼
-            var okHistory = await CheckPasswordHistoryAsync(user, model.UserNewPassword, policy);
+            var okHistory = await CheckPasswordHistoryAsync(user, model.UserNewPasswordHash, policy);
             if (!okHistory)
             {
                 SetPasswordPolicyToViewBag();
@@ -388,7 +387,7 @@ namespace BioMedDocManager.Controllers
                 return View(model);
             }
 
-            user.UserPasswordHash = HashPassword(user, model.UserNewPassword);
+            user.UserPasswordHash = HashPassword(user, model.UserNewPasswordHash);
             user.UserPasswordChangedAt = DateTime.Now;
 
             // 將新密碼寫入歷史資料庫
@@ -414,17 +413,16 @@ namespace BioMedDocManager.Controllers
         /// 顯示管理者重設使用者密碼頁面
         /// </summary>
         /// <param name="UserId">使用者Id</param>
-        /// <returns></returns>
-        [HttpGet("ResetPassword/{userId:int}")]
-        public async Task<IActionResult> ResetPassword([FromRoute] int? UserId)
+        /// <returns></returns>        
+        public async Task<IActionResult> ResetPassword([FromRoute] int? id)
         {
-            if (UserId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示管理者重設使用者密碼頁面", "錯誤，UserId小於等於0");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示管理者重設使用者密碼頁面", "錯誤，id小於等於0");
                 return NotFound();
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(s => s.UserId == UserId);
+            var user = await _context.Users.FirstOrDefaultAsync(s => s.UserId == id);
 
             if (user == null)
             {
@@ -451,13 +449,13 @@ namespace BioMedDocManager.Controllers
         /// <param name="id">工號</param>
         /// <param name="user">資料</param>
         /// <returns></returns>
-        [HttpPost("ResetPassword/{userId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword([FromRoute] int? UserId, ChangePasswordViewModel PostedUser)
+        public async Task<IActionResult> ResetPassword([FromRoute] int? id, ChangePasswordViewModel PostedUser)
         {
-            if (PostedUser == null || UserId.GetValueOrDefault() <= 0 || UserId != PostedUser.UserId)
+            if (PostedUser == null || id.GetValueOrDefault() <= 0 || id != PostedUser.UserId)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "管理者重設使用者密碼頁儲存", "錯誤，PostedUser為null 或 UserId小於等於0 或 PostedUser與UserId不符");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "管理者重設使用者密碼頁儲存", "錯誤，PostedUser為null 或 id小於等於0 或 PostedUser與id不符");
                 return NotFound();
             }
 
@@ -472,7 +470,7 @@ namespace BioMedDocManager.Controllers
 
             // 密碼政策（管理者重設：只套用強度）
             var policy = GetPasswordPolicy();
-            ValidateNewPasswordByPolicy("UserNewPassword", PostedUser.UserNewPassword, policy);
+            ValidateNewPasswordByPolicy("UserNewPassword", PostedUser.UserNewPasswordHash, policy);
 
             try
             {
@@ -488,7 +486,7 @@ namespace BioMedDocManager.Controllers
 
                 /*
                 // （可選）若也要對管理者重設套用「歷史密碼」：
-                var okHistory = await CheckPasswordHistoryAsync(user, PostedUser.UserNewPassword, policy);
+                var okHistory = await CheckPasswordHistoryAsync(user, PostedUser.UserNewPasswordHash, policy);
                 if (!okHistory)
                 {
                     TempData["_JSShowAlert"] = $"密碼重設【失敗】，新密碼不可與前 {policy.HistoryCount} 次密碼相同。";
@@ -496,7 +494,7 @@ namespace BioMedDocManager.Controllers
                 }
                 */
 
-                user.UserPasswordHash = HashPassword(user, PostedUser.UserNewPassword);
+                user.UserPasswordHash = HashPassword(user, PostedUser.UserNewPasswordHash);
                 user.UserPasswordChangedAt = DateTime.Now;
 
                 // 將新密碼寫入歷史資料庫
@@ -529,16 +527,15 @@ namespace BioMedDocManager.Controllers
         /// <param name="UserId">使用者Id</param>
         /// <param name="groupIds">群組Ids</param>
         /// <returns></returns>
-        [HttpGet("EditGroup/{userId:int}")]
-        public async Task<IActionResult> EditGroup([FromRoute] int? UserId, [FromQuery] int[]? groupIds)
+        public async Task<IActionResult> EditGroup([FromRoute] int? id, [FromQuery] int[]? groupIds)
         {
-            if (UserId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯使用者群組頁面", "錯誤，UserId小於等於0");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯使用者群組頁面", "錯誤，id小於等於0");
                 return NotFound();
             }
 
-            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == UserId);
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == id);
 
             if (user == null)
             {
@@ -555,7 +552,7 @@ namespace BioMedDocManager.Controllers
 
             // 目前DB已有的群組
             var currentGroupIds = await _context.UserGroupMembers
-                .Where(m => m.UserId == UserId)
+                .Where(m => m.UserId == id)
                 .Select(m => m.UserGroupId)
                 .ToListAsync();
 
@@ -587,13 +584,13 @@ namespace BioMedDocManager.Controllers
         /// <param name="form">表單物件</param>
         /// <param name="command">命令(save/preview)</param>
         /// <returns></returns>
-        [HttpPost("EditGroup/{userId:int}")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditGroup([FromRoute] int? UserId, UserGroupsEditPostViewModel PostedUser, string command)
+        public async Task<IActionResult> EditGroup([FromRoute] int? id, UserGroupsEditPostViewModel PostedUser, string command)
         {
-            if (PostedUser == null || UserId.GetValueOrDefault() <= 0 || UserId != PostedUser.UserId)
+            if (PostedUser == null || id.GetValueOrDefault() <= 0 || id != PostedUser.UserId)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "使用者群組頁儲存", "錯誤，PostedUser為null 或 UserId小於等於0 或 UserId與PostedUser不符");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "使用者群組頁儲存", "錯誤，PostedUser為null 或 id小於等於0 或 id與PostedUser不符");
                 return NotFound();
             }
 
@@ -613,7 +610,7 @@ namespace BioMedDocManager.Controllers
 
             // 目前 DB 裡的群組
             var existing = await _context.UserGroupMembers
-                .Where(m => m.UserId == UserId)
+                .Where(m => m.UserId == id)
                 .Select(m => m.UserGroupId)
                 .ToListAsync();
 
@@ -636,7 +633,7 @@ namespace BioMedDocManager.Controllers
                     if (toRemove.Count > 0)
                     {
                         await _context.UserGroupMembers
-                            .Where(m => m.UserId == UserId && toRemove.Contains(m.UserGroupId))
+                            .Where(m => m.UserId == id && toRemove.Contains(m.UserGroupId))
                             .ExecuteDeleteAsync();// 真的刪除(軟刪除會非常複雜)
                     }
 
@@ -644,7 +641,7 @@ namespace BioMedDocManager.Controllers
                     {
                         _context.UserGroupMembers.Add(new UserGroupMember
                         {
-                            UserId = UserId.Value,
+                            UserId = id.Value,
                             UserGroupId = gid,
                         });
                     }
@@ -672,7 +669,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="req">使用者權限預覽請求</param>
         /// <returns>使用者權限預覽結果</returns>
-        [HttpPost("PreviewPermissions")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PreviewPermissions([FromBody] PreviewPermissionsRequestViewModel req)
         {
@@ -811,12 +808,11 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="userId">使用者Id</param>
         /// <returns></returns>
-        [HttpGet("Details/{userId:int}")]
-        public async Task<IActionResult> Details(int? userId)
+        public async Task<IActionResult> Details(int? id)
         {
-            if (userId.GetValueOrDefault() <= 0)
+            if (id.GetValueOrDefault() <= 0)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示帳號明細頁", "錯誤，UserId小於等於0");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示帳號明細頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
@@ -826,7 +822,7 @@ namespace BioMedDocManager.Controllers
                     .ThenInclude(m => m.UserGroup)
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
-                .FirstOrDefaultAsync(u => u.UserId == userId && u.DeletedAt == null);
+                .FirstOrDefaultAsync(u => u.UserId == id && u.DeletedAt == null);
 
             if (user == null)
             {
@@ -861,6 +857,187 @@ namespace BioMedDocManager.Controllers
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示帳號明細頁");
 
             return View(vm);
+        }
+
+        /// <summary>
+        /// 顯示註冊 TOTP (Google Authenticator) 頁面
+        /// </summary>
+        public async Task<IActionResult> RegisterTotp()
+        {
+
+            bool TwoFA_ENABLED = _param.GetBool("SEC_2FA_ENABLED");
+
+            // 不用2FA
+            if (!TwoFA_ENABLED)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            // 1) 找出目前登入的使用者
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+            {
+                TempData["_JSShowAlert"] = "登入資訊已失效，請重新登入。";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                TempData["_JSShowAlert"] = "找不到使用者資料，請重新登入。";
+                return RedirectToAction("Index", "Home");
+            }
+
+            // 是否已經啟用 TOTP（已有 Secret）
+            ViewBag.IsAlreadyEnabled = !string.IsNullOrWhiteSpace(user.UserTotpSecret);
+
+            // 2) 嘗試從 Session 取出尚未完成的註冊狀態
+            var state = HttpContext.Session.GetObject<TotpSetupState>(TotpSetupSessionKey);
+            if (state == null || state.UserId != user.UserId)
+            {
+                // 3) 沒有就重新產生一組 Secret + otpauth URI
+
+                // Issuer 建議用系統名稱，可視情況改成 Parameter 取值
+                var issuer = _param.GetString("SITE_NAME") ?? "BioMedDocManager";
+                var accountLabel = user.UserAccount; // 也可以用 email，看你喜歡
+
+                // 產生 20 bytes 隨機 secret，轉成 Base32
+                var secretBytes = new byte[20];
+                RandomNumberGenerator.Fill(secretBytes);
+                var secretBase32 = Base32Encoding.ToString(secretBytes); // OtpNet 提供的 Base32
+
+                var encodedIssuer = Uri.EscapeDataString(issuer);
+                var encodedAccount = Uri.EscapeDataString(accountLabel);
+
+                // otpauth://totp/{issuer}:{account}?secret=...&issuer=...&digits=6&period=30
+                var otpauthUri =
+                    $"otpauth://totp/{encodedIssuer}:{encodedAccount}" +
+                    $"?secret={secretBase32}&issuer={encodedIssuer}&digits=6&period=30";
+
+                state = new TotpSetupState
+                {
+                    UserId = user.UserId,
+                    Secret = secretBase32,
+                    Issuer = issuer,
+                    AccountLabel = accountLabel,
+                    OtpauthUri = otpauthUri
+                };
+
+                HttpContext.Session.SetObject(TotpSetupSessionKey, state);
+            }
+
+            // 4) 組 ViewModel
+            var vm = new TotpSetupViewModel
+            {
+                UserAccount = user.UserAccount,
+                Issuer = state.Issuer,
+                Secret = state.Secret,
+                OtpauthUri = state.OtpauthUri
+            };
+
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示註冊 TOTP 頁面");
+
+            return View(vm);
+        }
+
+        /// <summary>
+        /// 註冊 TOTP 頁面送出（驗證使用者輸入的 6 碼）
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegisterTotp(TotpSetupViewModel model)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+            {
+                TempData["_JSShowAlert"] = "登入資訊已失效，請重新登入。";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                TempData["_JSShowAlert"] = "找不到使用者資料，請重新登入。";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var state = HttpContext.Session.GetObject<TotpSetupState>(TotpSetupSessionKey);
+            if (state == null || state.UserId != user.UserId)
+            {
+                TempData["_JSShowAlert"] = "TOTP 註冊流程已失效，請重新開始。";
+                return RedirectToAction(nameof(RegisterTotp));
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // 把狀態補回去（避免畫面無法顯示 QR / Secret）
+                model.UserAccount = user.UserAccount;
+                model.Issuer = state.Issuer;
+                model.Secret = state.Secret;
+                model.OtpauthUri = state.OtpauthUri;
+
+                return View(model);
+            }
+
+            // 用暫時 user 物件來驗證（VerifyTotpCodeAsync 只會用到 TotpSecret）
+            var tempUser = new User
+            {
+                UserTotpSecret = state.Secret
+            };
+
+            var ok = await VerifyTotpCodeAsync(tempUser, model.Code);
+            if (!ok)
+            {
+                ModelState.AddModelError(nameof(TotpSetupViewModel.Code), "驗證碼錯誤或已過期，請再次確認手機 App 顯示的數字。");
+
+                model.UserAccount = user.UserAccount;
+                model.Issuer = state.Issuer;
+                model.Secret = state.Secret;
+                model.OtpauthUri = state.OtpauthUri;
+
+                return View(model);
+            }
+
+            // 驗證成功 → 寫入 DB（正式啟用 TOTP）
+            user.UserTotpSecret = state.Secret;
+            await _context.SaveChangesAsync();
+
+            // 清除暫存狀態
+            HttpContext.Session.Remove(TotpSetupSessionKey);
+
+            TempData["_JSShowSuccess"] = "TOTP 兩步驟驗證已啟用，請妥善保管您的驗證器 App。";
+
+            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "註冊 TOTP 成功");
+
+            // 啟用後你可以選擇要導去哪裡：帳號明細 / 安全設定 / 首頁等
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// 輸出 TOTP 註冊用 QR Code 圖片 (PNG)
+        /// </summary>
+        public IActionResult TotpQrCode()
+        {
+            var state = HttpContext.Session.GetObject<TotpSetupState>(TotpSetupSessionKey);
+            if (state == null || string.IsNullOrWhiteSpace(state.OtpauthUri))
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                using var qrGenerator = new QRCodeGenerator();
+                using var qrData = qrGenerator.CreateQrCode(state.OtpauthUri, QRCodeGenerator.ECCLevel.Q);
+                var pngQr = new PngByteQRCode(qrData);
+                var bytes = pngQr.GetGraphic(20); // 20: pixel size
+
+                return File(bytes, "image/png");
+            }
+            catch (Exception ex)
+            {
+                Utilities.WriteExceptionIntoLogFile("產生 TOTP QR Code 失敗", ex, this.HttpContext);
+                return NotFound();
+            }
         }
 
         /// <summary>
@@ -947,191 +1124,6 @@ namespace BioMedDocManager.Controllers
                 .ThenBy(p => actionOrderMap.TryGetValue(p.AppActionId, out var ord) ? ord : int.MaxValue)
                 .ToList();
         }
-
-        /// <summary>
-        /// 顯示註冊 TOTP (Google Authenticator) 頁面
-        /// </summary>
-        [HttpGet("RegisterTotp")]
-        public async Task<IActionResult> RegisterTotp()
-        {
-
-            bool TwoFA_ENABLED = _param.GetBool("SEC_2FA_ENABLED");
-
-            // 不用2FA
-            if (!TwoFA_ENABLED)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            // 1) 找出目前登入的使用者
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
-            {
-                TempData["_JSShowAlert"] = "登入資訊已失效，請重新登入。";
-                return RedirectToAction("Index", "Home");
-            }
-
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-            {
-                TempData["_JSShowAlert"] = "找不到使用者資料，請重新登入。";
-                return RedirectToAction("Index", "Home");
-            }
-
-            // 是否已經啟用 TOTP（已有 Secret）
-            ViewBag.IsAlreadyEnabled = !string.IsNullOrWhiteSpace(user.UserTotpSecret);
-
-            // 2) 嘗試從 Session 取出尚未完成的註冊狀態
-            var state = HttpContext.Session.GetObject<TotpSetupState>(TotpSetupSessionKey);
-            if (state == null || state.UserId != user.UserId)
-            {
-                // 3) 沒有就重新產生一組 Secret + otpauth URI
-
-                // Issuer 建議用系統名稱，可視情況改成 Parameter 取值
-                var issuer = _param.GetString("SITE_NAME") ?? "BioMedDocManager";
-                var accountLabel = user.UserAccount; // 也可以用 email，看你喜歡
-
-                // 產生 20 bytes 隨機 secret，轉成 Base32
-                var secretBytes = new byte[20];
-                RandomNumberGenerator.Fill(secretBytes);
-                var secretBase32 = Base32Encoding.ToString(secretBytes); // OtpNet 提供的 Base32
-
-                var encodedIssuer = Uri.EscapeDataString(issuer);
-                var encodedAccount = Uri.EscapeDataString(accountLabel);
-
-                // otpauth://totp/{issuer}:{account}?secret=...&issuer=...&digits=6&period=30
-                var otpauthUri =
-                    $"otpauth://totp/{encodedIssuer}:{encodedAccount}" +
-                    $"?secret={secretBase32}&issuer={encodedIssuer}&digits=6&period=30";
-
-                state = new TotpSetupState
-                {
-                    UserId = user.UserId,
-                    Secret = secretBase32,
-                    Issuer = issuer,
-                    AccountLabel = accountLabel,
-                    OtpauthUri = otpauthUri
-                };
-
-                HttpContext.Session.SetObject(TotpSetupSessionKey, state);
-            }
-
-            // 4) 組 ViewModel
-            var vm = new TotpSetupViewModel
-            {
-                UserAccount = user.UserAccount,
-                Issuer = state.Issuer,
-                Secret = state.Secret,
-                OtpauthUri = state.OtpauthUri
-            };
-
-            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示註冊 TOTP 頁面");
-
-            return View(vm);
-        }
-
-        /// <summary>
-        /// 註冊 TOTP 頁面送出（驗證使用者輸入的 6 碼）
-        /// </summary>
-        [HttpPost("RegisterTotp")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RegisterTotp(TotpSetupViewModel model)
-        {
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
-            {
-                TempData["_JSShowAlert"] = "登入資訊已失效，請重新登入。";
-                return RedirectToAction("Index", "Home");
-            }
-
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-            {
-                TempData["_JSShowAlert"] = "找不到使用者資料，請重新登入。";
-                return RedirectToAction("Index", "Home");
-            }
-
-            var state = HttpContext.Session.GetObject<TotpSetupState>(TotpSetupSessionKey);
-            if (state == null || state.UserId != user.UserId)
-            {
-                TempData["_JSShowAlert"] = "TOTP 註冊流程已失效，請重新開始。";
-                return RedirectToAction(nameof(RegisterTotp));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                // 把狀態補回去（避免畫面無法顯示 QR / Secret）
-                model.UserAccount = user.UserAccount;
-                model.Issuer = state.Issuer;
-                model.Secret = state.Secret;
-                model.OtpauthUri = state.OtpauthUri;
-
-                return View(model);
-            }
-
-            // 用暫時 user 物件來驗證（VerifyTotpCodeAsync 只會用到 TotpSecret）
-            var tempUser = new User
-            {
-                UserTotpSecret = state.Secret
-            };
-
-            var ok = await VerifyTotpCodeAsync(tempUser, model.Code);
-            if (!ok)
-            {
-                ModelState.AddModelError(nameof(TotpSetupViewModel.Code), "驗證碼錯誤或已過期，請再次確認手機 App 顯示的數字。");
-
-                model.UserAccount = user.UserAccount;
-                model.Issuer = state.Issuer;
-                model.Secret = state.Secret;
-                model.OtpauthUri = state.OtpauthUri;
-
-                return View(model);
-            }
-
-            // 驗證成功 → 寫入 DB（正式啟用 TOTP）
-            user.UserTotpSecret = state.Secret;
-            await _context.SaveChangesAsync();
-
-            // 清除暫存狀態
-            HttpContext.Session.Remove(TotpSetupSessionKey);
-
-            TempData["_JSShowSuccess"] = "TOTP 兩步驟驗證已啟用，請妥善保管您的驗證器 App。";
-
-            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "註冊 TOTP 成功");
-
-            // 啟用後你可以選擇要導去哪裡：帳號明細 / 安全設定 / 首頁等
-            return RedirectToAction(nameof(Index));
-        }
-
-        /// <summary>
-        /// 輸出 TOTP 註冊用 QR Code 圖片 (PNG)
-        /// </summary>
-        [HttpGet("RegisterTotp/Qr")]
-        public IActionResult TotpQrCode()
-        {
-            var state = HttpContext.Session.GetObject<TotpSetupState>(TotpSetupSessionKey);
-            if (state == null || string.IsNullOrWhiteSpace(state.OtpauthUri))
-            {
-                return NotFound();
-            }
-
-            try
-            {
-                using var qrGenerator = new QRCodeGenerator();
-                using var qrData = qrGenerator.CreateQrCode(state.OtpauthUri, QRCodeGenerator.ECCLevel.Q);
-                var pngQr = new PngByteQRCode(qrData);
-                var bytes = pngQr.GetGraphic(20); // 20: pixel size
-
-                return File(bytes, "image/png");
-            }
-            catch (Exception ex)
-            {
-                Utilities.WriteExceptionIntoLogFile("產生 TOTP QR Code 失敗", ex, this.HttpContext);
-                return NotFound();
-            }
-        }
-
-
 
         /// <summary>
         /// 建立查詢EF（帳號設定）
@@ -1304,28 +1296,6 @@ namespace BioMedDocManager.Controllers
             // 沒有命中 -> 通過
             return true;
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
