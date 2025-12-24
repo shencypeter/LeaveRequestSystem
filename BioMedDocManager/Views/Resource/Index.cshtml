@@ -202,9 +202,9 @@
                                     功能
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "Resource", new { resourceId = row["ResourceId"] })">檢視</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "Resource", new { resourceId = row["ResourceId"] })">編輯</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "Resource", new { resourceId = row["ResourceId"] })">刪除</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "Resource", new { id = row["ResourceId"] })">檢視</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "Resource", new { id = row["ResourceId"] })">編輯</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "Resource", new { id = row["ResourceId"] })">刪除</a></li>
                                 </ul>
                             </div>
                         </td>

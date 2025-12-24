@@ -393,7 +393,7 @@
 
                         <td class="col-actions">
                             <a class="btn btn-sm btn-outline-secondary detail"
-                               href="@Url.Action("Details", "CFileQuery", new { IdNo = row.TryGetValue("IdNo", out var v) ? v : null })">
+                               href="@Url.Action("Details", "CFileQuery", new { id = row.TryGetValue("IdNo", out var v) ? v : null })">
                                 檢視
                             </a>
                         </td>

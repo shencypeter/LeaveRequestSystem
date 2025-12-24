@@ -1,0 +1,44 @@
+﻿@using System.Globalization
+
+@{
+    // 目前文化（顯示 select 用）
+    var currentCulture = CultureInfo.CurrentUICulture.Name;
+
+    // 從 RouteData 取得 culture（你 route pattern: {culture}/...）
+    var routeCulture = (ViewContext.RouteData.Values["culture"]?.ToString() ?? "").Trim();
+
+    // 目前完整路徑（含 query）
+    var fullPath = (Context.Request.Path + Context.Request.QueryString).ToString();
+
+    // 把前綴 "/{culture}" 拔掉，得到不含 culture 的 returnUrl
+    // e.g. /en-US/Login?x=1  => /Login?x=1
+    var neutralPath = fullPath;
+
+    if (!string.IsNullOrWhiteSpace(routeCulture))
+    {
+        var prefix = "/" + routeCulture;
+
+        if (neutralPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            neutralPath = neutralPath.Substring(prefix.Length);
+        }
+    }
+
+    if (string.IsNullOrWhiteSpace(neutralPath))
+    {
+        neutralPath = "/";
+    }
+    else if (!neutralPath.StartsWith("/"))
+    {
+        neutralPath = "/" + neutralPath;
+    }
+}
+
+<form id="cultureForm" method="get" action="@Url.Action("Set", "Culture")" class="d-inline-flex align-items-center gap-2">
+    <input type="hidden" name="returnUrl" value="@neutralPath" />
+
+    <select id="cultureSelect" name="culture" class="form-select form-select-sm w-auto">
+        <option value="zh-TW" selected="@(currentCulture == "zh-TW" ? "selected" : null)">中文</option>
+        <option value="en-US" selected="@(currentCulture == "en-US" ? "selected" : null)">English</option>
+    </select>
+</form>

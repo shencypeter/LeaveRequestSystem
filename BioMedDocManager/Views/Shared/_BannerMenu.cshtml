@@ -40,7 +40,7 @@
         {
             // 沒有任何 MenuItem（未登入或沒有可用選單）
             var isLoggedIn = User?.Identity?.IsAuthenticated == true;
-            var linkUrl = isLoggedIn ? Url.Content("~/Login/Logout") : Url.Content("~/Login/Login");
+            var linkUrl = isLoggedIn ? Url.Content("~/Login/Logout") : Url.Content("~/Login");
             var message = isLoggedIn
             ? "您的帳號尚未開通使用權限 — 若有疑問請聯絡系統管理員"
             : "您尚未登入，請點此登入";

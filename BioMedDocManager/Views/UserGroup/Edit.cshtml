@@ -9,7 +9,7 @@
         <i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]
     </h4>
 
-    <form id="myForm" method="post" action="@Url.Action("Edit", "UserGroup", new { userGroupId = Model.UserGroupId })" target="_top">
+    <form id="myForm" method="post" action="@Url.Action("Edit", "UserGroup", new { id = Model.UserGroupId })" target="_top">
         @Html.AntiForgeryToken()
 
         <div class="pop">

@@ -168,15 +168,15 @@
                                 <ul class="dropdown-menu">
                                     <li>
                                         <a class="dropdown-item detail"
-                                           href="@Url.Action("Details", "AppAction", new { appActionId = row["AppActionId"] })">檢視</a>
+                                           href="@Url.Action("Details", "AppAction", new { id = row["AppActionId"] })">檢視</a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item detail"
-                                           href="@Url.Action("Edit", "AppAction", new { appActionId = row["AppActionId"] })">編輯</a>
+                                           href="@Url.Action("Edit", "AppAction", new { id = row["AppActionId"] })">編輯</a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item detail"
-                                           href="@Url.Action("Delete", "AppAction", new { appActionId = row["AppActionId"] })">刪除</a>
+                                           href="@Url.Action("Delete", "AppAction", new { id = row["AppActionId"] })">刪除</a>
                                     </li>
                                 </ul>
                             </div>

@@ -9,7 +9,7 @@
 <div class="m-4">
     <h4 class="m-3 px-2"><i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]</h4>
 
-    <form id="myFormDetail" method="post" action="@Url.Action("EditGroup", "AccountSettings", new { UserId = Model.UserId })" target="_top">
+    <form id="myFormDetail" method="post" action="@Url.Action("EditGroup", "AccountSettings", new { id = Model.UserId })" target="_top">
         @Html.AntiForgeryToken()
 
         <div class="pop">
@@ -68,7 +68,7 @@
                     <div class="mt-3 d-flex gap-2">
                         <button type="submit" name="command" value="preview" class="btn btn-secondary">預覽權限</button>
                         <button type="submit" name="command" value="save" class="btn btn-primary">儲存</button>
-                        <a class="btn btn-outline-dark" href="@Url.Action("EditGroup", "AccountSettings", new { userId = Model.UserId })">還原</a>
+                        <a class="btn btn-outline-dark" href="@Url.Action("EditGroup", "AccountSettings", new { id = Model.UserId })">還原</a>
                     </div>
                     <div class="mt-3 d-flex gap-2">
                         備註：預覽權限後，若確認無誤請務必點選「儲存」按鈕。

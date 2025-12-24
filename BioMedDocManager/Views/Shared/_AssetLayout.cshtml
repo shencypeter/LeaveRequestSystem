@@ -8,7 +8,7 @@
     var controllerLabel = ViewData["ControllerLabel"]?.ToString() ?? "";
 }
 
-@section Styles {    
+@section Styles {
     @RenderSection("PageStyles", required: false)
 }
 
@@ -41,7 +41,7 @@
 </div>
 
 @section Scripts {
-    
+
     @{
         var safeLabel = (controllerLabel ?? "").Replace("查詢", "");
     }
@@ -65,7 +65,7 @@
 
             const path = window.location.pathname.replace(/\/+$/, ''); // removes trailing slash
 
-            if (!path || path === "/Welcome") {
+            if (!path || path === "/") {
                // $('#linkSystemSelect').hide();
                 $('#scrollableMenu .btn:visible').eq(0).addClass('btn-start');
             }
@@ -110,6 +110,10 @@
                 return false;
             });
 
+            // 語系切換監聽
+            $(document).on("change", "#cultureSelect", function () {
+               $("#cultureForm").trigger("submit");
+            });
         });
     </script>
 

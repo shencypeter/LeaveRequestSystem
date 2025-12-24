@@ -11,7 +11,7 @@
 
     <form id="myForm"
           method="post"
-          action="@Url.Action("Delete", "UserGroup", new { userGroupId = Model.UserGroupId })"
+          action="@Url.Action("Delete", "UserGroup", new { id = Model.UserGroupId })"
           target="_top">
         @Html.AntiForgeryToken()
 

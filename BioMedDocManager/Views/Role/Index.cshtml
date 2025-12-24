@@ -162,10 +162,10 @@
                                     功能
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "Role", new { roleId = row["RoleId"] })">檢視</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "Role", new { roleId = row["RoleId"] })">編輯</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "RolePermission", new { roleId = row["RoleId"] })">編輯【權限】</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "Role", new { roleId = row["RoleId"] })">刪除</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "Role", new { id = row["RoleId"] })">檢視</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "Role", new { id = row["RoleId"] })">編輯</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "RolePermission", new { id = row["RoleId"] })">編輯【權限】</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "Role", new { id = row["RoleId"] })">刪除</a></li>
                                 </ul>
                             </div>
                         </td>

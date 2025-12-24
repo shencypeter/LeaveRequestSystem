@@ -210,15 +210,15 @@
                                 <ul class="dropdown-menu">
                                     <li>
                                         <a class="dropdown-item detail"
-                                           href="@Url.Action("Details", "MenuItem", new { menuItemId = row["MenuItemId"] })">檢視</a>
+                                           href="@Url.Action("Details", "MenuItem", new { id = row["MenuItemId"] })">檢視</a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item detail"
-                                           href="@Url.Action("Edit", "MenuItem", new { menuItemId = row["MenuItemId"] })">編輯</a>
+                                           href="@Url.Action("Edit", "MenuItem", new { id = row["MenuItemId"] })">編輯</a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item detail"
-                                           href="@Url.Action("Delete", "MenuItem", new { menuItemId = row["MenuItemId"] })">刪除</a>
+                                           href="@Url.Action("Delete", "MenuItem", new { id = row["MenuItemId"] })">刪除</a>
                                     </li>
                                 </ul>
                             </div>

@@ -210,10 +210,10 @@
                                     功能
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "AccountSettings", new { UserId = row["UserId"] })">檢視</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "AccountSettings", new { UserId = row["UserId"] })">編輯</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("EditGroup", "AccountSettings", new { UserId = row["UserId"] })">編輯【群組】</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("ResetPassword", "AccountSettings", new { UserId = row["UserId"] })">重設密碼</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "AccountSettings", new { id = row["UserId"] })">檢視</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "AccountSettings", new { id = row["UserId"] })">編輯</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("EditGroup", "AccountSettings", new { id = row["UserId"] })">編輯【群組】</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("ResetPassword", "AccountSettings", new { id = row["UserId"] })">重設密碼</a></li>
                                 </ul>
                             </div>
                         </td>

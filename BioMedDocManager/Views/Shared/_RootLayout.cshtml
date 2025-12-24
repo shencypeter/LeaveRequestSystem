@@ -3,8 +3,7 @@
 
     // Title 來源優先序：FullTitle（BaseController 組好的）→ Title → 預設
     var fullTitle = ViewData["FullTitle"]?.ToString()
-                    ?? ViewData["Title"]?.ToString()
-                    ?? "文管與電子採購系統(範例)";
+                    ?? ViewData["Title"]?.ToString();
 
     var htmlClass = ViewData["HtmlClass"] as string ?? "";
 }

@@ -145,12 +145,12 @@
                                     功能
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "UserGroup", new { userGroupId = row["UserGroupId"] })"> 檢視 </a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "UserGroup", new { userGroupId = row["UserGroupId"] })">編輯</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "UserGroupRole", new { userGroupId = row["UserGroupId"] })">編輯【角色】</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "UserGroup", new { userGroupId = row["UserGroupId"] })">刪除</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "UserGroup", new { id = row["UserGroupId"] })"> 檢視 </a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "UserGroup", new { id = row["UserGroupId"] })">編輯</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "UserGroupRole", new { id = row["UserGroupId"] })">編輯【角色】</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "UserGroup", new { id = row["UserGroupId"] })">刪除</a></li>
                                     @* TODO：如果要做「編輯群組成員」，在這裡再加 *@
-                                    @* <li><a class="dropdown-item detail" href="@Url.Action("EditMembers", "UserGroup", new { userGroupId = row["UserGroupId"] })">編輯【成員】</a></li> *@
+                                    @* <li><a class="dropdown-item detail" href="@Url.Action("EditMembers", "UserGroup", new { id = row["UserGroupId"] })">編輯【成員】</a></li> *@
                                 </ul>
                             </div>
                         </td>

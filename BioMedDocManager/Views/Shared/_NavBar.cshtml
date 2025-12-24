@@ -43,7 +43,7 @@
                     data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <a class="navbar-brand fw-bolder align-middle" href="~/Welcome">
+            <a class="navbar-brand fw-bolder align-middle" href="~/">
                 &ensp;文管與電子採購系統(範例)
             </a>
         </div>
@@ -54,17 +54,19 @@
             <span>，@greeting！&ensp;&ensp;</span>
             @if (UserFullName == "訪客")
             {
-                <a class="btn btn-link px-1 me-3 py-1 logout" href="~/Login/Login">登入</a>
+                <a class="btn btn-link px-1 me-3 py-1 logout" href="@Url.Action("Index", "Login")">登入</a>
             }
             else
             {
-                <a class="btn btn-link px-1 me-3 py-1 logout change_password_btn" href="@Url.Action("RegisterTotp", "ChangePassword")" target="_blank">更改密碼</a>
+                <a class="btn btn-link px-1 me-3 py-1 logout change_password_btn" href="@Url.Action("ChangePassword", "AccountSettings")" target="_blank">更改密碼</a>
                 @if (TwoFA_ENABLED)
                 {
                     <a class="btn btn-link px-1 me-3 py-1 logout register_totp_btn" href="@Url.Action("RegisterTotp", "AccountSettings")" target="_blank">註冊TOTP</a>
                 }
                 <a class="btn btn-link px-1 me-3 py-1 logout" href="@Url.Action("Logout", "Login")">登出</a>
             }
+            
+            @await Html.PartialAsync("_Language")
         </div>
 
         <div class="offcanvas offcanvas-start navbar-dark text-light" tabindex="-1"
