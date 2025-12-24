@@ -376,40 +376,145 @@ function setTableStyle() {
     $thead.find("a").addClass("thead-link");
 }
 
-// 驗證確認密碼
-function validateConfirmPassword(type) {
-    var newPassword = $('#' + type + 'Password').val();
-    var confirmPassword = $('#UserConfirmPassword').val();
+// 單一欄位驗證：用自己的 data-target 去比對，訊息寫到自己的 data-validation
+function validatePasswordPair(inputEl) {
+    var $input = $(inputEl);
+    if ($input.length === 0) { return true; }
 
-    if (newPassword !== confirmPassword) {
-        $('#ConfirmPasswordValidation')
-            .text('「新密碼」與「確認密碼」不一致');
-        return false;
-    } else {
-        $('#ConfirmPasswordValidation').text('');
+    var targetId = ($input.data('target') || '').toString();
+    var validationId = ($input.data('validation') || '').toString();
+
+    var $target = targetId ? $('#' + targetId) : $();
+    var $msg = validationId ? $('#' + validationId) : $();
+
+    if ($target.length === 0 || $msg.length === 0) { return true; }
+
+    var v1 = ($input.val() || '').toString();
+    var v2 = ($target.val() || '').toString();
+
+    // 兩邊都空：不顯示
+    if (v1 === '' && v2 === '') {
+        $msg.text('');
         return true;
     }
+
+    if (v1 !== v2) {
+        $msg.text('「密碼」與「確認密碼」不一致');
+        return false;
+    }
+
+    $msg.text('');
+    return true;
 }
 
-function CheckConfirmPassword(type = "") {
+/**
+ * 核心：驗證 PasswordForm 內所有密碼欄位
+ * - 雙向比對
+ * - 控制 submit button disabled
+ *
+ * @param {string|HTMLElement} formSelector
+ * @returns {boolean} 是否全部通過
+ */
+function validatePasswordForm(formSelector = '.PasswordForm') {
+    var $form = $(formSelector);
+    if ($form.length === 0) { return true; }
 
-    // 失去焦點時驗證
-    $('#UserConfirmPassword').on('blur', function () {
-        validateConfirmPassword(type);
+    var $inputs = $form.find('input[data-target][data-validation]');
+    if ($inputs.length === 0) { return true; }
+
+    var allOk = true;
+
+    $inputs.each(function () {
+        var $el = $(this);
+
+        // 驗證自己
+        var ok1 = validatePasswordPair($el);
+
+        // 驗證 target（雙向）
+        var targetId = ($el.data('target') || '').toString();
+        var $target = targetId ? $('#' + targetId) : $();
+        var ok2 = true;
+
+        if ($target.length > 0) {
+            ok2 = validatePasswordPair($target);
+        }
+
+        if (!(ok1 && ok2)) {
+            allOk = false;
+        }
     });
 
-    // 失去焦點時驗證
-    $('#' + type + 'Password').on('blur', function () {
-        validateConfirmPassword(type);
+    // 控制 submit button
+    $form.find('button[type=submit]').prop('disabled', !allOk);
+
+    return allOk;
+}
+
+// 綁定雙向：Password / Confirm 任一欄位 blur/input 都會驗證自己，並順便驗證對方（雙向同步清訊息）
+function CheckConfirmPassword(formSelector = '.PasswordForm') {
+    var $form = $(formSelector);
+    if ($form.length === 0) { return; }
+
+    var $inputs = $form.find('input[data-target][data-validation]');
+    if ($inputs.length === 0) { return; }
+
+    // blur + input 即時驗證
+    $inputs.on('blur input', function () {
+        validatePasswordForm($form);
     });
 
-    // 表單送出前驗證
-    $('.PasswordForm').on('submit', function (e) {
-        if (!validateConfirmPassword(type)) {
-            e.preventDefault(); // 阻止提交
+    // submit 前再驗一次
+    $form.on('submit', function (e) {
+        if (!validatePasswordForm($form)) {
+            e.preventDefault();
         }
     });
 }
+
+
+/**
+ * 立即檢查 PasswordForm 底下所有密碼欄位是否正確
+ * - 自動抓 input[data-target][data-validation]
+ * - 雙向驗證
+ * - 控制 submit button disabled
+ * 
+ * @param {string} formSelector 預設 '.PasswordForm'
+ * @returns {boolean} 是否全部通過
+ */
+function ValidatePasswordFormNow(formSelector = '.PasswordForm') {
+    var $form = $(formSelector);
+    if ($form.length === 0) { return true; }
+
+    var $inputs = $form.find('input[data-target][data-validation]');
+    if ($inputs.length === 0) { return true; }
+
+    var allOk = true;
+
+    $inputs.each(function () {
+        var $el = $(this);
+
+        // 驗證自己
+        var ok1 = validatePasswordPair($el);
+
+        // 驗證 target
+        var targetId = ($el.data('target') || '').toString();
+        var $target = targetId ? $('#' + targetId) : $();
+        var ok2 = true;
+        if ($target.length > 0) {
+            ok2 = validatePasswordPair($target);
+        }
+
+        if (!(ok1 && ok2)) {
+            allOk = false;
+        }
+    });
+
+    // 控制送出按鈕
+    $form.find('button[type=submit]').prop('disabled', !allOk);
+
+    return allOk;
+}
+
 
 // 密碼規則動態檢查（text-muted -> text-success）
 function bindPasswordPolicyWatcher(options) {
@@ -1007,8 +1112,11 @@ function copyUserAccountButtonListener() {
 // 密碼重設頁-快捷鍵，重設密碼為Abcd+工號
 function copyUserAccount() {
     var UserAccount = $("#UserAccount").val();
-    $("#UserNewPassword").val("Abcd" + UserAccount);
-    $("#UserConfirmPassword").val("Abcd" + UserAccount);
+    $("#UserNewPasswordHash").val("Abcd" + UserAccount);
+    $("#UserConfirmPasswordHash").val("Abcd" + UserAccount);
+
+    // 確認密碼(一定會相同，呼叫他可以讓錯誤訊息消失)
+    ValidatePasswordFormNow();
 }
 
 // 密碼重設頁-密碼顯示按鈕事件監聽

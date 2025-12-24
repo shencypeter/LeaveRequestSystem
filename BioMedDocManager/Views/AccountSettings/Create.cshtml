@@ -8,11 +8,13 @@
         "OptionValue", "OptionText"
     );
 
+    var policy = ViewBag.PasswordPolicy; // dynamic（參考變更密碼頁）
 }
 
 <div class="m-4">
     <h4 class="m-3 px-2"><i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]</h4>
-    <form id="myForm" class="PasswordForm" method="post" action="@Url.Action("Create", "AccountSettings", new { UserAccount = Model.UserAccount })" target="_top">
+
+    <form id="myForm" class="PasswordForm" method="post" action="@Url.Action("Create", "AccountSettings")" target="_top">
         @Html.AntiForgeryToken()
         <div class="pop">
 
@@ -41,14 +43,19 @@
             </div>
 
             <!-- 部門名稱 -->
-            @await Html.PartialAsync("_DepartmentSelect", Model.DepartmentId?.ToString(),
-            new ViewDataDictionary(ViewData)
-            {
-                ["Options"] = ViewBag.DepartmentOptions,   // SelectOption[]
-                ["IsRequired"] = true,
-                ["FieldName"] = "DepartmentId",
-                ["LabelText"] = "-- 請選擇部門 --"
-            })
+            <div class="row align-items-center my-3">
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.DepartmentId)：</strong></div>
+                <div class="col-md-10">
+                    @await Html.PartialAsync("_DepartmentSelect", Model.DepartmentId?.ToString(),
+                    new ViewDataDictionary(ViewData)
+                    {
+                        ["Options"] = ViewBag.DepartmentOptions,   // SelectOption[]
+                        ["IsRequired"] = true,
+                        ["FieldName"] = "DepartmentId",
+                        ["LabelText"] = "-- 請選擇部門 --"
+                    })
+                </div>
+            </div>
 
             <!-- Email -->
             <div class="row align-items-center my-3">
@@ -77,14 +84,78 @@
                 </div>
             </div>
 
+            <!-- 密碼政策（Create頁補上，供JS讀取） -->
+            <div id="passwordPolicyConfig"
+                 data-enabled="@(policy?.Enabled == true ? "true" : "false")"
+                 data-min-length="@(policy?.MinLength ?? 0)"
+                 data-require-upper="@(policy?.RequireUpper == true ? "true" : "false")"
+                 data-require-lower="@(policy?.RequireLower == true ? "true" : "false")"
+                 data-require-digit="@(policy?.RequireDigit == true ? "true" : "false")"
+                 data-require-special="@(policy?.RequireSpecial == true ? "true" : "false")"
+                 data-special-chars="@((string)(policy?.SpecialCharSets ?? ""))"
+                 class="d-none">
+            </div>
+
             <!-- 密碼 -->
-            <div class="row align-items-center my-3">
+            <div class="row my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start">
                     <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.UserPasswordHash)：</strong>
                 </div>
                 <div class="col-md-10">
-                    <span class="text-12 fw-bold">*密碼長度至少需8個字元</span>
-                    <input asp-for="UserPasswordHash" class="form-control" type="password" required="required" />
+
+                    <div class="input-group">
+                        <input asp-for="UserPasswordHash"
+                               class="form-control"
+                               type="password"
+                               required="required"
+                               data-target="UserConfirmPasswordHash"
+                               data-validation="UserPasswordHashValidation" />
+
+                        <!-- 眼睛按鈕：維持 data-id -->
+                        <button class="btn btn-outline-secondary togglePasswordButton" data-id="UserPasswordHash" type="button">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <!-- 這個是「雙向驗證訊息」的顯示位置（由 data-validation 指定） -->
+                    <span id="UserPasswordHashValidation" class="text-danger"></span>
+
+                    @if (policy != null && policy.Enabled == true)
+                    {
+                        <div class="mb-1">
+                            <div class="text-12 fw-bold">* 密碼須符合以下規則：</div>
+                            <ul id="passwordRulesList" class="text-12 mb-0 ps-3">
+                                <li class="password-rule text-muted" data-rule="minLength">
+                                    密碼長度至少需 @policy.MinLength 個字元。
+                                </li>
+                                @if (policy.RequireUpper == true)
+                                {
+                                    <li class="password-rule text-muted" data-rule="upper">
+                                        至少包含 1 個英文大寫字母（A–Z）。
+                                    </li>
+                                }
+                                @if (policy.RequireLower == true)
+                                {
+                                    <li class="password-rule text-muted" data-rule="lower">
+                                        至少包含 1 個英文小寫字母（a–z）。
+                                    </li>
+                                }
+                                @if (policy.RequireDigit == true)
+                                {
+                                    <li class="password-rule text-muted" data-rule="digit">
+                                        至少包含 1 個數字（0–9）。
+                                    </li>
+                                }
+                                @if (policy.RequireSpecial == true)
+                                {
+                                    <li class="password-rule text-muted" data-rule="special">
+                                        至少包含 1 個特殊符號（允許符號：@policy.SpecialCharSets）。
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
                     <span asp-validation-for="UserPasswordHash" class="text-danger"></span>
                 </div>
             </div>
@@ -92,14 +163,31 @@
             <!-- 確認密碼 -->
             <div class="row align-items-center my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start">
-                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.UserConfirmPassword)：</strong>
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.UserConfirmPasswordHash)：</strong>
                 </div>
                 <div class="col-md-10">
-                    <span class="text-12 fw-bold">*密碼長度至少需8個字元</span>
-                    <input asp-for="UserConfirmPassword" class="form-control" type="password" required="required" />
-                    <span id="ConfirmPasswordValidation" asp-validation-for="UserConfirmPassword" class="text-danger"></span>
+
+                    <div class="input-group">
+                        <input asp-for="UserConfirmPasswordHash"
+                               class="form-control"
+                               type="password"
+                               required="required"
+                               data-target="UserPasswordHash"
+                               data-validation="UserConfirmPasswordHashValidation" />
+
+                        <!-- 眼睛按鈕：維持 data-id -->
+                        <button class="btn btn-outline-secondary togglePasswordButton" data-id="UserConfirmPasswordHash" type="button">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <!-- 這個是「雙向驗證訊息」的顯示位置（由 data-validation 指定） -->
+                    <span id="UserConfirmPasswordHashValidation" class="text-danger"></span>
+
+                    <span asp-validation-for="UserConfirmPasswordHash" class="text-danger"></span>
                 </div>
             </div>
+
 
             <!-- 使用者是否啟用 -->
             <div class="row align-items-center my-3">
@@ -133,14 +221,6 @@
                 </div>
             </div>
 
-            <!-- 建立日期 -->
-            <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.CreatedAt)：</strong></div>
-                <div class="col-md-10">
-                    @Html.TextBox("CreatedAt", Model.CreatedAt?.ToString("yyyy-MM-dd"), new { @class = "form-control", @type = "date", @required = "required" })
-                </div>
-            </div>
-
             <!-- 按鈕列 -->
             <div class="row align-items-center my-3">
                 <div class="col-12 d-flex flex-wrap justify-content-center">
@@ -157,7 +237,20 @@
 @section PageScripts {
     <script nonce="@ViewBag.CspNonce">
         $(function () {
+            // 確認密碼
             CheckConfirmPassword();
+
+            // 密碼顯示/隱藏（眼睛按鈕）
+            passwordVisibilityListener();
+
+            // 動態顯示已完成的密碼規則
+            bindPasswordPolicyWatcher({
+                configSelector: '#passwordPolicyConfig',
+                rulesListSelector: '#passwordRulesList',
+                inputSelector: '#UserPasswordHash',
+                formSelector: '.PasswordForm',
+                errorSelector: 'span[data-valmsg-for="UserPasswordHash"]'
+            });
         });
     </script>
 }
