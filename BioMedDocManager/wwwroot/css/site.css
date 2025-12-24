@@ -1,5 +1,5 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 .Main {
@@ -176,22 +176,22 @@ table {
 
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }
 
 
@@ -315,3 +315,33 @@ input[type="reset"]:disabled {
     pointer-events: none; /* 禁用滑鼠事件（視情況可省略） */
     cursor: not-allowed; /* 滑鼠游標變成禁止狀態（UX更佳） */
 }
+
+/* ===== 表頭 ===== */
+.fixed-thead {
+    max-height: 70vh; /* 可自行調整高度 */
+    overflow-y: auto;
+}
+
+    /* ===== 固定表頭 ===== */
+    .fixed-thead thead th {
+        position: sticky;
+        top: -1px; /*因為有邊線*/
+        z-index: 2; /* 蓋過 tbody */
+        background-color: #f8f9fa; /* table-light 顏色 */
+    }
+
+    /* ===== 固定第 1 欄（資源名稱） ===== */
+    .fixed-thead th:first-child,
+    .fixed-thead td:first-child {
+        position: sticky;
+        left: -1px; /*因為有邊線*/
+        z-index: 2;
+        background-color: #f8f9fa;
+        text-align: left;
+    }
+     
+    /* ===== 左上角（表頭 + 第 1 欄） ===== */
+    .fixed-thead thead th:first-child {
+        z-index: 4;
+        background-color: #f8f9fa;
+    }
