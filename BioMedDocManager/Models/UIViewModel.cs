@@ -857,8 +857,28 @@ namespace BioMedDocManager.Models
         public string Code { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// 通用型：是否選單<select>
+    /// </summary>
+    public class BoolNullableSelectVm
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public bool? Value { get; set; }
 
+        // 額外 class（可選）
+        public string? CssClass { get; set; }
 
+        // 額外屬性（可選）：例如 disabled、data-xxx、aria-xxx
+        // 直接傳入完整片段：@"data-foo=""bar"" disabled"
+        public string? Attributes { get; set; }
+
+        // 讓 Attributes 不會輸出 "System.String"
+        public Microsoft.AspNetCore.Html.IHtmlContent AttributesHtml =>
+            string.IsNullOrWhiteSpace(Attributes)
+                ? Microsoft.AspNetCore.Html.HtmlString.Empty
+                : new Microsoft.AspNetCore.Html.HtmlString(Attributes);
+    }
 
 
 

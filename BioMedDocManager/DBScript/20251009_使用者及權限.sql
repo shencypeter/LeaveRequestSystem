@@ -371,26 +371,26 @@ GO
 /*
 清空資料
 -- 1) 用 DELETE 依 FK 由子到父清空
-DELETE FROM [DocControl0].[dbo].[RolePermission];
-DELETE FROM [DocControl0].[dbo].[UserGroupMember];
-DELETE FROM [DocControl0].[dbo].[UserGroupRole];
-DELETE FROM [DocControl0].[dbo].[UserGroup];
-DELETE FROM [DocControl0].[dbo].[UserRole];
-DELETE FROM [DocControl0].[dbo].[AppAction];
-DELETE FROM [DocControl0].[dbo].[MenuItem];
-DELETE FROM [DocControl0].[dbo].[Role];
-DELETE FROM [DocControl0].[dbo].[Resource];
-DELETE FROM [DocControl0].[dbo].[Department];
-DELETE FROM [DocControl0].[dbo].[User];
+DELETE FROM [dbo].[RolePermission];
+DELETE FROM [dbo].[UserGroupMember];
+DELETE FROM [dbo].[UserGroupRole];
+DELETE FROM [dbo].[UserGroup];
+DELETE FROM [dbo].[UserRole];
+DELETE FROM [dbo].[AppAction];
+DELETE FROM [dbo].[MenuItem];
+DELETE FROM [dbo].[Role];
+DELETE FROM [dbo].[Resource];
+DELETE FROM [dbo].[Department];
+DELETE FROM [dbo].[User];
 
 -- 2) 如果有 Identity，要重設從 1 開始
-DBCC CHECKIDENT ('[DocControl0].[dbo].[UserGroup]', RESEED, 0);
-DBCC CHECKIDENT ('[DocControl0].[dbo].[AppAction]', RESEED, 0);
-DBCC CHECKIDENT ('[DocControl0].[dbo].[MenuItem]', RESEED, 0);
-DBCC CHECKIDENT ('[DocControl0].[dbo].[Role]', RESEED, 0);
-DBCC CHECKIDENT ('[DocControl0].[dbo].[Resource]', RESEED, 0);
-DBCC CHECKIDENT ('[DocControl0].[dbo].[Department]', RESEED, 0);
-DBCC CHECKIDENT ('[DocControl0].[dbo].[User]', RESEED, 0);
+DBCC CHECKIDENT ('[dbo].[UserGroup]', RESEED, 0);
+DBCC CHECKIDENT ('[dbo].[AppAction]', RESEED, 0);
+DBCC CHECKIDENT ('[dbo].[MenuItem]', RESEED, 0);
+DBCC CHECKIDENT ('[dbo].[Role]', RESEED, 0);
+DBCC CHECKIDENT ('[dbo].[Resource]', RESEED, 0);
+DBCC CHECKIDENT ('[dbo].[Department]', RESEED, 0);
+DBCC CHECKIDENT ('[dbo].[User]', RESEED, 0);
 */
 
 

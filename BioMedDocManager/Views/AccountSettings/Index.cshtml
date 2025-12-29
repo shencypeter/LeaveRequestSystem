@@ -31,7 +31,7 @@
             <h2 class="accordion-header" id="userHeading">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                         data-bs-target="#userCollapse" aria-expanded="false" aria-controls="userCollapse">
-                    <i class="fa fa-user me-2"></i> 使用者帳號設定
+                    <i class="fa fa-user me-2"></i> @ViewData["Title"]
                 </button>
             </h2>
             <div id="userCollapse" class="accordion-collapse collapse show" aria-labelledby="userHeading"
@@ -141,7 +141,7 @@
                             </a>
 
                             <button type="button" class="btn2 btn-secondary mt-2 clear_btn" data-form="myForm">
-                                <i class="fas fa-eraser"></i> 清除
+                                 <i class="fas fa-eraser"></i> @Loc.T("Common.Reset")
                             </button>
 
                         </div>
@@ -197,9 +197,9 @@
                         {
                             if (!row.TryGetValue(key, out var cell)) { cell = ""; }
 
-                            string value = TableHelper.FormatValue(cell);
+                            string value =TableHelper.FormatValue(cell, Loc);
 
-                            <td class="@(value == "(無)" ? "none-data" : "") @((key.Equals("RowNum", StringComparison.OrdinalIgnoreCase)) ? "text-nowrap" : "")">
+                            <td class="@(value == "(" + Loc.T("Common.None") + ")" ? "none-data" : "") @((key.Equals("RowNum", StringComparison.OrdinalIgnoreCase)) ? "text-nowrap" : "")">
                                 @Html.Raw(value)
                             </td>
                         }

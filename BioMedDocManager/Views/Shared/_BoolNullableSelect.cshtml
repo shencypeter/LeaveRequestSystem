@@ -1,0 +1,10 @@
+﻿@model BoolNullableSelectVm
+
+<select id="@Model.Id"
+        name="@Model.Name"
+        class="form-select @(Model.CssClass ?? "")"
+        @(Model.AttributesHtml)>
+    <option value="" selected="@(Model.Value == null ? "selected" : null)">@Loc.T("Common.All")</option>
+    <option value="true" selected="@(Model.Value == true ? "selected" : null)">@Loc.T("Common.Enabled")</option>
+    <option value="false" selected="@(Model.Value == false ? "selected" : null)">@Loc.T("Common.Disabled")</option>
+</select>

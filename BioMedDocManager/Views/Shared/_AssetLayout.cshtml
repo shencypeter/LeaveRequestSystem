@@ -41,17 +41,11 @@
 </div>
 
 @section Scripts {
-
-    @{
-        var safeLabel = (controllerLabel ?? "").Replace("查詢", "");
-    }
-
     <script nonce="@ViewBag.CspNonce">
         $(document).ready(function () {
             const $menuButtons = $('#scrollableMenu a.btn');
             $menuButtons.first().addClass('btn-start');
             $menuButtons.last().addClass('btn-end');
-
 
             tableSortListener("myForm");// 表格排序事件監聽
             detailModalListener();// 表格的明細按鈕事件監聽
@@ -70,10 +64,6 @@
                 $('#scrollableMenu .btn:visible').eq(0).addClass('btn-start');
             }
 
-            // 更新標題
-            const title = '@controllerLabel.Replace("查詢", "")';
-            updateAccordionLabelFromTitle(title ,'#pageTitle', '.accordion-button');
-
             // 設定表格樣式
              setTableStyle();
 
@@ -82,7 +72,6 @@
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
               return new bootstrap.Tooltip(tooltipTriggerEl);
             });
-
 
             // Modal停用焦點陷阱 + 把焦點移出 modal
             installModalA11yFix(document);

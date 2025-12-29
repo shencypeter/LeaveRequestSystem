@@ -1,10 +1,11 @@
-﻿using BioMedDocManager.Models;
+﻿using BioMedDocManager.Interface;
+using BioMedDocManager.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using System.Text.Json;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace BioMedDocManager.Extensions
@@ -181,11 +182,11 @@ namespace BioMedDocManager.Extensions
 
     public static class TableHelper
     {
-        public static string FormatValue(object value)
+        public static string FormatValue(object value, IDbLocalizer loc)
         {
             return value switch
             {
-                null or "" => "(無)",
+                null or "" => "("+ loc.T("Common.None") + ")",
                 DateTime dt => dt.ToString("yyyy-MM-dd"),
                 int i => i.ToString("#,###,##0"),
                 decimal d => d.ToString("#,###,##0"),

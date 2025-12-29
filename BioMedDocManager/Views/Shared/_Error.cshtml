@@ -13,7 +13,11 @@
     <h1>@Model.StatusCode</h1>
     <p>@Model.Message</p>
     <a href="@Model.RedirectUrl" class="back-home" target="_top">
-        <div id="countdown">將在 <span id="seconds">@Model.Seconds</span> 秒後自動返回首頁...</div>
+        <div id="countdown">
+            @Loc.T("Error.RedirectCountdown.Prefix")
+            <span id="seconds">@Model.Seconds</span>
+            @Loc.T("Error.RedirectCountdown.Suffix")
+        </div>
     </a>
 </div>
 

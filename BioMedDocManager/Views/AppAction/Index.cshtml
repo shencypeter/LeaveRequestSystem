@@ -3,7 +3,7 @@
 @model IEnumerable<Dictionary<string, object>>
 
 @{
-    ViewData["Title"] = "系統動作管理";
+    ViewData["Title"] = Loc.T("AppAction.Index.Title");
     Layout = "_AssetLayout";
 
     var queryModel = QueryableExtensions.GetSessionQueryModel<AppActionQueryViewModel>(Context);
@@ -22,7 +22,7 @@
             <h2 class="accordion-header" id="appActionHeading">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                         data-bs-target="#appActionCollapse" aria-expanded="false" aria-controls="appActionCollapse">
-                    <i class="fa fa-bolt me-2"></i> 系統動作管理
+                    <i class="fa fa-bolt me-2"></i> @ViewData["Title"]
                 </button>
             </h2>
             <div id="appActionCollapse" class="accordion-collapse collapse show" aria-labelledby="appActionHeading"
@@ -36,7 +36,7 @@
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="AppActionName" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    動作名稱：
+                                    @Loc.T("AppAction.AppActionName.Label")
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
@@ -44,7 +44,7 @@
                                            id="AppActionName"
                                            name="@nameof(AppActionQueryViewModel.AppActionName)"
                                            value="@queryModel.AppActionName"
-                                           placeholder="例如：Index / Create / Edit / Delete" />
+                                           placeholder="@Loc.T("AppAction.AppActionName.Placeholder")" />
                                 </div>
                             </div>
                         </div>
@@ -53,7 +53,7 @@
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="AppActionDisplayName" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    顯示名稱：
+                                    @Loc.T("AppAction.AppActionDisplayName.Label")
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
@@ -61,7 +61,7 @@
                                            id="AppActionDisplayName"
                                            name="@nameof(AppActionQueryViewModel.AppActionDisplayName)"
                                            value="@queryModel.AppActionDisplayName"
-                                           placeholder="請輸入顯示名稱" />
+                                           placeholder="@Loc.T("AppAction.AppActionDisplayName.Placeholder")" />
                                 </div>
                             </div>
                         </div>
@@ -72,16 +72,16 @@
                         <div class="col-12 d-flex justify-content-center flex-wrap gap-2">
 
                             <button type="submit" class="btn2 btn-primary mt-2 search_btn">
-                                <i class="fas fa-search"></i>&ensp;查詢
+                                <i class="fas fa-search"></i> @Loc.T("Common.Search")
                             </button>
 
                             <a id="create_btn" href="@Url.Action("Create", "AppAction")"
                                class="btn2 btn-success mt-2">
-                                <i class="fas fa-plus-circle"></i>&ensp;新增動作
+                                <i class="fas fa-plus-circle"></i> @Loc.T("Common.Create")
                             </a>
 
                             <button type="button" class="btn2 btn-secondary mt-2 clear_btn" data-form="myForm">
-                                <i class="fas fa-eraser"></i> 清除
+                                <i class="fas fa-eraser"></i> @Loc.T("Common.Reset")
                             </button>
                         </div>
                     </div>
@@ -118,7 +118,9 @@
                     <th data-id="@item.Key">
                         @if (item.Key != "RowNum")
                         {
-                            <a href="#" title="點選「@(item.Value)」欄位進行排序"> @item.Value </a>
+                        <a href="#" title="@Loc.T("Common.SortByColumn.TooltipPrefix")@(item.Value)@Loc.T("Common.SortByColumn.TooltipSuffix")">
+                                @item.Value
+                            </a>
                         }
                         else
                         {
@@ -131,14 +133,14 @@
                     </span>
                 </th>
                                 }
-                <th class="col-actions">功能</th>
+                <th class="col-actions">@Loc.T("Common.Actions")</th>
             </tr>
         </thead>
         <tbody>
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="@(headers.Count + 1)">查無資料</td>
+                    <td colspan="@(headers.Count + 1)">@Loc.T("Common.NoData")</td>
                 </tr>
             }
             else
@@ -153,9 +155,9 @@
                                 cell = "";
                             }
 
-                            string value = TableHelper.FormatValue(cell);
+                            string value = TableHelper.FormatValue(cell, Loc);
 
-                            <td class="@(value == "(無)" ? "none-data" : "") @((key.Equals("RowNum", StringComparison.OrdinalIgnoreCase)) ? "text-nowrap" : "")">
+                            <td class="@(value == "(" + Loc.T("Common.None") + ")" ? "none-data" : "") @((key.Equals("RowNum", StringComparison.OrdinalIgnoreCase)) ? "text-nowrap" : "")">
                                 @Html.Raw(value)
                             </td>
                         }
@@ -163,20 +165,26 @@
                         <td class="col-actions">
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    功能
+                                    @Loc.T("Common.Actions")
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li>
                                         <a class="dropdown-item detail"
-                                           href="@Url.Action("Details", "AppAction", new { id = row["AppActionId"] })">檢視</a>
+                                           href="@Url.Action("Details", "AppAction", new { id = row["AppActionId"] })">
+                                            @Loc.T("Common.View")
+                                        </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item detail"
-                                           href="@Url.Action("Edit", "AppAction", new { id = row["AppActionId"] })">編輯</a>
+                                           href="@Url.Action("Edit", "AppAction", new { id = row["AppActionId"] })">
+                                            @Loc.T("Common.Edit")
+                                        </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item detail"
-                                           href="@Url.Action("Delete", "AppAction", new { id = row["AppActionId"] })">刪除</a>
+                                           href="@Url.Action("Delete", "AppAction", new { id = row["AppActionId"] })">
+                                            @Loc.T("Common.Delete")
+                                        </a>
                                     </li>
                                 </ul>
                             </div>

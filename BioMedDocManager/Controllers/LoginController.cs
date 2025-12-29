@@ -423,6 +423,7 @@ namespace BioMedDocManager.Controllers
         /// 取得驗證碼
         /// </summary>
         /// <returns></returns>
+        [AllowAnonymous]
         public IActionResult GetCaptcha()
         {
             string code = GenerateRandomCode(5); // e.g., "A3X9B"

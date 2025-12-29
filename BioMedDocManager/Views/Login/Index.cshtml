@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["FullTitle"] = "文管與電子採購系統(範例)-登入";
+    ViewData["FullTitle"] = Loc.T("Common.SystemName") + "-" + Loc.T("Common.Login");
     Layout = "_LoginLayout";
 
     var message = TempData["_JSShowAlert"] as string;
@@ -67,14 +67,14 @@
                     <input type="hidden" name="returnUrl" value="@returnUrl" />
 
                     <div class="fs-3 fw-bold my-2">
-                        文管與電子採購系統(範例)
+                        @Loc.T("Home.Welcome.SubTitle")
                     </div>
 
                     @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl as string))
                     {
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
-                            系統偵測到您的登入已過期，請重新登入。
+                            @Loc.T("Login.SessionExpired")
                         </div>
                     }
 
@@ -97,14 +97,14 @@
                     <!-- 帳號 -->
                     <div class="row my-3">
                         <label class="col-md-2 col-sm-3 col-12 col-form-label fw-bold">
-                            帳號
+                            @Loc.T("Login.Account")
                         </label>
                         <div class="col-md-9 col-sm-8 col-12">
                             <input type="text"
                                    class="form-control"
                                    name="userAccount"
                                    value="@sampleUser"
-                                   placeholder="請輸入登入帳號"
+                                   placeholder="@Loc.T("Login.Account.Placeholder")"
                                    required />
                         </div>
                     </div>
@@ -112,7 +112,7 @@
                     <!-- 密碼 -->
                     <div class="row my-3">
                         <label class="col-md-2 col-sm-3 col-12 col-form-label fw-bold">
-                            密碼
+                            @Loc.T("Login.Password")
                         </label>
                         <div class="col-md-9 col-sm-8 col-12">
                             <div class="input-group">
@@ -121,7 +121,7 @@
                                        id="password"
                                        name="password"
                                        value="@samplePassword"
-                                       placeholder="請輸入密碼"
+                                       placeholder="@Loc.T("Login.Password.Placeholder")"
                                        required />
                                 <button type="button"
                                         class="btn btn-outline-secondary togglePasswordButton"
@@ -137,7 +137,7 @@
                     {
                         <div class="row my-3">
                             <label class="col-md-2 col-sm-3 col-12 col-form-label fw-bold">
-                                驗證碼
+                                @Loc.T("Login.Captcha")
                             </label>
                             <div class="col-md-9 col-sm-8 col-12">
                                 <div class="input-group">
@@ -146,21 +146,21 @@
                                            name="captcha"
                                            maxlength="5"
                                            pattern="[A-Za-z0-9]*"
-                                           placeholder="點擊圖片更換驗證碼"
+                                           placeholder="@Loc.T("Login.Captcha.Placeholder")"
                                            required />
                                     <img id="captchaImage"
                                          src="@Url.Action("GetCaptcha", "Login")"
                                          data-url="@Url.Action("GetCaptcha", "Login")"
                                          class="captcha-img ms-2 border rounded"
-                                         title="點擊重新產生"
-                                         alt="驗證碼" />
+                                         title="@Loc.T("Login.Captcha.RefreshTitle")"
+                                         alt="@Loc.T("Login.Captcha")" />
                                 </div>
                             </div>
                         </div>
                     }
 
                     <button type="submit" class="btn btn-primary my-3 col-sm-6">
-                        登入
+                        @Loc.T("Common.Login")
                     </button>
                 </form>
 

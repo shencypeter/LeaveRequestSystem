@@ -2,7 +2,7 @@
 @using BioMedDocManager.Models
 
 @{
-    ViewData["Title"] = "系統動作管理-詳細資料";
+    ViewData["Title"] = Loc.T("AppAction.Details.Title");
     Layout = "_NoNavLayout";
 
     var usageList = ViewBag.ActionRoleUsageList as List<AppActionRoleUsageViewModel> ?? new();
@@ -43,7 +43,7 @@
             <label asp-for="CreatedAt" class="col-md-2 col-form-label text-md-end"></label>
             <div class="col-md-10">
                 <p class="form-control-plaintext">
-                    @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")
+                    @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? Loc.T("Common.None"))
                 </p>
             </div>
         </div>
@@ -52,27 +52,29 @@
             <label asp-for="UpdatedAt" class="col-md-2 col-form-label text-md-end"></label>
             <div class="col-md-10">
                 <p class="form-control-plaintext">
-                    @(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")
+                    @(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? Loc.T("Common.None"))
                 </p>
             </div>
         </div>
 
-        <!-- RolePermission 關聯狀況 (Resource + Role) -->
+        <!-- RolePermission 關聯狀況 -->
         <div class="row align-items-start my-2">
             <label class="col-md-2 col-form-label text-md-end">
-                角色權限關聯
+                @Loc.T("AppAction.RolePermissionUsage.Title")
             </label>
             <div class="col-md-10">
                 @if (!hasAnyRolePermission)
                 {
                     <div class="text-muted">
-                        目前尚未有任何角色權限使用此動作。
+                        @Loc.T("AppAction.RolePermissionUsage.None")
                     </div>
                 }
                 else
                 {
                     <p class="mb-2">
-                        此動作目前被 <strong>@pairCount</strong> 組角色使用。
+                        @Loc.T("AppAction.RolePermissionUsage.CountPrefix")
+                        <strong>@pairCount</strong>
+                        @Loc.T("AppAction.RolePermissionUsage.CountSuffix")
                     </p>
 
                     @if (usageList.Any())
@@ -81,10 +83,10 @@
                             <table class="table table-sm table-bordered align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>角色群組</th>
-                                        <th>角色名稱</th>
-                                        <th>資源代號</th>
-                                        <th>資源名稱</th>                                        
+                                        <th>@Loc.T("Role.RoleGroup")</th>
+                                        <th>@Loc.T("Role.RoleName")</th>
+                                        <th>@Loc.T("Resource.ResourceKey")</th>
+                                        <th>@Loc.T("Resource.ResourceDisplayName")</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -94,7 +96,7 @@
                                             <td>@item.RoleGroup</td>
                                             <td>@item.RoleName</td>
                                             <td>@item.ResourceKey</td>
-                                            <td>@item.ResourceDisplayName</td>                                            
+                                            <td>@item.ResourceDisplayName</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -104,7 +106,7 @@
                     else
                     {
                         <div class="text-muted">
-                            已有角色權限使用此動作，但無法取得對應的詳細資料。
+                            @Loc.T("AppAction.RolePermissionUsage.NoDetail")
                         </div>
                     }
                 }

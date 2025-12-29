@@ -2,7 +2,7 @@
 @using BioMedDocManager.Models
 
 @{
-    ViewData["Title"] = "系統資源管理-刪除";
+    ViewData["Title"] = Loc.T("Resource.Delete.Title");
     Layout = "_NoNavLayout";
 
     var groupUsage = ViewBag.ResourceGroupUsageList as List<ResourceGroupUsageViewModel> ?? new();
@@ -61,34 +61,34 @@
             <!-- 角色權限使用狀況 + 使用者群組／未指定群組 -->
             <div class="row align-items-start my-2">
                 <label class="col-md-2 col-form-label text-md-end">
-                    角色權限使用狀況
+                    @Loc.T("Resource.RolePermissionUsage.Title")
                 </label>
                 <div class="col-md-10">
 
                     @if (!hasAnyRolePermission)
                     {
                         <div class="text-muted">
-                            目前尚未有任何角色權限使用此資源。
+                            @Loc.T("Resource.RolePermissionUsage.None")
                         </div>
                     }
                     else
                     {
                         <p class="mb-2">
-                            此資源目前被 <strong>@rolePermCount</strong> 個角色設定權限。
+                            @Loc.T("Resource.RolePermissionUsage.CountPrefix")
+                            <strong>@rolePermCount</strong>
+                            @Loc.T("Resource.RolePermissionUsage.CountSuffix")
                         </p>
 
                         @if (groupCount > 0)
                         {
-
                             // 依 Role 分組，每個角色一行，群組名稱用「、」串起來
                             var roleGroups = groupUsage
                             .GroupBy(g => new { g.RoleId, g.RoleGroup, g.RoleName })
                             .OrderBy(g => g.Key.RoleGroup)
                             .ThenBy(g => g.Key.RoleName);
 
-
                             <div class="mb-2">
-                                <h6>使用此資源的角色／群組：</h6>
+                                <h6>@Loc.T("Resource.RolePermissionUsage.RoleGroupListTitle")</h6>
                                 <ol class="mb-0">
                                     @foreach (var roleGroup in roleGroups)
                                     {
@@ -101,17 +101,14 @@
 
                                         if (!groupsForRole.Any())
                                         {
-                                            // 完全沒有指定群組
                                             <li>
                                                 【@key.RoleGroup】@key.RoleName ：
-                                                <span class="text-muted">未指定群組</span>
+                                                <span class="text-muted">@Loc.T("Resource.UnassignedGroup")</span>
                                             </li>
                                         }
                                         else
                                         {
-                                            // 把所有群組名稱用「、」串起來
                                             var names = string.Join("、", groupsForRole.Select(x => x.UserGroupName));
-
                                             <li>
                                                 【@key.RoleGroup】@key.RoleName ：@names
                                             </li>
@@ -123,7 +120,7 @@
                         else
                         {
                             <div class="text-muted">
-                                目前已由部分角色設定權限，但尚未指定任何使用者群組。
+                                @Loc.T("Resource.RolePermissionUsage.HasPermissionButNoGroup")
                             </div>
                         }
                     }
@@ -133,15 +130,16 @@
             @if (hasAnyRolePermission)
             {
                 <div class="alert alert-danger mb-0">
-                    此資源目前仍被角色權限使用，<strong>無法刪除</strong>。<br />
-                    若要刪除，請先在「角色管理-權限設定」中取消此資源相關的權限設定。
+                    @Loc.T("Resource.Delete.Blocked.Prefix")
+                    <strong>@Loc.T("Resource.Delete.Blocked.CannotDelete")</strong>。<br />
+                    @Loc.T("Resource.Delete.Blocked.Instruction")
                 </div>
             }
             else
             {
                 <div class="alert alert-warning mb-0">
-                    確定要刪除資源：
-                    <strong>@Model.ResourceKey (@Model.ResourceDisplayName)</strong> 嗎？
+                    @Loc.T("Common.ConfirmDelete")
+                    <strong>@Model.ResourceKey (@Model.ResourceDisplayName)</strong>
                 </div>
             }
 
@@ -151,7 +149,7 @@
                     @if (!hasAnyRolePermission)
                     {
                         <button type="submit" class="btn2 btn-danger mt-2 col-6 col-md-3 mx-1">
-                            <i class="bi bi-trash"></i>&ensp;確定刪除
+                            <i class="bi bi-trash"></i> @Loc.T("Common.Delete")
                         </button>
                     }
                 </div>

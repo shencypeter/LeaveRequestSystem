@@ -42,8 +42,8 @@
             var isLoggedIn = User?.Identity?.IsAuthenticated == true;
             var linkUrl = isLoggedIn ? Url.Content("~/Login/Logout") : Url.Content("~/Login");
             var message = isLoggedIn
-            ? "您的帳號尚未開通使用權限 — 若有疑問請聯絡系統管理員"
-            : "您尚未登入，請點此登入";
+            ? $"{Loc.T("Auth.AccessDenied")} — {Loc.T("Common.ContactAdminIfAnyQuestion")}"
+            : Loc.T("Auth.LoginRequired");
 
             <a href="@linkUrl" class="btn btn1 btn-info">
                 <i class="fas fa-sign-out-alt me-1"></i> @message
@@ -65,7 +65,7 @@
                         continue;
                     }
 
-                    var label = parent.MenuItemTitle ?? "(未命名選單)";
+                    var label = parent.MenuItemTitle ?? Loc.T("Menu.UnnamedItem");
                     var iconClass = parent.MenuItemIcon;
                     var isActiveParent = currentGroup != null &&
                     currentGroup.MenuItemParentId == group.MenuItemParentId;
@@ -103,14 +103,14 @@
             {
                 <a href="@Url.Content("~/")"
                    class="btn btn-outline-secondary btn-sm me-2">
-                    <i class="fa fa-arrow-left"></i> 返回上層
+                    <i class="fa fa-arrow-left"></i> @Loc.T("Common.BackToUpper")
                 </a>
 
                 @foreach (var child in currentGroup.Children
                         .OrderBy(c => c.MenuItemDisplayOrder)
                         .ThenBy(c => c.MenuItemId))
                 {
-                    var label = child.MenuItemTitle ?? "(未命名)";
+                    var label = child.MenuItemTitle ?? @Loc.T("Menu.UnnamedItem");
                     var iconClass = child.MenuItemIcon;
 
                     string url = "#";
@@ -144,9 +144,3 @@
         <i class="fa fa-chevron-right"></i>
     </button>
 </div>
-
-@section PageScripts {
-    <script nonce="@ViewBag.CspNonce">
-
-    </script>
-}

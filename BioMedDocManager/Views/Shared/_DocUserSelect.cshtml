@@ -1,4 +1,5 @@
-﻿@model string // 傳入目前選擇的 Id
+﻿@*範例code，就沒有改成多語系*@
+@model string // 傳入目前選擇的 Id
 @{
     var DocUser = ViewData["DocUser"] as SelectOption?[] ?? new SelectOption[] { };
     var isRequired = ViewData["DocUserIsRequired"] as bool? ?? false;// 欄位是否必填

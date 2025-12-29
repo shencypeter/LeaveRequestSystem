@@ -3,7 +3,11 @@
 @using BioMedDocManager.Models
 
 @{
-    var UserFullName = ViewData["UserFullName"]?.ToString() ?? "訪客";
+    // 建議用空字串判斷是否訪客，顯示時再用 Loc
+    var userFullNameRaw = ViewData["UserFullName"]?.ToString();
+    bool isGuest = string.IsNullOrWhiteSpace(userFullNameRaw);
+    var userFullName = isGuest ? Loc.T("Common.Guest") : userFullNameRaw;
+
     var greeting = ViewData["Greeting"]?.ToString() ?? "";
 
     // 共用的 MenuTree（跟 _BannerMenu 一樣）
@@ -44,26 +48,26 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <a class="navbar-brand fw-bolder align-middle" href="~/">
-                &ensp;文管與電子採購系統(範例)
+                &ensp;@Loc.T("Home.Welcome.SubTitle")
             </a>
         </div>
 
         <div class="justify-content-end user-nav">
             <i class="fa-solid fa-user"></i>
-            <span class="ps-1" id="memberNo">@UserFullName</span>
+            <span class="ps-1" id="memberNo">@userFullName</span>
             <span>，@greeting！&ensp;&ensp;</span>
-            @if (UserFullName == "訪客")
+            @if (isGuest)
             {
-                <a class="btn btn-link px-1 me-3 py-1 logout" href="@Url.Action("Index", "Login")">登入</a>
+                <a class="btn btn-link px-1 me-3 py-1 logout" href="@Url.Action("Index", "Login")">@Loc.T("Common.Login")</a>
             }
             else
             {
-                <a class="btn btn-link px-1 me-3 py-1 logout change_password_btn" href="@Url.Action("ChangePassword", "AccountSettings")" target="_blank">更改密碼</a>
+                <a class="btn btn-link px-1 me-3 py-1 logout change_password_btn" href="@Url.Action("ChangePassword", "AccountSettings")" target="_blank">@Loc.T("Common.ChangePassword")</a>
                 @if (TwoFA_ENABLED)
                 {
-                    <a class="btn btn-link px-1 me-3 py-1 logout register_totp_btn" href="@Url.Action("RegisterTotp", "AccountSettings")" target="_blank">註冊TOTP</a>
+                    <a class="btn btn-link px-1 me-3 py-1 logout register_totp_btn" href="@Url.Action("RegisterTotp", "AccountSettings")" target="_blank">@Loc.T("AccountSettings.RegisterTotp")</a>
                 }
-                <a class="btn btn-link px-1 me-3 py-1 logout" href="@Url.Action("Logout", "Login")">登出</a>
+                <a class="btn btn-link px-1 me-3 py-1 logout" href="@Url.Action("Logout", "Login")">@Loc.T("Common.Logout")</a>
             }
             
             @await Html.PartialAsync("_Language")
@@ -74,7 +78,7 @@
             <div class="offcanvas-header justify-content-center mt-4">
                 <span class="offcanvas-title fw-bolder align-middle fs-5" id="offcanvasNavbarLabel">
                     <i class="fa-solid fa-user"></i>
-                    <span class="ps-1" id="memberNo">@UserFullName</span>
+                    <span class="ps-1" id="memberNo">@userFullName</span>
                     <span>，@greeting！&ensp;&ensp;</span>
                 </span>
             </div>
@@ -85,21 +89,21 @@
                     @* === 沒有 Menu（未登入或沒權限） === *@
                     @if (!hasMenu)
                     {
-                        if (UserFullName == "訪客")
+                        if (isGuest)
                         {
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration" href="@Url.Action("Login", "Login")">登入</a>
+                                <a class="nav-link active text-decoration" href="@Url.Action("Login", "Login")">@Loc.T("Common.Login")</a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item py-1 px-5">
                                 <span class="nav-link active text-decoration">
-                                    您的帳號尚未開通使用權限，請聯絡系統管理員
+                                    @Loc.T("Common.NoPermissionContactAdmin")
                                 </span>
                             </li>
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration" href="@Url.Action("Logout", "Login")">登出</a>
+                                <a class="nav-link active text-decoration" href="@Url.Action("Logout", "Login")">@Loc.T("Common.Logout")</a>
                             </li>
                         }
                     }
@@ -118,7 +122,7 @@
                                     continue;
                                 }
 
-                                var label = parent.MenuItemTitle ?? "(未命名選單)";
+                                var label = parent.MenuItemTitle ?? Loc.T("Menu.Unnamed");
                                 var iconClass = parent.MenuItemIcon;
 
                                 // Parent 不直接對應 controller，讓它連到第一個子項
@@ -150,7 +154,7 @@
                             @* === 第二層：顯示 currentGroup 底下的所有子選單 === *@
                             <li class="nav-item py-1 px-5">
                                 <a class="nav-link active text-decoration" href="~/">
-                                    <i class="fa fa-arrow-left"></i> 返回上層
+                                    <i class="fa fa-arrow-left"></i>@Loc.T("Common.BackToUpper")
                                 </a>
                             </li>
 
@@ -158,7 +162,7 @@
                                                 .OrderBy(c => c.MenuItemDisplayOrder)
                                                 .ThenBy(c => c.MenuItemId))
                             {
-                                var label = child.MenuItemTitle ?? "(未命名)";
+                                var label = child.MenuItemTitle ?? Loc.T("Menu.Unnamed");
                                 var iconClass = child.MenuItemIcon;
 
                                 string url = "#";
@@ -192,25 +196,25 @@
                             <hr class="my-2 bg-white" />
                         </li>
 
-                        @if (UserFullName == "訪客")
+                        @if (isGuest)
                         {
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration" href="@Url.Action("Login", "Login")">登入</a>
+                                <a class="nav-link active text-decoration" href="@Url.Action("Login", "Login")">@Loc.T("Common.Login")</a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration change_password_btn" href="@Url.Action("ChangePassword", "AccountSettings")" target="_blank">更改密碼</a>
+                                <a class="nav-link active text-decoration change_password_btn" href="@Url.Action("ChangePassword", "AccountSettings")" target="_blank">@Loc.T("Common.ChangePassword")</a>
                             </li>
 
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration register_totp_btn" href="@Url.Action("RegisterTotp", "AccountSettings")" target="_blank">註冊TOTP</a>
+                                <a class="nav-link active text-decoration register_totp_btn" href="@Url.Action("RegisterTotp", "AccountSettings")" target="_blank">@Loc.T("AccountSettings.RegisterTotp")</a>
                             </li>
 
 
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration" href="@Url.Action("Logout", "Login")">登出</a>
+                                <a class="nav-link active text-decoration" href="@Url.Action("Logout", "Login")">@Loc.T("Common.Logout")</a>
                             </li>
                         }
                     }

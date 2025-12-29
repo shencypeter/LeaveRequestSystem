@@ -1,6 +1,6 @@
 ﻿@model BioMedDocManager.Models.Resource
 @{
-    ViewData["Title"] = "系統資源管理-新增";
+    ViewData["Title"] = Loc.T("Resource.Create.Title");
     Layout = "_NoNavLayout";
 }
 
@@ -18,7 +18,7 @@
             <div class="row align-items-center my-3">
                 <label asp-for="ResourceType" class="col-md-2 col-form-label text-md-end"></label>
                 <div class="col-md-10">
-                    <input asp-for="ResourceType" class="form-control" placeholder="PAGE、API"/>
+                    <input asp-for="ResourceType" class="form-control" placeholder="@Loc.T("Resource.ResourceType.Placeholder")" />
                     <span asp-validation-for="ResourceType" class="text-danger"></span>
                 </div>
             </div>
@@ -26,7 +26,7 @@
             <div class="row align-items-center my-3">
                 <label asp-for="ResourceKey" class="col-md-2 col-form-label text-md-end"></label>
                 <div class="col-md-10">
-                    <input asp-for="ResourceKey" class="form-control" />
+                    <input asp-for="ResourceKey" class="form-control" placeholder="@Loc.T("Resource.ResourceKey.Placeholder")" />
                     <span asp-validation-for="ResourceKey" class="text-danger"></span>
                 </div>
             </div>
@@ -34,7 +34,7 @@
             <div class="row align-items-center my-3">
                 <label asp-for="ResourceDisplayName" class="col-md-2 col-form-label text-md-end"></label>
                 <div class="col-md-10">
-                    <input asp-for="ResourceDisplayName" class="form-control" />
+                    <input asp-for="ResourceDisplayName" class="form-control" placeholder="@Loc.T("Resource.ResourceDisplayName.Placeholder")" />
                     <span asp-validation-for="ResourceDisplayName" class="text-danger"></span>
                 </div>
             </div>
@@ -53,7 +53,7 @@
             <div class="row align-items-center my-3">
                 <div class="col-12 d-flex flex-wrap justify-content-center">
                     <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
-                        <i class="fas fa-check-circle"></i>&ensp;儲存
+                        <i class="fas fa-check-circle"></i> @Loc.T("Common.Save")
                     </button>
                 </div>
             </div>

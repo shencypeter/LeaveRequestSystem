@@ -113,8 +113,8 @@ SELECT
     */
     al.Severity           AS 嚴重度,
     al.Description        AS 額外敘述
-FROM [DocControl0].[dbo].[AccessLogs] al
-LEFT JOIN [DocControl0].[dbo].[User] u
+FROM [dbo].[AccessLogs] al
+LEFT JOIN [dbo].[User] u
     ON al.AccountId = u.[UserId]
 ORDER BY LogDateTime DESC
 OFFSET 0 ROWS

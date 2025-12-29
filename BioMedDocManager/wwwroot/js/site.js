@@ -285,19 +285,6 @@ function goToLogin() {
     window.location.href = "/login";
 }
 
-// 關鍵字查詢 改成麵包屑名稱
-function updateAccordionLabelFromTitle(title, itleSelector, accordionSelector) {
-
-    const label = title + '查詢';
-
-    $(accordionSelector).each(function () {
-        const $btn = $(this);
-        const $icon = $btn.find('i');
-        $btn.contents().filter((i, el) => el.nodeType === 3).remove();
-        $icon.after('&ensp;' + label);
-    });
-}
-
 // 顯示訊息
 function showModalMessage({ message, title = 'Notice', showCancel = false }) {
     return new Promise((resolve) => {
