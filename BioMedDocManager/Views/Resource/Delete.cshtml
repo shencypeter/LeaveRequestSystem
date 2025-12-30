@@ -83,9 +83,9 @@
                         {
                             // 依 Role 分組，每個角色一行，群組名稱用「、」串起來
                             var roleGroups = groupUsage
-                            .GroupBy(g => new { g.RoleId, g.RoleGroup, g.RoleName })
+                            .GroupBy(g => new { g.RoleId, g.RoleGroup, g.RoleCode })
                             .OrderBy(g => g.Key.RoleGroup)
-                            .ThenBy(g => g.Key.RoleName);
+                            .ThenBy(g => g.Key.RoleCode);
 
                             <div class="mb-2">
                                 <h6>@Loc.T("Resource.RolePermissionUsage.RoleGroupListTitle")</h6>
@@ -96,21 +96,21 @@
 
                                         // 有群組的項目
                                         var groupsForRole = roleGroup
-                                        .Where(x => x.HasGroup && !string.IsNullOrWhiteSpace(x.UserGroupName))
+                                        .Where(x => x.HasGroup && !string.IsNullOrWhiteSpace(x.UserGroupCode))
                                         .ToList();
 
                                         if (!groupsForRole.Any())
                                         {
                                             <li>
-                                                【@key.RoleGroup】@key.RoleName ：
+                                                【@key.RoleGroup】@key.RoleCode ：
                                                 <span class="text-muted">@Loc.T("Resource.UnassignedGroup")</span>
                                             </li>
                                         }
                                         else
                                         {
-                                            var names = string.Join("、", groupsForRole.Select(x => x.UserGroupName));
+                                            var names = string.Join("、", groupsForRole.Select(x => x.UserGroupCode));
                                             <li>
-                                                【@key.RoleGroup】@key.RoleName ：@names
+                                                【@key.RoleGroup】@key.RoleCode ：@names
                                             </li>
                                         }
                                     }

@@ -1,7 +1,10 @@
 ﻿using BioMedDocManager.Enums;
+using BioMedDocManager.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace BioMedDocManager.Models
 {
@@ -92,102 +95,105 @@ namespace BioMedDocManager.Models
     public class CreateUserViewModel
     {
         /// <summary>
-        /// 流水號
+        /// 使用者編號
         /// </summary>
         [Key]
-        [Display(Name = "使用者編號")]
+        [Display(Name = "User.UserId")]
         public int UserId { get; set; }
 
         /// <summary>
-        /// 使用者帳號(工號)
+        /// 帳號(工號)
         /// </summary>
-        [Display(Name = "帳號(工號)")]
+        [Display(Name = "User.UserAccount")]
+        [Required(ErrorMessage = "Validation.Required")]
+        [StringLength(100, ErrorMessage = "Validation.StringLength")]
         public string UserAccount { get; set; } = null!;
 
         /// <summary>
         /// 姓名
         /// </summary>
-        [Display(Name = "姓名")]
+        [Display(Name = "User.UserFullName")]
+        [Required(ErrorMessage = "Validation.Required")]
+        [StringLength(100, ErrorMessage = "Validation.StringLength")]
         public string UserFullName { get; set; } = null!;
 
         /// <summary>
         /// 職稱
         /// </summary>
-        [Display(Name = "職稱")]
-        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
+        [Display(Name = "User.UserJobTitle")]
+        [StringLength(100, ErrorMessage = "Validation.StringLength")]
         public string? UserJobTitle { get; set; }
 
         /// <summary>
-        /// 部門名稱
+        /// 部門
         /// </summary>
-        [Display(Name = "部門名稱")]
-        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
+        [Display(Name = "User.DepartmentId")]
         public int? DepartmentId { get; set; }
 
         /// <summary>
-        /// Email
+        /// 電子郵件
         /// </summary>
-        [Display(Name = "Email")]
-        [Required(ErrorMessage = "請輸入「Email」")]
-        [EmailAddress(ErrorMessage = "Email 格式不正確")]
-        [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
-        public string? UserEmail { get; set; } = null!;
+        [Display(Name = "User.UserEmail")]
+        [Required(ErrorMessage = "Validation.Required")]
+        [EmailAddress(ErrorMessage = "Validation.EmailAddress")]
+        [StringLength(255, ErrorMessage = "Validation.StringLength")]
+        public string UserEmail { get; set; } = null!;
 
         /// <summary>
         /// 聯絡電話
         /// </summary>
-        [Display(Name = "聯絡電話")]
-        [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
+        [Display(Name = "User.UserPhone")]
+        [StringLength(50, ErrorMessage = "Validation.StringLength")]
         public string? UserPhone { get; set; }
 
         /// <summary>
         /// 手機
         /// </summary>
-        [Display(Name = "手機")]
-        [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
+        [Display(Name = "User.UserMobile")]
+        [StringLength(50, ErrorMessage = "Validation.StringLength")]
         public string? UserMobile { get; set; }
 
         /// <summary>
         /// 密碼
         /// </summary>
-        [Required(ErrorMessage = "請輸入「密碼」")]
-        [MinLength(8, ErrorMessage = "密碼長度至少需8個字元")]
+        [Display(Name = "User.UserPasswordHash")]
+        [Required(ErrorMessage = "Validation.Required")]
         [DataType(DataType.Password)]
-        [Display(Name = "密碼")]
-        public string UserPasswordHash { get; set; }
+        [StringLength(255, ErrorMessage = "Validation.StringLength")]
+        public string UserPasswordHash { get; set; } = null!;
 
         /// <summary>
         /// 確認密碼
         /// </summary>
-        [Required(ErrorMessage = "請輸入「確認密碼」")]
-        [Display(Name = "確認密碼")]
-        [Compare(nameof(UserPasswordHash), ErrorMessage = "「密碼」與「確認密碼」不一致")]
+        [Display(Name = "User.UserConfirmPasswordHash")]
+        [Required(ErrorMessage = "Validation.Required")]
+        [DataType(DataType.Password)]
+        [Compare(nameof(UserPasswordHash), ErrorMessage = "Validation.Compare")]
         public string UserConfirmPasswordHash { get; set; } = null!;
 
         /// <summary>
         /// 是否啟用
         /// </summary>
-        [Display(Name = "是否啟用")]
+        [Display(Name = "User.UserIsActive")]
         public bool UserIsActive { get; set; } = true;
 
         /// <summary>
         /// 是否鎖定
         /// </summary>
-        [Display(Name = "是否鎖定")]
+        [Display(Name = "User.UserIsLocked")]
         public bool UserIsLocked { get; set; } = false;
 
         /// <summary>
-        /// 狀態（例如 Active / Suspended）
+        /// 帳號狀態
         /// </summary>
-        [Display(Name = "狀態")]
-        [StringLength(20, ErrorMessage = "{0}最多{1}字元")]
-        public string? UserStatus { get; set; }
+        [Display(Name = "User.UserStatus")]
+        public AccountStatus? UserStatus { get; set; } = AccountStatus.Active;
 
         /// <summary>
         /// 備註
         /// </summary>
-        [Display(Name = "備註")]
-        [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
+        [Display(Name = "User.UserRemarks")]
+        [StringLength(255, ErrorMessage = "Validation.StringLength")]
         public string? UserRemarks { get; set; }
 
         /// <summary>
@@ -204,42 +210,45 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 使用者Id
         /// </summary>
-        [Display(Name = "使用者Id")]
+        [Display(Name = "User.UserId")]
         public int UserId { get; set; }
+
         /// <summary>
         /// 使用者帳號(工號)
         /// </summary>
-        [Display(Name = "帳號(工號)")]
-        public string UserAccount { get; set; }
+        [Display(Name = "User.UserAccount")]
+        public string UserAccount { get; set; } = null!;
 
         /// <summary>
-        /// 使用者名稱(中文姓名)
+        /// 使用者姓名
         /// </summary>
-        [Display(Name = "姓名")]
-        public string UserFullName { get; set; }
+        [Display(Name = "User.UserFullName")]
+        public string UserFullName { get; set; } = null!;
 
         /// <summary>
         /// 原密碼
         /// </summary>
-        [Required(ErrorMessage = "請輸入「原密碼」")]
+        [Display(Name = "User.UserCurrentPassword")]
+        [Required(ErrorMessage = "Validation.Required")]
         [DataType(DataType.Password)]
-        [Display(Name = "原密碼")]
-        public string UserCurrentPassword { get; set; }
+        public string UserCurrentPassword { get; set; } = null!;
 
         /// <summary>
         /// 新密碼
         /// </summary>
-        [Required(ErrorMessage = "請輸入「新密碼」")]
+        [Display(Name = "User.UserNewPasswordHash")]
+        [Required(ErrorMessage = "Validation.Required")]
         [DataType(DataType.Password)]
-        [Display(Name = "新密碼")]
-        public string UserNewPasswordHash { get; set; }
+        [StringLength(255, ErrorMessage = "Validation.StringLength")]
+        public string UserNewPasswordHash { get; set; } = null!;
 
         /// <summary>
         /// 確認新密碼
         /// </summary>
-        [Required(ErrorMessage = "請輸入「確認新密碼」")]
-        [Display(Name = "確認新密碼")]
-        [Compare(nameof(UserNewPasswordHash), ErrorMessage = "「新密碼」與「確認新密碼」不一致")]
+        [Display(Name = "User.UserConfirmPasswordHash")]
+        [Required(ErrorMessage = "Validation.Required")]
+        [DataType(DataType.Password)]
+        [Compare(nameof(UserNewPasswordHash), ErrorMessage = "Validation.Compare")]
         public string UserConfirmPasswordHash { get; set; } = null!;
     }
 
@@ -256,19 +265,19 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 使用者帳號
         /// </summary>
-        [Display(Name = "帳號")]
+        [Display(Name = "User.UserAccount")]
         public string UserAccount { get; set; } = string.Empty;
 
         /// <summary>
         /// 使用者姓名
         /// </summary>
-        [Display(Name = "姓名")]
+        [Display(Name = "User.UserFullName")]
         public string UserFullName { get; set; } = string.Empty;
 
         /// <summary>
         /// 使用者群組
         /// </summary>
-        [Display(Name = "使用者群組")]
+        [Display(Name = "User.UserGroupRoleList")]
         public List<int> SelectedUserGroupIds { get; set; } = new();
 
         /// <summary>
@@ -339,7 +348,7 @@ namespace BioMedDocManager.Models
     public class EffectiveRoleViewModel
     {
         public int RoleId { get; set; }
-        public string RoleName { get; set; } = "";
+        public string RoleCode { get; set; } = "";
         public string RoleGroup { get; set; } = "";
         public List<int> FromUserGroupIds { get; set; } = new();
     }
@@ -353,7 +362,7 @@ namespace BioMedDocManager.Models
         public string ResourceKey { get; set; } = "";
         public string ResourceDisplayName { get; set; } = "";
         public int AppActionId { get; set; }
-        public string AppActionName { get; set; } = "";
+        public string AppActionCode { get; set; } = "";
         public string AppActionDisplayName { get; set; } = "";
         public List<int> FromRoleIds { get; set; } = new();
     }
@@ -371,7 +380,7 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 群組名稱（顯示用）
         /// </summary>
-        public string? UserGroupName { get; set; }
+        public string? UserGroupCode { get; set; }
 
         /// <summary>
         /// 使用者選取的角色 Id 清單
@@ -401,7 +410,7 @@ namespace BioMedDocManager.Models
 
         public int RoleId { get; set; }
         public string? RoleGroup { get; set; }
-        public string? RoleName { get; set; }
+        public string? RoleCode { get; set; }
     }
 
     /// <summary>
@@ -488,96 +497,95 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 使用者Id
         /// </summary>
-        [Display(Name = "使用者編號")]
+        [Display(Name = "User.UserId")]
         public int UserId { get; set; }
 
         /// <summary>
         /// 工號
         /// </summary>
-        [Display(Name = "帳號(工號)")]
+        [Display(Name = "User.UserAccount")]
         public string UserAccount { get; set; }
 
         /// <summary>
         /// 姓名
         /// </summary>
-        [Display(Name = "姓名")]
-        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
+        [Display(Name = "User.UserFullName")]
+        [StringLength(100, ErrorMessage = "Validation.StringLength")]
         public string UserFullName { get; set; }
 
         /// <summary>
         /// 職稱
         /// </summary>
-        [Display(Name = "職稱")]
-        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
+        [Display(Name = "User.UserJobTitle")]
+        [StringLength(100, ErrorMessage = "Validation.StringLength")]
         public string? UserJobTitle { get; set; }
 
         /// <summary>
-        /// 部門名稱
+        /// 部門
         /// </summary>
-        [Display(Name = "部門名稱")]
-        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
-        public string? DepartmentName { get; set; }
+        [Display(Name = "User.DepartmentId")]
+        public int? DepartmentId { get; set; }
 
         /// <summary>
         /// Email
         /// </summary>
-        [Display(Name = "Email")]
-        [EmailAddress(ErrorMessage = "Email 格式不正確")]
-        [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
+        [Display(Name = "User.UserEmail")]
+        [EmailAddress(ErrorMessage = "Validation.EmailAddress")]
+        [StringLength(255, ErrorMessage = "Validation.StringLength")]
         public string UserEmail { get; set; }
 
         /// <summary>
         /// 聯絡電話
         /// </summary>
-        [Display(Name = "聯絡電話")]
-        [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
+        [Display(Name = "User.UserPhone")]
+        [StringLength(50, ErrorMessage = "Validation.StringLength")]
         public string? UserPhone { get; set; }
 
         /// <summary>
         /// 手機
         /// </summary>
-        [Display(Name = "手機")]
-        [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
+        [Display(Name = "User.UserMobile")]
+        [StringLength(50, ErrorMessage = "Validation.StringLength")]
         public string? UserMobile { get; set; }
 
         /// <summary>
         /// 角色群組(List)
         /// </summary>
-        [Display(Name = "系統角色")]
+        [Display(Name = "User.RoleCodeList")]
         public List<int>? RoleId { get; set; }
 
         /// <summary>
         /// 建立時間
         /// </summary>
-        [Display(Name = "建立時間")]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true, NullDisplayText = "無")]
+        [Display(Name = "AuditableEntity.CreatedAt")]
         public DateTime? CreatedAt { get; set; }
 
         /// <summary>
         /// 是否啟用
         /// </summary>
-        [Display(Name = "是否啟用")]
+        [Display(Name = "User.UserIsActive")]
         public bool? UserIsActive { get; set; }
 
         /// <summary>
         /// 是否鎖定
         /// </summary>
-        [Display(Name = "是否鎖定")]
+        [Display(Name = "User.UserIsLocked")]
         public bool? UserIsLocked { get; set; }
 
         /// <summary>
         /// 狀態
         /// </summary>
-        [Display(Name = "帳號狀態")]
+        [Display(Name = "User.UserStatus")]
         public AccountStatus UserStatus { get; set; } = AccountStatus.Active;
 
         /// <summary>
         /// 備註
         /// </summary>
-        [Display(Name = "備註")]
-        [StringLength(255, ErrorMessage = "{0}最多{1}字元")]
+        [Display(Name = "User.UserRemarks")]
+        [StringLength(255, ErrorMessage = "Validation.StringLength")]
         public string? UserRemarks { get; set; }
     }
+
 
     /// <summary>
     /// 使用者權限預覽請求
@@ -594,7 +602,7 @@ namespace BioMedDocManager.Models
     public class PreviewRoleSourceGroupViewModel
     {
         public int UserGroupId { get; set; }
-        public string UserGroupName { get; set; } = "";
+        public string UserGroupCode { get; set; } = "";
     }
     /// <summary>
     /// 角色預覽DTO
@@ -602,7 +610,7 @@ namespace BioMedDocManager.Models
     public class PreviewRoleViewModel
     {
         public int RoleId { get; set; }
-        public string RoleName { get; set; } = "";
+        public string RoleCode { get; set; } = "";
         public string RoleGroup { get; set; } = "";
         public bool IsNew { get; set; }
 
@@ -628,7 +636,7 @@ namespace BioMedDocManager.Models
         public string ResourceKey { get; set; } = "";
         public string ResourceDisplayName { get; set; } = "";
         public int AppActionId { get; set; }        
-        public string AppActionName { get; set; } = "";
+        public string AppActionCode { get; set; } = "";
         public string AppActionDisplayName { get; set; } = "";
         public bool IsNew { get; set; }
         public int AppActionOrder { get; set; }
@@ -644,7 +652,7 @@ namespace BioMedDocManager.Models
     public class RoleUsageGroupViewModel
     {
         public int UserGroupId { get; set; }
-        public string UserGroupName { get; set; } = "";
+        public string UserGroupCode { get; set; } = "";
         public string? UserGroupDescription { get; set; }
     }
 
@@ -661,7 +669,7 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 角色名稱（純顯示用）
         /// </summary>
-        public string RoleName { get; set; } = string.Empty;
+        public string RoleCode { get; set; } = string.Empty;
 
         /// <summary>
         /// 可選擇的資源清單（只放啟用中的 Resource）
@@ -686,11 +694,11 @@ namespace BioMedDocManager.Models
     public class ResourceGroupUsageViewModel
     {
         public int UserGroupId { get; set; }
-        public string UserGroupName { get; set; } = string.Empty;
+        public string UserGroupCode { get; set; } = string.Empty;
         public string? UserGroupDescription { get; set; }
 
         public int RoleId { get; set; }
-        public string RoleName { get; set; } = string.Empty;
+        public string RoleCode { get; set; } = string.Empty;
         public string RoleGroup { get; set; } = string.Empty;
 
         /// <summary>
@@ -701,6 +709,14 @@ namespace BioMedDocManager.Models
 
     public class MenuItemGroupViewModel
     {
+        /// <summary>
+        /// DB Localizer（供 NotMapped 計算屬性使用）
+        /// Controller/Service 在取資料後可指派：entity.Loc = _loc;
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public IDbLocalizer? Loc { get; set; }
+
         /// <summary>
         /// 父層選單編號
         /// </summary>
@@ -837,25 +853,30 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class TotpSetupViewModel
     {
+        [Display(Name = "User.UserAccount")]
         public string UserAccount { get; set; } = string.Empty;
 
+        [Display(Name = "Totp.Issuer")]
         public string Issuer { get; set; } = string.Empty;
 
         /// <summary>
         /// 顯示給使用者的 Base32 Secret（手動輸入用）
         /// </summary>
+        [Display(Name = "Totp.Secret")]
         public string Secret { get; set; } = string.Empty;
 
+        [Display(Name = "Totp.OtpauthUri")]
         public string OtpauthUri { get; set; } = string.Empty;
 
         /// <summary>
         /// 使用者用 Authenticator App 產生的 6 碼驗證碼
         /// </summary>
-        [Required(ErrorMessage = "請輸入驗證碼")]
-        [Display(Name = "驗證碼")]
-        [StringLength(6, MinimumLength = 6, ErrorMessage = "驗證碼必須為 6 位數字")]
+        [Required(ErrorMessage = "Validation.Required")]
+        [Display(Name = "Totp.Code")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "Validation.StringLength")]
         public string Code { get; set; } = string.Empty;
     }
+
 
     /// <summary>
     /// 通用型：是否選單<select>
@@ -880,7 +901,10 @@ namespace BioMedDocManager.Models
                 : new Microsoft.AspNetCore.Html.HtmlString(Attributes);
     }
 
-
+    public class PermissionRequirement : IAuthorizationRequirement
+    {
+        // 不需要任何屬性，空殼就可以
+    }
 
 
 

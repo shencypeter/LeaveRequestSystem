@@ -1,7 +1,7 @@
 ﻿@model BioMedDocManager.Models.UserDetailsViewModel
 
 @{
-    ViewData["Title"] = "帳號設定-使用者明細";
+    ViewData["Title"] = Loc.T("AccountSettings.Details.Title");
     Layout = "_NoNavLayout";
 }
 <div class="m-4">
@@ -12,17 +12,17 @@
     <div class="pop">
 
         <!-- ===================== 一、使用者基本資料 ===================== -->
-        <h5 class="mb-3">一、使用者基本資料</h5>
+        <h5 class="mb-3">@Loc.T("UserDetails.Section1.Title")</h5>
 
         <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserAccount)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserAccount)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @Model.User.UserAccount
             </div>
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserFullName)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserFullName)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @Model.User.UserFullName
@@ -31,12 +31,12 @@
 
         <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserJobTitle)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserJobTitle)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @if (string.IsNullOrWhiteSpace(Model.User.UserJobTitle))
                 {
-                    <span class="text-muted">(無)</span>
+                    <span class="text-muted">(@Loc.T("Common.None"))</span>
                 }
                 else
                 {
@@ -44,27 +44,27 @@
                 }
             </div>
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>部門：</strong>
+                <strong>@Loc.T("User.DepartmentId")</strong>
             </div>
             <div class="col-md-4 pt-1">
-                @(Model.User.Department?.DepartmentName ?? "(無)")
+                @(Model.User.Department?.DepartmentName ?? $"({Loc.T("Common.None")})")
             </div>
         </div>
 
         <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserEmail)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserEmail)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @Model.User.UserEmail
             </div>
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserPhone)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserPhone)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @if (string.IsNullOrWhiteSpace(Model.User.UserPhone))
                 {
-                    <span class="text-muted">(無)</span>
+                    <span class="text-muted">(@Loc.T("Common.None"))</span>
                 }
                 else
                 {
@@ -75,12 +75,12 @@
 
         <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserMobile)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserMobile)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @if (string.IsNullOrWhiteSpace(Model.User.UserMobile))
                 {
-                    <span class="text-muted">(無)</span>
+                    <span class="text-muted">(@Loc.T("Common.None"))</span>
                 }
                 else
                 {
@@ -89,7 +89,7 @@
             </div>
 
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserIsActive)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserIsActive)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @Model.User.UserIsActiveText
@@ -99,14 +99,14 @@
         <!-- 狀態類資訊（不留空） -->
         <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>是否已綁定 TOTP：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserTotpSecret)</strong>
             </div>
             <div class="col-md-4 pt-1">
-                @(string.IsNullOrWhiteSpace(Model.User.UserTotpSecret) ? "否" : "是")
+                @(string.IsNullOrWhiteSpace(Model.User.UserTotpSecret) ? Loc.T("Common.No") : Loc.T("Common.Yes"))
             </div>
 
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserIsLocked)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserIsLocked)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @Model.User.UserIsLockedText
@@ -115,21 +115,21 @@
 
         <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserLockedUntil)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserLockedUntil)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @{
-                    var lockedText = Model.User.UserLockedUntil?.ToString("yyyy-MM-dd HH:mm:ss") ?? "(無)";
+                    var lockedText = Model.User.UserLockedUntil?.ToString("yyyy-MM-dd HH:mm:ss") ?? $"({Loc.T("Common.None")})";
                 }
                 @lockedText
             </div>
 
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserLastLoginAt)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserLastLoginAt)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @{
-                    var lastLogin = Model.User.UserLastLoginAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "(無)";
+                    var lastLogin = Model.User.UserLastLoginAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? $"({Loc.T("Common.None")})";
                 }
                 @lastLogin
             </div>
@@ -137,12 +137,12 @@
 
         <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserLastLoginIp)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserLastLoginIp)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @if (string.IsNullOrWhiteSpace(Model.User.UserLastLoginIp))
                 {
-                    <span class="text-muted">(無)</span>
+                    <span class="text-muted">(@Loc.T("Common.None"))</span>
                 }
                 else
                 {
@@ -151,11 +151,11 @@
             </div>
 
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserPasswordChangedAt)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserPasswordChangedAt)</strong>
             </div>
             <div class="col-md-4 pt-1">
                 @{
-                    var pwdChanged = Model.User.UserPasswordChangedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "(無)";
+                    var pwdChanged = Model.User.UserPasswordChangedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? $"({Loc.T("Common.None")})";
                 }
                 @pwdChanged
             </div>
@@ -163,12 +163,12 @@
 
         <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.User.UserRemarks)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.User.UserRemarks)</strong>
             </div>
             <div class="col-md-10 pt-1">
                 @if (string.IsNullOrWhiteSpace(Model.User.UserRemarks))
                 {
-                    <span class="text-muted">(無)</span>
+                    <span class="text-muted">(@Loc.T("Common.None"))</span>
                 }
                 else
                 {
@@ -180,17 +180,17 @@
         <hr class="my-4" />
 
         <!-- ===================== 二、使用者群組、角色與權限 ===================== -->
-        <h5 class="mb-3">二、使用者群組、角色與權限</h5>
+        <h5 class="mb-3">@Loc.T("UserDetails.Section2.Title")</h5>
 
         <!-- 使用者群組 -->
         <div class="row align-items-start my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                使用者群組
+                @Loc.T("User.UserGroupList")
             </div>
             <div class="col-md-10">
                 @if (Model.UserGroups == null || !Model.UserGroups.Any())
                 {
-                    <div class="text-muted">(無)</div>
+                    <div class="text-muted">(@Loc.T("Common.None"))</div>
                 }
                 else
                 {
@@ -207,12 +207,12 @@
         <!-- 有效角色（沿用 EffectiveRoles） -->
         <div class="row align-items-start my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                有效角色
+                @Loc.T("UserDetails.EffectiveRoles")
             </div>
             <div class="col-md-10">
                 @if (Model.EffectiveRoles == null || Model.EffectiveRoles.Count == 0)
                 {
-                    <div class="text-muted">(無)</div>
+                    <div class="text-muted">(@Loc.T("Common.None"))</div>
                 }
                 else
                 {
@@ -220,7 +220,7 @@
                         @foreach (var r in Model.EffectiveRoles)
                         {
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>@r.RoleGroup - @r.RoleName</span>
+                                <span>@Loc.T($"Role.{r.RoleGroup}") - @Loc.T($"Role.{r.RoleCode}")</span>
                             </li>
                         }
                     </ul>
@@ -231,12 +231,12 @@
         <!-- 有效權限（Resource × Action）- 完全可以把你 EditGroup 的那段搬過來 -->
         <div class="row align-items-start my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                有效權限
+                @Loc.T("UserDetails.EffectivePermissions")
             </div>
             <div class="col-md-10">
                 @if (Model.EffectivePermissions == null || Model.EffectivePermissions.Count == 0)
                 {
-                    <div class="text-muted">(無)</div>
+                    <div class="text-muted">(@Loc.T("Common.None"))</div>
                 }
                 else
                 {
@@ -255,7 +255,7 @@
                                 @foreach (var p in g)
                                 {
                                     <span class="badge bg-success me-1 mb-1"
-                                          title="動作：@p.AppActionName">
+                                          title="@Loc.T("UserDetails.ActionTooltipPrefix")@p.AppActionCode">
                                         @p.AppActionDisplayName
                                     </span>
                                 }
@@ -265,7 +265,6 @@
                 }
             </div>
         </div>
-
 
     </div>
 </div>

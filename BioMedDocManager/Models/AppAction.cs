@@ -13,33 +13,34 @@ public class AppAction : AuditableEntity
     /// 動作編號
     /// </summary>
     [Key]
-    [Display(Name = "動作編號")]
+    [Display(Name = "AppAction.AppActionId")]
     public int AppActionId { get; set; }
 
     /// <summary>
     /// 動作名稱
     /// </summary>
-    [Display(Name = "動作名稱")]
-    [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
-    public string AppActionName { get; set; } = null!;  // index/create/edit/delete/...
+    [Display(Name = "AppAction.AppActionCode")]
+    [StringLength(
+        50,
+        ErrorMessage = "Validation.StringLength"
+    )]
+    public string AppActionCode { get; set; } = null!;  // Index/Create/Edit/Delete/...
 
     /// <summary>
-    /// 顯示名稱
+    /// 顯示名稱（改為多語系，不再存 DB 欄位）
     /// </summary>
-    [Display(Name = "顯示名稱")]
-    [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
-    public string AppActionDisplayName { get; set; } = null!;
+    [NotMapped]
+    [Display(Name = "AppAction.AppActionDisplayName")]
+    public string AppActionDisplayName => Loc?.T($"AppAction.{AppActionCode}") ?? AppActionCode;
 
     /// <summary>
     /// 顯示順序
     /// </summary>
-    [Display(Name = "顯示順序")]
+    [Display(Name = "AppAction.AppActionOrder")]
     public int AppActionOrder { get; set; }
 
     /// <summary>
     /// 使用者權限-關聯
     /// </summary>
     public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
-
-
 }

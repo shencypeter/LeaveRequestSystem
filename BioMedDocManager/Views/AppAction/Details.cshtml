@@ -19,9 +19,9 @@
 
         <!-- 基本資訊 -->
         <div class="row align-items-center my-2">
-            <label asp-for="AppActionName" class="col-md-2 col-form-label text-md-end"></label>
+            <label asp-for="AppActionCode" class="col-md-2 col-form-label text-md-end"></label>
             <div class="col-md-10">
-                <p class="form-control-plaintext">@Model.AppActionName</p>
+                <p class="form-control-plaintext">@Model.AppActionCode</p>
             </div>
         </div>
 
@@ -84,7 +84,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>@Loc.T("Role.RoleGroup")</th>
-                                        <th>@Loc.T("Role.RoleName")</th>
+                                        <th>@Loc.T("Role.RoleCode")</th>
                                         <th>@Loc.T("Resource.ResourceKey")</th>
                                         <th>@Loc.T("Resource.ResourceDisplayName")</th>
                                     </tr>
@@ -94,7 +94,7 @@
                                     {
                                         <tr>
                                             <td>@item.RoleGroup</td>
-                                            <td>@item.RoleName</td>
+                                            <td>@item.RoleCode</td>
                                             <td>@item.ResourceKey</td>
                                             <td>@item.ResourceDisplayName</td>
                                         </tr>

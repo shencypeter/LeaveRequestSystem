@@ -151,23 +151,23 @@
                     <th data-id="@item.Key">
                         @if (item.Key != "RowNum")
                         {
-                            <a href="#" title="點選「@(item.Value)」欄位進行排序"> @item.Value </a>
+                            <a href="#" title="@($"{Loc.T("Common.SortByColumn.TooltipPrefix")}{Loc.T(item.Value)}{Loc.T("Common.SortByColumn.TooltipSuffix")}")"> @Loc.T(@item.Value)</a>
                         }
                         else
                         {
-                            @item.Value
+                            @Loc.T(item.Value)
                         }
                         <span class="order-index"> @(queryModel.OrderBy.EndsWith(item.Key) ? (queryModel.SortDir == "asc" ? "▲" : "▼") : "")</span>
                     </th>
                 }
-                <th class="col-actions">功能</th>
+                <th class="col-actions">@Loc.T("Common.Actions")</th>
             </tr>
         </thead>
         <tbody>
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="@(headers.Count + 1)">查無資料</td>
+                    <td colspan="@(headers.Count + 1)">@Loc.T("Common.NoData")</td>
                 </tr>
             }
 

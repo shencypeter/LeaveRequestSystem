@@ -1,6 +1,6 @@
 ﻿@model BioMedDocManager.Models.CreateUserViewModel
 @{
-    ViewData["Title"] = "帳號設定-新增";
+    ViewData["Title"] = Loc.T("AccountSettings.Create.Title");
     Layout = "_NoNavLayout";
 
     var deptItems = new SelectList(
@@ -8,83 +8,137 @@
         "OptionValue", "OptionText"
     );
 
-    var policy = ViewBag.PasswordPolicy; // dynamic（參考變更密碼頁）
+    var policy = ViewBag.PasswordPolicy;
 }
 
 <div class="m-4">
-    <h4 class="m-3 px-2"><i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]</h4>
+    <h4 class="m-3 px-2">
+        <i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]
+    </h4>
 
-    <form id="myForm" class="PasswordForm" method="post" action="@Url.Action("Create", "AccountSettings")" target="_top">
+    <form id="myForm"
+          class="PasswordForm"
+          method="post"
+          action="@Url.Action("Create", "AccountSettings")"
+          target="_top">
+
         @Html.AntiForgeryToken()
+
         <div class="pop">
 
             <!-- 帳號(工號) -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserAccount)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.UserAccount)</strong>
+                </div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.UserAccount, new { @class = "form-control", @required = "required" })
+                    @Html.TextBoxFor(m => m.UserAccount,
+                    new { @class = "form-control", required = "required" })
                 </div>
             </div>
 
             <!-- 姓名 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserFullName)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.UserFullName)</strong>
+                </div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.UserFullName, new { @class = "form-control", @required = "required" })
+                    @Html.TextBoxFor(m => m.UserFullName,
+                                        new { @class = "form-control", required = "required" })
                 </div>
             </div>
 
             <!-- 職稱 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserJobTitle)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.UserJobTitle)</strong>
+                </div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.UserJobTitle, new { @class = "form-control", @maxlength = "100", placeholder = "例：工程師、經理" })
+                    @Html.TextBoxFor(
+                                        m => m.UserJobTitle,
+                                        new
+                                        {
+                                            @class = "form-control",
+                                            maxlength = "100",
+                                            placeholder = Loc.T("User.UserJobTitle.Placeholder")
+                                        })
                 </div>
             </div>
 
-            <!-- 部門名稱 -->
+            <!-- 部門 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.DepartmentId)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.DepartmentId)</strong>
+                </div>
                 <div class="col-md-10">
-                    @await Html.PartialAsync("_DepartmentSelect", Model.DepartmentId?.ToString(),
-                    new ViewDataDictionary(ViewData)
-                    {
-                        ["Options"] = ViewBag.DepartmentOptions,   // SelectOption[]
-                        ["IsRequired"] = true,
-                        ["FieldName"] = "DepartmentId",
-                        ["LabelText"] = Loc.T("Common.PleaseSelect")
-                    })
+                    @await Html.PartialAsync("_DepartmentSelect",
+                                        Model.DepartmentId?.ToString(),
+                                        new ViewDataDictionary(ViewData)
+                                        {
+                                            ["Options"] = ViewBag.DepartmentOptions,
+                                            ["IsRequired"] = true,
+                                            ["FieldName"] = "DepartmentId",
+                                            ["LabelText"] = Loc.T("Common.PleaseSelect")
+                                        })
                 </div>
             </div>
 
             <!-- Email -->
             <div class="row align-items-center my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start">
-                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.UserEmail)：</strong>
+                    <span class="text-danger fw-bold">*</span>
+                    <strong>@Html.LabelFor(m => m.UserEmail)</strong>
                 </div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.UserEmail, new { @class = "form-control", @type = "email", @required = "required", @maxlength = "255", placeholder = "name@example.com" })
+                    @Html.TextBoxFor(
+                                        m => m.UserEmail,
+                                        new
+                                        {
+                                            @class = "form-control",
+                                            type = "email",
+                                            required = "required",
+                                            maxlength = "255",
+                                            placeholder = Loc.T("User.UserEmail.Placeholder")
+                                        })
                     <span asp-validation-for="UserEmail" class="text-danger"></span>
                 </div>
             </div>
 
-            <!-- 聯絡電話 -->
+            <!-- 市話 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserPhone)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.UserPhone)</strong>
+                </div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.UserPhone, new { @class = "form-control", @maxlength = "50", placeholder = "市話（選填）" })
+                    @Html.TextBoxFor(
+                                        m => m.UserPhone,
+                                        new
+                                        {
+                                            @class = "form-control",
+                                            maxlength = "50",
+                                            placeholder = Loc.T("User.UserPhone.Placeholder")
+                                        })
                 </div>
             </div>
 
             <!-- 手機 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserMobile)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.UserMobile)</strong>
+                </div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.UserMobile, new { @class = "form-control", @maxlength = "50", placeholder = "手機（選填）" })
+                    @Html.TextBoxFor(
+                                        m => m.UserMobile,
+                                        new
+                                        {
+                                            @class = "form-control",
+                                            maxlength = "50",
+                                            placeholder = Loc.T("User.UserMobile.Placeholder")
+                                        })
                 </div>
             </div>
 
-            <!-- 密碼政策（Create頁補上，供JS讀取） -->
+            <!-- 密碼政策設定(供 JS 使用) -->
             <div id="passwordPolicyConfig"
                  data-enabled="@(policy?.Enabled == true ? "true" : "false")"
                  data-min-length="@(policy?.MinLength ?? 0)"
@@ -99,7 +153,7 @@
             <!-- 密碼 -->
             <div class="row my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start">
-                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.UserPasswordHash)：</strong>
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.UserPasswordHash)</strong>
                 </div>
                 <div class="col-md-10">
 
@@ -111,7 +165,7 @@
                                data-target="UserConfirmPasswordHash"
                                data-validation="UserPasswordHashValidation" />
 
-                        <!-- 眼睛按鈕：維持 data-id -->
+                        <!-- 眼睛按鈕維持 data-id -->
                         <button class="btn btn-outline-secondary togglePasswordButton" data-id="UserPasswordHash" type="button">
                             <i class="fas fa-eye"></i>
                         </button>
@@ -123,35 +177,53 @@
                     @if (policy != null && policy.Enabled == true)
                     {
                         <div class="mb-1">
-                            <div class="text-12 fw-bold">* 密碼須符合以下規則：</div>
+                            <div class="text-12 fw-bold">
+                                @Loc.T("PasswordPolicy.Title")
+                            </div>
+
                             <ul id="passwordRulesList" class="text-12 mb-0 ps-3">
+
+                                <!-- 最小長度 -->
                                 <li class="password-rule text-muted" data-rule="minLength">
-                                    密碼長度至少需 @policy.MinLength 個字元。
+                                    @Loc.T("PasswordPolicy.MinLength.Prefix")
+                                    @policy.MinLength
+                                    @Loc.T("PasswordPolicy.MinLength.Suffix")
                                 </li>
+
+                                <!-- 大寫字母 -->
                                 @if (policy.RequireUpper == true)
                                 {
                                     <li class="password-rule text-muted" data-rule="upper">
-                                        至少包含 1 個英文大寫字母（A–Z）。
+                                        @Loc.T("PasswordPolicy.RequireUpper.Text")
                                     </li>
                                 }
+
+                                <!-- 小寫字母 -->
                                 @if (policy.RequireLower == true)
                                 {
                                     <li class="password-rule text-muted" data-rule="lower">
-                                        至少包含 1 個英文小寫字母（a–z）。
+                                        @Loc.T("PasswordPolicy.RequireLower.Text")
                                     </li>
                                 }
+
+                                <!-- 數字 -->
                                 @if (policy.RequireDigit == true)
                                 {
                                     <li class="password-rule text-muted" data-rule="digit">
-                                        至少包含 1 個數字（0–9）。
+                                        @Loc.T("PasswordPolicy.RequireDigit.Text")
                                     </li>
                                 }
+
+                                <!-- 特殊符號 -->
                                 @if (policy.RequireSpecial == true)
                                 {
                                     <li class="password-rule text-muted" data-rule="special">
-                                        至少包含 1 個特殊符號（允許符號：@policy.SpecialCharSets）。
+                                        @Loc.T("PasswordPolicy.RequireSpecial.Prefix")
+                                        @policy.SpecialCharSets
+                                        @Loc.T("PasswordPolicy.RequireSpecial.Suffix")
                                     </li>
                                 }
+
                             </ul>
                         </div>
                     }
@@ -163,7 +235,7 @@
             <!-- 確認密碼 -->
             <div class="row align-items-center my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start">
-                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.UserConfirmPasswordHash)：</strong>
+                    <span class="text-danger fw-bold">*</span><strong>@Html.LabelFor(m => m.UserConfirmPasswordHash)</strong>
                 </div>
                 <div class="col-md-10">
 
@@ -175,7 +247,7 @@
                                data-target="UserPasswordHash"
                                data-validation="UserConfirmPasswordHashValidation" />
 
-                        <!-- 眼睛按鈕：維持 data-id -->
+                        <!-- 眼睛按鈕維持 data-id -->
                         <button class="btn btn-outline-secondary togglePasswordButton" data-id="UserConfirmPasswordHash" type="button">
                             <i class="fas fa-eye"></i>
                         </button>
@@ -188,43 +260,63 @@
                 </div>
             </div>
 
-
             <!-- 使用者是否啟用 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserIsActive)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.UserIsActive)</strong>
+                </div>
                 <div class="col-md-10">
-                    @Html.DropDownListFor(model => model.UserIsActive, new List<SelectListItem>
-                    {
-                        new SelectListItem { Text = "啟用", Value = "true" },
-                                        new SelectListItem { Text = "停用", Value = "false" }
-                                        }, new { @class = "form-select" })
+                    @Html.DropDownListFor(
+                    m => m.UserIsActive,
+                                        new List<SelectListItem>
+                                        {
+                                        new() { Text = Loc.T("Common.Enabled"),  Value = "true" },
+                                        new() { Text = Loc.T("Common.Disabled"), Value = "false" }
+                                        },
+                                        new { @class = "form-select" })
                 </div>
             </div>
 
             <!-- 是否鎖定 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserIsLocked)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.UserIsLocked)</strong>
+                </div>
                 <div class="col-md-10">
-                    @Html.DropDownListFor(model => model.UserIsLocked, new List<SelectListItem>
+                    @Html.DropDownListFor(
+                                        m => m.UserIsLocked,
+                                        new List<SelectListItem>
                                         {
-                        new SelectListItem { Text = "未鎖定", Value = "false" },
-                                        new SelectListItem { Text = "鎖定", Value = "true" }
-                                        }, new { @class = "form-select" })
+                                        new() { Text = Loc.T("Common.Unlocked"), Value = "false" },
+                                        new() { Text = Loc.T("Common.Locked"),   Value = "true" }
+                                        },
+                                        new { @class = "form-select" })
                 </div>
             </div>
 
             <!-- 備註 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserRemarks)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.UserRemarks)</strong>
+                </div>
                 <div class="col-md-10">
-                    @Html.TextAreaFor(m => m.UserRemarks, 4, 50, new { @class = "form-control", @maxlength = "255", placeholder = "備註（選填）" })
+                    @Html.TextAreaFor(
+                                        m => m.UserRemarks,
+                                        4, 50,
+                                        new
+                                        {
+                                            @class = "form-control",
+                                            maxlength = "255",
+                                            placeholder = Loc.T("User.UserRemarks.Placeholder")
+                                        })
                 </div>
             </div>
 
-            <!-- 按鈕列 -->
+            <!-- 按鈕 -->
             <div class="row align-items-center my-3">
                 <div class="col-12 d-flex flex-wrap justify-content-center">
-                    <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                    <button type="submit"
+                            class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
                         <i class="fas fa-check-circle"></i> @Loc.T("Common.Save")
                     </button>
                 </div>

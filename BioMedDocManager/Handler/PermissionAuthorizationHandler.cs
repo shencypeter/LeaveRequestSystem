@@ -94,7 +94,7 @@ namespace BioMedDocManager.Handler
                 join act in _db.AppActions on rp.AppActionId equals act.AppActionId
                 where ugm.UserId == userId
                     && res.ResourceKey.ToLower() == resourceKeyLower
-                    && act.AppActionName.ToLower() == actionNameLower
+                    && act.AppActionCode.ToLower() == actionNameLower
                 select rp;
 
             // Debug 用：印出 EF 轉換後的 SQL

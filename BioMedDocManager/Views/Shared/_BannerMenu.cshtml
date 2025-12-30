@@ -65,7 +65,7 @@
                         continue;
                     }
 
-                    var label = parent.MenuItemTitle ?? Loc.T("Menu.UnnamedItem");
+                    var label = parent.MenuItemTitleDisplay;
                     var iconClass = parent.MenuItemIcon;
                     var isActiveParent = currentGroup != null &&
                     currentGroup.MenuItemParentId == group.MenuItemParentId;
@@ -110,7 +110,7 @@
                         .OrderBy(c => c.MenuItemDisplayOrder)
                         .ThenBy(c => c.MenuItemId))
                 {
-                    var label = child.MenuItemTitle ?? @Loc.T("Menu.UnnamedItem");
+                    var label = child.MenuItemTitleDisplay;
                     var iconClass = child.MenuItemIcon;
 
                     string url = "#";

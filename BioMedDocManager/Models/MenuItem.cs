@@ -9,93 +9,51 @@ namespace BioMedDocManager.Models;
 /// </summary>
 public class MenuItem : AuditableEntity
 {
-    /// <summary>
-    /// 選單編號
-    /// </summary>
     [Key]
-    [Display(Name = "選單編號")]
+    [Display(Name = "MenuItem.MenuItemId")]
     public int MenuItemId { get; set; }
 
-    /// <summary>
-    /// 上層選單編號
-    /// </summary>
-    [Display(Name = "上層選單")]
+    [Display(Name = "MenuItem.MenuItemParentId")]
     public int? MenuItemParentId { get; set; }
 
     /// <summary>
-    /// 選單標題
+    /// 選單標題（顯示用）：改用關聯 Resource 的 ResourceDisplayName
     /// </summary>
-    [Display(Name = "選單標題")]
-    [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
-    public string MenuItemTitle { get; set; } = null!;
+    [NotMapped]
+    [Display(Name = "MenuItem.MenuItemTitle")]
+    public string MenuItemTitle => Resource?.ResourceDisplayName ?? Loc?.T("Menu.UnnamedItem");
+    
+    [NotMapped]
+    public string MenuItemTitleDisplay { get; set; } = "";
 
-    /// <summary>
-    /// 圖示
-    /// </summary>
-    [Display(Name = "圖示")]
-    [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
+    [Display(Name = "MenuItem.MenuItemIcon")]
+    [StringLength(100, ErrorMessage = "Validation.StringLength")]
     public string? MenuItemIcon { get; set; }
 
-    /*  停用 => 改成用關連Resource.ResourceKey
-    /// <summary>
-    /// 連結
-    /// </summary>
-    [Display(Name = "連結")]
-    [StringLength(300, ErrorMessage = "{0}最多{1}字元")]
-    public string? MenuItemUrl { get; set; }
-    */
-
-    /// <summary>
-    /// 資源代號（顯示用）
-    /// </summary>
     [NotMapped]
-    [Display(Name = "連結")]
-    public string? ResourceKey
-    {
-        get
-        {
-            return Resource?.ResourceKey;
-        }
-    }
+    [Display(Name = "MenuItem.ResourceKey")]
+    public string? ResourceKey => Resource?.ResourceKey;
 
-    /// <summary>
-    /// 顯示順序
-    /// </summary>
-    [Display(Name = "顯示順序")]
+    [Display(Name = "MenuItem.MenuItemDisplayOrder")]
     public int MenuItemDisplayOrder { get; set; } = 0;
 
-    /// <summary>
-    /// 是否啟用
-    /// </summary>
-    [Display(Name = "是否啟用")]
+    [Display(Name = "MenuItem.MenuItemIsActive")]
     public bool MenuItemIsActive { get; set; } = true;
 
-    /// <summary>
-    /// 是否啟用 文字
-    /// </summary>
     [NotMapped]
-    [Display(Name = "是否啟用")]
-    public string MenuItemIsActiveText => MenuItemIsActive ? "啟用" : "停用";
+    [Display(Name = "MenuItem.MenuItemIsActive")]
+    public string MenuItemIsActiveText =>
+        MenuItemIsActive
+            ? (Loc?.T("Common.Enabled") ?? "Enabled")
+            : (Loc?.T("Common.Disabled") ?? "Disabled");
 
-    /// <summary>
-    /// 資源編號(連結)
-    /// </summary>
-    [Display(Name = "連結")]
+    [Display(Name = "MenuItem.ResourceId")]
     public int? ResourceId { get; set; }
 
-    /// <summary>
-    /// 上層選單
-    /// </summary>
     [ForeignKey(nameof(MenuItemParentId))]
     public MenuItem? Parent { get; set; }
 
-    /// <summary>
-    /// 子選單
-    /// </summary>
     public ICollection<MenuItem> Children { get; set; } = new List<MenuItem>();
 
-    /// <summary>
-    /// 資源
-    /// </summary>
     public Resource? Resource { get; set; }
 }

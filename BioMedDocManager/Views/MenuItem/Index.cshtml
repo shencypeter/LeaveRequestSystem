@@ -3,7 +3,7 @@
 @model IEnumerable<Dictionary<string, object>>
 
 @{
-    ViewData["Title"] = "選單項目管理";
+    ViewData["Title"] = Loc.T("MenuItem.Index.Title");
     Layout = "_AssetLayout";
 
     var queryModel = QueryableExtensions.GetSessionQueryModel<MenuItemQueryViewModel>(Context);
@@ -33,16 +33,15 @@
                         <!-- 組1：選單標題 -->
                         <div class="col">
                             <div class="row g-2 align-items-center">
-                                <label for="MenuItemTitle" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    選單標題：
+                                <label class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    @Loc.T("MenuItem.MenuItemTitle")：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
                                            class="form-control"
-                                           id="MenuItemTitle"
                                            name="@nameof(MenuItemQueryViewModel.MenuItemTitle)"
                                            value="@queryModel.MenuItemTitle"
-                                           placeholder="請輸入選單標題" />
+                                           placeholder="@Loc.T("MenuItem.MenuItemTitle.Placeholder")" />
                                 </div>
                             </div>
                         </div>
@@ -50,16 +49,15 @@
                         <!-- 組2：連結 -->
                         <div class="col">
                             <div class="row g-2 align-items-center">
-                                <label for="ResourceKey" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    連結：
+                                <label class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    @Loc.T("MenuItem.ResourceKey")：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
                                            class="form-control"
-                                           id="ResourceKey"
                                            name="@nameof(MenuItemQueryViewModel.ResourceKey)"
                                            value="@queryModel.ResourceKey"
-                                           placeholder="請輸入連結 (例如：/Resource 或 /Home/Index)" />
+                                           placeholder="@Loc.T("MenuItem.ResourceKey.Placeholder")" />
                                 </div>
                             </div>
                         </div>
@@ -71,17 +69,16 @@
                         <!-- 組1：是否啟用 -->
                         <div class="col">
                             <div class="row g-2 align-items-center">
-                                <label for="MenuItemIsActive" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    是否啟用：
+                                <label class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    @Loc.T("MenuItem.MenuItemIsActive")：
                                 </label>
                                 <div class="col-12 col-sm-8">
-                                    <select id="MenuItemIsActive"
-                                            name="@nameof(MenuItemQueryViewModel.MenuItemIsActive)"
-                                            class="form-select">
-                                        <option value="" selected="@(queryModel.MenuItemIsActive == null)">全部顯示</option>
-                                        <option value="true" selected="@(queryModel.MenuItemIsActive == true)">啟用</option>
-                                        <option value="false" selected="@(queryModel.MenuItemIsActive == false)">停用</option>
-                                    </select>
+                                    @await Html.PartialAsync("_BoolNullableSelect", new BoolNullableSelectVm
+                                    {
+                                        Id = "MenuItemIsActive",
+                                                                        Name = nameof(MenuItemQueryViewModel.MenuItemIsActive),
+                                                                        Value = queryModel.MenuItemIsActive
+                                                                        })
                                 </div>
                             </div>
                         </div>
@@ -94,18 +91,19 @@
                     <!-- 按鈕排 -->
                     <div class="row mb-3">
                         <div class="col-12 d-flex justify-content-center flex-wrap gap-2">
-
                             <button type="submit" class="btn2 btn-primary mt-2 search_btn">
-                                <i class="fas fa-search"></i>&ensp;查詢
+                                <i class="fas fa-search"></i> @Loc.T("Common.Search")
                             </button>
 
-                            <a id="create_btn" href="@Url.Action("Create", "MenuItem")"
+                            <a href="@Url.Action("Create", "MenuItem")"
                                class="btn2 btn-success mt-2">
-                                <i class="fas fa-plus-circle"></i>&ensp;新增選單項目
+                                <i class="fas fa-plus-circle"></i> @Loc.T("Common.Create")
                             </a>
 
-                            <button type="button" class="btn2 btn-secondary mt-2 clear_btn" data-form="myForm">
-                                 <i class="fas fa-eraser"></i> @Loc.T("Common.Reset")
+                            <button type="button"
+                                    class="btn2 btn-secondary mt-2 clear_btn"
+                                    data-form="myForm">
+                                <i class="fas fa-eraser"></i> @Loc.T("Common.Reset")
                             </button>
                         </div>
                     </div>
@@ -140,16 +138,16 @@
                 @foreach (var item in headers)
                 {
                     @*不排序*@
-                    <th>@item.Value</th>
+                    <th>@Loc.T(item.Value)</th>
                 }
-                <th class="col-actions">功能</th>
+                <th class="col-actions">@Loc.T("Common.Actions")</th>
             </tr>
         </thead>
         <tbody>
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="@(headers.Count + 1)">查無資料</td>
+                    <td colspan="@(headers.Count + 1)">@Loc.T("Common.NoData")</td>
                 </tr>
             }
             else
@@ -180,7 +178,7 @@
                             var isRowNum = key.Equals("RowNum", StringComparison.OrdinalIgnoreCase);
                             var classes = new List<string>();
 
-                            if (value == "(無)")
+                            if (value == "(" + Loc.T("Common.None") + ")")
                             {
                                 classes.Add("none-data");
                             }
@@ -189,12 +187,12 @@
                                 classes.Add("text-nowrap");
                             }
 
-                            // ★ Root（沒有 parent）的標題欄位 → 靠左顯示
-                            if (key == "MenuItemTitle" && !hasParent)
+                            // Root（沒有 parent）的標題欄位 → 靠左顯示
+                            if ((key == "MenuItemTitle" || key == "MenuItemDisplayOrder") && !hasParent)
                             {
                                 classes.Add("text-start");
                                 // 如果想讓 root 更明顯也可以加粗
-                                // classes.Add("fw-bold");
+                                classes.Add("fw-bold");
                             }
 
                             <td class="@string.Join(" ", classes)">
@@ -205,21 +203,12 @@
                         <td class="col-actions">
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    功能
+                                    @Loc.T("Common.Actions")
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item detail"
-                                           href="@Url.Action("Details", "MenuItem", new { id = row["MenuItemId"] })">檢視</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item detail"
-                                           href="@Url.Action("Edit", "MenuItem", new { id = row["MenuItemId"] })">編輯</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item detail"
-                                           href="@Url.Action("Delete", "MenuItem", new { id = row["MenuItemId"] })">刪除</a>
-                                    </li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "MenuItem", new { id = row["MenuItemId"] })">@Loc.T("Common.View")</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "MenuItem", new { id = row["MenuItemId"] })">@Loc.T("Common.Edit")</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "MenuItem", new { id = row["MenuItemId"] })">@Loc.T("Common.Delete")</a></li>
                                 </ul>
                             </div>
                         </td>

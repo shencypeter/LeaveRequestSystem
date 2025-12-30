@@ -410,7 +410,11 @@ namespace BioMedDocManager.Controllers
         public async Task<IActionResult> Logout()
         {
             HttpContext.Session.Remove("try_login");
-            HttpContext.Session.Remove("MenuTree");
+
+            var culture = System.Globalization.CultureInfo.CurrentUICulture.Name; // "zh-TW" / "en-US"
+            var cultureSessionKey = $"MenuTree::{culture}";
+            HttpContext.Session.Remove(cultureSessionKey);
+
             TempData["_JSShowAlert"] = "您已登出系統，謝謝您的使用";
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
@@ -501,7 +505,7 @@ namespace BioMedDocManager.Controllers
             // 角色名稱 → 標準 Role Claim：之後 [Authorize(Roles = "xxx")] 會吃這個
             foreach (var r in allRoles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, r.RoleName));
+                claims.Add(new Claim(ClaimTypes.Role, r.RoleCode));
             }
 
             // 角色群組（自訂 ClaimType，方便你之後用來分群或顯示）
@@ -522,9 +526,11 @@ namespace BioMedDocManager.Controllers
             var principal = new ClaimsPrincipal(identity);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-            // ===== 3. 建立選單樹(只做一次) =====
+            // ===== 3. 建立選單樹(依照目前語言，只做一次，切換語言寫在切換那邊) =====
             var menuTree = BuildMenuTreeForUser(principal);
-            HttpContext.Session.SetObject("MenuTree", menuTree);
+            var culture = System.Globalization.CultureInfo.CurrentUICulture.Name; // "zh-TW" / "en-US"
+            var cultureSessionKey = $"MenuTree::{culture}";
+            HttpContext.Session.SetObject(cultureSessionKey, menuTree);
 
             await _accessLog.NewLoginSuccessAsync(user);
         }

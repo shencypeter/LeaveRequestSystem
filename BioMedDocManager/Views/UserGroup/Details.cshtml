@@ -14,10 +14,10 @@
         <!-- 基本資料 -->
         <div class="row align-items-center my-3">
             <div class="col-md-2 col-form-label text-md-end text-start">
-                <strong>@Html.DisplayNameFor(m => m.UserGroupName)：</strong>
+                <strong>@Html.DisplayNameFor(m => m.UserGroupCode)：</strong>
             </div>
             <div class="col-md-10 pt-1">
-                @Model.UserGroupName
+                @Model.UserGroupCode
             </div>
         </div>
 
@@ -146,7 +146,7 @@
                                     @Html.DisplayNameFor(m => m.UserGroupRoles.FirstOrDefault().Role.RoleGroup)
                                 </th>
                                 <th>
-                                    @Html.DisplayNameFor(m => m.UserGroupRoles.FirstOrDefault().Role.RoleName)
+                                    @Html.DisplayNameFor(m => m.UserGroupRoles.FirstOrDefault().Role.RoleCode)
                                 </th>
                             </tr>
                         </thead>
@@ -156,7 +156,7 @@
                                 <tr>
                                     <td>@r.RoleId</td>
                                     <td>@r.Role?.RoleGroup</td>
-                                    <td>@r.Role?.RoleName</td>
+                                    <td>@r.Role?.RoleCode</td>
                                 </tr>
                             }
                         </tbody>

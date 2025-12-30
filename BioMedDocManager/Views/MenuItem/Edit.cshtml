@@ -1,6 +1,6 @@
 ﻿@model BioMedDocManager.Models.MenuItem
 @{
-    ViewData["Title"] = "選單項目管理-編輯";
+    ViewData["Title"] = Loc.T("MenuItem.Edit.Title");
     Layout = "_NoNavLayout";
 
     var parentList = ViewBag.ParentMenuItems as List<MenuItem> ?? new();
@@ -29,12 +29,13 @@
                     <select asp-for="MenuItemParentId"
                             class="form-select"
                             asp-items="@(new SelectList(parentList, "MenuItemId", "MenuItemTitle"))">
-                        <option value="">-- 無上層選單 --</option>
+                        <option value="">@Loc.T("Common.None")</option>
                     </select>
                     <span asp-validation-for="MenuItemParentId" class="text-danger"></span>
                 </div>
             </div>
 
+            @*
             <!-- 標題 -->
             <div class="row align-items-center my-3">
                 <label asp-for="MenuItemTitle" class="col-md-2 col-form-label text-md-end"></label>
@@ -43,6 +44,7 @@
                     <span asp-validation-for="MenuItemTitle" class="text-danger"></span>
                 </div>
             </div>
+            *@
 
             <!-- 圖示 -->
             <div class="row align-items-center my-3">
@@ -50,9 +52,9 @@
                 <div class="col-md-10">
                     <input asp-for="MenuItemIcon" class="form-control" />
                     <span asp-validation-for="MenuItemIcon" class="text-danger"></span>
-                    <a href="https://fontawesome.com/v6/search?ic=free-collection" target="_blank" title="查詢 Font Awesome icon">
+                    <a href="https://fontawesome.com/v6/search?ic=free-collection" target="_blank" title="@Loc.T("MenuItem.Icon.SearchTitle")">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        查詢Icon
+                        @Loc.T("MenuItem.Icon.SearchLink")
                     </a>
                 </div>
             </div>
@@ -84,7 +86,7 @@
                     <select asp-for="ResourceId"
                             class="form-select"
                             asp-items="@(new SelectList(resourceList, "ResourceId", "ResourceKey"))">
-                        <option value="">-- 無相關資料 --</option>
+                        <option value="">@Loc.T("Common.None")</option>
                     </select>
                     <span asp-validation-for="ResourceId" class="text-danger"></span>
                 </div>

@@ -95,7 +95,7 @@
                             @foreach (var r in Model.EffectiveRoles)
                             {
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>@r.RoleGroup - @r.RoleName</span>
+                                    <span>@r.RoleGroup - @r.RoleCode</span>
                                     <span class="badge bg-primary">
                                         @string.Join("、",
                                         r.FromUserGroupIds
@@ -135,7 +135,7 @@
                                     @foreach (var p in g)
                                     {
                                         <span class="badge bg-success me-1 mb-1"
-                                              title="動作：@p.AppActionName">
+                                              title="動作：@p.AppActionCode">
                                             @p.AppActionDisplayName
                                         </span>
                                     }

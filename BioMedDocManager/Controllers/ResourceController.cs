@@ -14,7 +14,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    
+
     public class ResourceController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
 
@@ -168,7 +168,6 @@ namespace BioMedDocManager.Controllers
             {
                 dbEntity.ResourceType = posted.ResourceType?.Trim() ?? "";
                 dbEntity.ResourceKey = posted.ResourceKey?.Trim() ?? "";
-                dbEntity.ResourceDisplayName = posted.ResourceDisplayName?.Trim() ?? "";
                 dbEntity.ResourceIsActive = posted.ResourceIsActive;
 
                 await _context.SaveChangesAsync();
@@ -235,10 +234,10 @@ namespace BioMedDocManager.Controllers
                     .Select(ugr => new ResourceGroupUsageViewModel
                     {
                         UserGroupId = ugr.UserGroupId,
-                        UserGroupName = ugr.UserGroup!.UserGroupName,
+                        UserGroupCode = ugr.UserGroup!.UserGroupCode,
                         UserGroupDescription = ugr.UserGroup!.UserGroupDescription,
                         RoleId = ugr.RoleId,
-                        RoleName = ugr.Role!.RoleName,
+                        RoleCode = ugr.Role!.RoleCode,
                         RoleGroup = ugr.Role!.RoleGroup,
                         HasGroup = true
                     })
@@ -261,10 +260,10 @@ namespace BioMedDocManager.Controllers
                     .Select(r => new ResourceGroupUsageViewModel
                     {
                         UserGroupId = 0,
-                        UserGroupName = null,
+                        UserGroupCode = null,
                         UserGroupDescription = null,
                         RoleId = r.RoleId,
-                        RoleName = r.RoleName,
+                        RoleCode = r.RoleCode,
                         RoleGroup = r.RoleGroup,
                         HasGroup = false
                     })
@@ -273,9 +272,9 @@ namespace BioMedDocManager.Controllers
                 groupUsage = withGroup
                     .Concat(withoutGroup)
                     .Distinct()
-                    .OrderBy(g => g.UserGroupName ?? "未指定群組")
+                    .OrderBy(g => g.UserGroupCode ?? "未指定群組")
                     .ThenBy(g => g.RoleGroup)
-                    .ThenBy(g => g.RoleName)
+                    .ThenBy(g => g.RoleCode)
                     .ToList();
             }
 
@@ -333,10 +332,10 @@ namespace BioMedDocManager.Controllers
                     .Select(ugr => new ResourceGroupUsageViewModel
                     {
                         UserGroupId = ugr.UserGroupId,
-                        UserGroupName = ugr.UserGroup!.UserGroupName,
+                        UserGroupCode = ugr.UserGroup!.UserGroupCode,
                         UserGroupDescription = ugr.UserGroup!.UserGroupDescription,
                         RoleId = ugr.RoleId,
-                        RoleName = ugr.Role!.RoleName,
+                        RoleCode = ugr.Role!.RoleCode,
                         RoleGroup = ugr.Role!.RoleGroup,
                         HasGroup = true
                     })
@@ -360,10 +359,10 @@ namespace BioMedDocManager.Controllers
                     .Select(r => new ResourceGroupUsageViewModel
                     {
                         UserGroupId = 0,
-                        UserGroupName = null,
+                        UserGroupCode = null,
                         UserGroupDescription = null,
                         RoleId = r.RoleId,
-                        RoleName = r.RoleName,
+                        RoleCode = r.RoleCode,
                         RoleGroup = r.RoleGroup,
                         HasGroup = false
                     })
@@ -373,9 +372,9 @@ namespace BioMedDocManager.Controllers
                 groupUsage = withGroup
                     .Concat(withoutGroup)
                     .Distinct() // 避免重複
-                    .OrderBy(g => g.UserGroupName ?? "未指定群組") // 讓有群組的排前面
+                    .OrderBy(g => g.UserGroupCode ?? "未指定群組") // 讓有群組的排前面
                     .ThenBy(g => g.RoleGroup)
-                    .ThenBy(g => g.RoleName)
+                    .ThenBy(g => g.RoleCode)
                     .ToList();
             }
 
@@ -463,18 +462,11 @@ namespace BioMedDocManager.Controllers
                 q = q.Where(r => EF.Functions.Like(r.ResourceType, s));
             }
 
-            // 資源代號
+            // 資源代碼
             if (!string.IsNullOrWhiteSpace(queryModel.ResourceKey))
             {
                 var s = $"%{queryModel.ResourceKey.Trim()}%";
                 q = q.Where(r => EF.Functions.Like(r.ResourceKey, s));
-            }
-
-            // 顯示名稱
-            if (!string.IsNullOrWhiteSpace(queryModel.ResourceDisplayName))
-            {
-                var s = $"%{queryModel.ResourceDisplayName.Trim()}%";
-                q = q.Where(r => EF.Functions.Like(r.ResourceDisplayName, s));
             }
 
             // 是否啟用
@@ -492,6 +484,9 @@ namespace BioMedDocManager.Controllers
 
             var (entities, totalCount) =
                 await q.PaginateWithCountAsync(queryModel.PageNumber, queryModel.PageSize, ct);
+
+            // 讓 NotMapped 計算屬性可以用多語系 Loc.T(...)
+            entities.WithLoc(_loc);
 
             var result = BuildRows(
                 entities: entities,

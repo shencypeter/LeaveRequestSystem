@@ -25,7 +25,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 預設排序依據
         /// </summary>
-        public const string InitSort = "UserGroupName";
+        public const string InitSort = "UserGroupCode";
 
         /// <summary>
         /// 清單表頭設定（欄位對應）
@@ -34,7 +34,7 @@ namespace BioMedDocManager.Controllers
             includeRowNum: true,
             onlyProps: new[]
             {
-                "UserGroupName",
+                "UserGroupCode",
                 "UserGroupDescription",
                 "CreatedAt",
                 "UpdatedAt"
@@ -131,14 +131,14 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{posted.UserGroupName} 資料新增【失敗】";
+                var msg = $"使用者群組-{posted.UserGroupCode} 資料新增【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "資料新增【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{posted.UserGroupName} 資料新增成功";
+            TempData["_JSShowSuccess"] = $"使用者群組-{posted.UserGroupCode} 資料新增成功";
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁資料新增成功");
 
@@ -192,7 +192,7 @@ namespace BioMedDocManager.Controllers
 
             try
             {
-                dbGroup.UserGroupName = posted.UserGroupName?.Trim() ?? string.Empty;
+                dbGroup.UserGroupCode = posted.UserGroupCode?.Trim() ?? string.Empty;
                 dbGroup.UserGroupDescription = string.IsNullOrWhiteSpace(posted.UserGroupDescription)
                     ? null
                     : posted.UserGroupDescription.Trim();
@@ -201,7 +201,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{dbGroup.UserGroupName} 資料更新【失敗】";
+                var msg = $"使用者群組-{dbGroup.UserGroupCode} 資料更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新【失敗】", msg, true);
@@ -209,7 +209,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{dbGroup.UserGroupName} 資料更新成功";
+            TempData["_JSShowSuccess"] = $"使用者群組-{dbGroup.UserGroupCode} 資料更新成功";
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新成功");
 
@@ -300,7 +300,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{group.UserGroupName} 刪除【失敗】";
+                var msg = $"使用者群組-{group.UserGroupCode} 刪除【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
@@ -308,7 +308,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupName} 已刪除";
+            TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupCode} 已刪除";
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
@@ -332,10 +332,10 @@ namespace BioMedDocManager.Controllers
             // 3) 條件篩選
 
             // 群組名稱（模糊）
-            if (!string.IsNullOrWhiteSpace(queryModel.UserGroupName))
+            if (!string.IsNullOrWhiteSpace(queryModel.UserGroupCode))
             {
-                var s = $"%{queryModel.UserGroupName.Trim()}%";
-                q = q.Where(g => EF.Functions.Like(g.UserGroupName, s));
+                var s = $"%{queryModel.UserGroupCode.Trim()}%";
+                q = q.Where(g => EF.Functions.Like(g.UserGroupCode, s));
             }
 
             // 群組說明（模糊）
@@ -355,12 +355,15 @@ namespace BioMedDocManager.Controllers
             );
 
             // 5) 分頁＋總筆數
-            var (entityList, totalCount) =
+            var (entities, totalCount) =
                 await q.PaginateWithCountAsync(queryModel.PageNumber, queryModel.PageSize, ct);
+
+            // 讓 NotMapped 計算屬性可以用多語系 Loc.T(...)
+            entities.WithLoc(_loc);
 
             // 6) 轉成你現有表格用的 rows
             var result = BuildRows(
-                entities: entityList,
+                entities: entities,
                 tableHeaders: TableHeaders,
                 pageNumber: queryModel.PageNumber,
                 pageSize: queryModel.PageSize,

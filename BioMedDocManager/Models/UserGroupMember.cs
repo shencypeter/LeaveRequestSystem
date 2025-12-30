@@ -12,13 +12,15 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 群組編號
         /// </summary>
-        [Key][Display(Name = "群組編號")]
+        [Key]
+        [Display(Name = "UserGroupMember.UserGroupId")]
         public int UserGroupId { get; set; }
 
         /// <summary>
         /// 使用者編號
         /// </summary>
-        [Display(Name = "使用者編號")]
+        [Key]
+        [Display(Name = "UserGroupMember.UserId")]
         public int UserId { get; set; }
 
         /// <summary>

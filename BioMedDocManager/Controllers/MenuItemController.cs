@@ -89,7 +89,7 @@ namespace BioMedDocManager.Controllers
                 CreatedAt = DateTime.Now
             };
 
-            ViewBag.ParentMenuItems = await _context.MenuItems.Where(m => m.MenuItemParentId == null && m.DeletedAt == null).OrderBy(m => m.MenuItemTitle).ToListAsync();
+            ViewBag.ParentMenuItems = await _context.MenuItems.Where(m => m.MenuItemParentId == null && m.DeletedAt == null).OrderBy(m => m.MenuItemDisplayOrder).ToListAsync();
             ViewBag.Resources = await _context.Resources.OrderBy(r => r.ResourceKey).ToListAsync();
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
@@ -150,7 +150,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            ViewBag.ParentMenuItems = await _context.MenuItems.Where(m => m.MenuItemParentId == null && m.DeletedAt == null).OrderBy(m => m.MenuItemTitle).ToListAsync();
+            ViewBag.ParentMenuItems = await _context.MenuItems.Where(m => m.MenuItemParentId == null && m.DeletedAt == null).OrderBy(m => m.MenuItemDisplayOrder).ToListAsync();
             ViewBag.Resources = await _context.Resources.OrderBy(r => r.ResourceKey).ToListAsync();
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
@@ -180,7 +180,6 @@ namespace BioMedDocManager.Controllers
             try
             {
                 dbEntity.MenuItemParentId = posted.MenuItemParentId;
-                dbEntity.MenuItemTitle = posted.MenuItemTitle?.Trim() ?? string.Empty;
                 dbEntity.MenuItemIcon = posted.MenuItemIcon?.Trim();
                 dbEntity.MenuItemDisplayOrder = posted.MenuItemDisplayOrder;
                 dbEntity.MenuItemIsActive = posted.MenuItemIsActive;
@@ -223,6 +222,11 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
+            if (entity.Resource != null)
+            {
+                entity.Resource.WithLoc(_loc);
+            }
+            
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示詳細資料");
 
             return View(entity);
@@ -364,7 +368,7 @@ namespace BioMedDocManager.Controllers
             // ===== 樹狀排序：父層依自己的 DisplayOrder，子層跟在各自父層後面 =====
             q =
                 from m in q
-                join p in _context.MenuItems.AsNoTracking()
+                join p in _context.MenuItems.Include(m=>m.Resource).AsNoTracking()
                     on m.MenuItemParentId equals p.MenuItemId into parentJoin
                 from parent in parentJoin.DefaultIfEmpty()
                 orderby
@@ -382,6 +386,18 @@ namespace BioMedDocManager.Controllers
 
             var (entities, totalCount) =
                 await q.PaginateWithCountAsync(queryModel.PageNumber, queryModel.PageSize, ct);
+
+            // 讓 NotMapped 計算屬性可以用多語系 Loc.T(...)
+            entities.WithLoc(_loc);
+
+            // Resource 也要有 Loc（不然 ResourceDisplayName 抓不到）
+            foreach (var m in entities)
+            {
+                if (m.Resource != null)
+                {
+                    m.Resource.WithLoc(_loc);
+                }
+            }
 
             var result = BuildRows(
                 entities: entities,

@@ -45,7 +45,7 @@ namespace BioMedDocManager.Controllers
             // 全部角色（你可以之後在這邊加上狀態過濾，例如只抓啟用中的角色）
             var allRoles = await _context.Roles
                 .AsNoTracking()
-                .OrderBy(r => r.RoleName)
+                .OrderBy(r => r.RoleCode)
                 .ToListAsync();
 
             var selectedRoleIds = group.UserGroupRoles
@@ -70,7 +70,7 @@ namespace BioMedDocManager.Controllers
                         j.rp.AppActionId,
                         j.res.ResourceKey,
                         j.res.ResourceDisplayName,
-                        act.AppActionName,
+                        act.AppActionCode,
                         act.AppActionDisplayName,
                         act.AppActionOrder,
                     })
@@ -84,7 +84,7 @@ namespace BioMedDocManager.Controllers
                     p.ResourceKey,
                     p.ResourceDisplayName,
                     p.AppActionId,
-                    p.AppActionName,
+                    p.AppActionCode,
                     p.AppActionDisplayName,
                     p.AppActionOrder,
                 })
@@ -94,7 +94,7 @@ namespace BioMedDocManager.Controllers
                     ResourceKey = g.Key.ResourceKey,
                     ResourceDisplayName = g.Key.ResourceDisplayName,
                     AppActionId = g.Key.AppActionId,
-                    AppActionName = g.Key.AppActionName,
+                    AppActionCode = g.Key.AppActionCode,
                     AppActionDisplayName = g.Key.AppActionDisplayName,
                     AppActionOrder = g.Key.AppActionOrder,
                     // 在群組頁這裡不用比較「是不是新」，統一視為目前有效權限
@@ -108,7 +108,7 @@ namespace BioMedDocManager.Controllers
             var vm = new UserGroupRoleEditViewModel
             {
                 UserGroupId = group.UserGroupId,
-                UserGroupName = group.UserGroupName,
+                UserGroupCode = group.UserGroupCode,
                 SelectedRoleIds = selectedRoleIds,
                 AllRoles = allRoles,
                 EffectivePermissions = effectivePerms
@@ -192,7 +192,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{group.UserGroupName} 角色設定更新【失敗】";
+                var msg = $"使用者群組-{group.UserGroupCode} 角色設定更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -201,7 +201,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(UserGroupController.Index), "UserGroup");
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupName} 角色設定更新成功";
+            TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupCode} 角色設定更新成功";
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色設定更新成功");
             return RedirectToAction(nameof(UserGroupController.Index), "UserGroup");
@@ -259,7 +259,7 @@ namespace BioMedDocManager.Controllers
                         j.rp.AppActionId,
                         j.res.ResourceKey,
                         j.res.ResourceDisplayName,
-                        act.AppActionName,
+                        act.AppActionCode,
                         act.AppActionDisplayName,
                         act.AppActionOrder,
                     })
@@ -273,7 +273,7 @@ namespace BioMedDocManager.Controllers
                     p.ResourceKey,
                     p.ResourceDisplayName,
                     p.AppActionId,
-                    p.AppActionName,
+                    p.AppActionCode,
                     p.AppActionDisplayName,
                     p.AppActionOrder,
                 })
@@ -283,7 +283,7 @@ namespace BioMedDocManager.Controllers
                     ResourceKey = g.Key.ResourceKey,
                     ResourceDisplayName = g.Key.ResourceDisplayName,
                     AppActionId = g.Key.AppActionId,
-                    AppActionName = g.Key.AppActionName,
+                    AppActionCode = g.Key.AppActionCode,
                     AppActionDisplayName = g.Key.AppActionDisplayName,
                     AppActionOrder = g.Key.AppActionOrder,
                     IsNew = !currentPermSet.Contains((g.Key.ResourceId, g.Key.AppActionId))

@@ -1,12 +1,12 @@
 ﻿@model BioMedDocManager.Models.MenuItem
 
 @{
-    ViewData["Title"] = "選單項目管理-刪除";
+    ViewData["Title"] = Loc.T("MenuItem.Delete.Title");
     Layout = "_NoNavLayout";
 
     bool hasChildren = ViewBag.HasChildren ?? false;
     int childrenCount = ViewBag.ChildrenCount ?? 0;
-    var children = ViewBag.ChildrenList as List<BioMedDocManager.Models.MenuItem> ?? new();
+    var children = ViewBag.ChildrenList as List<MenuItem> ?? new();
 }
 
 <div class="m-4">
@@ -27,17 +27,18 @@
             <!-- 基本資訊 -->
             <div class="row align-items-center my-2">
                 <label class="col-md-2 col-form-label text-md-end">
-                    上層選單
+                    @Loc.T("MenuItem.Parent")
                 </label>
                 <div class="col-md-10">
                     <p class="form-control-plaintext">
                         @if (Model.Parent != null)
                         {
-                            @($"{Model.Parent.MenuItemTitle} (ID: {Model.MenuItemParentId})")
+                            var parentTitle = Model.Parent.MenuItemTitleDisplay ?? Model.Parent.MenuItemTitle;
+                            <text>@parentTitle (@Loc.T("Common.Id") @Model.MenuItemParentId)</text>
                         }
                         else
                         {
-                            @:無
+                            @Loc.T("Common.None")
                         }
                     </p>
                 </div>
@@ -68,66 +69,65 @@
                 <label asp-for="MenuItemIsActive" class="col-md-2 col-form-label text-md-end"></label>
                 <div class="col-md-10">
                     <p class="form-control-plaintext">
-                        @(Model.MenuItemIsActive ? "啟用" : "停用")
+                        @(Model.MenuItemIsActive? Loc.T("Common.Enabled") : Loc.T("Common.Disabled"))
                     </p>
                 </div>
             </div>
 
             <div class="row align-items-center my-2">
-                <label asp-for="ResourceKey" class="col-md-2 col-form-label text-md-end"></label>
+                <label class="col-md-2 col-form-label text-md-end">
+                    @Loc.T("MenuItem.ResourceKey")
+                </label>
                 <div class="col-md-10">
                     <p class="form-control-plaintext">
-                        @if (Model.Resource != null)
-                        {
-                            @Model.Resource.ResourceKey
-                        }
-                        else
-                        {
-                            @:無
-                        }
+                        @(Model.Resource != null ? Model.Resource.ResourceKey : Loc.T("Common.None"))
                     </p>
                 </div>
             </div>
 
-            <!-- 子選單使用狀況 + 明細 -->
+            <!-- 子選單狀況 + 明細 -->
             <div class="row align-items-start my-2">
                 <label class="col-md-2 col-form-label text-md-end">
-                    子選單狀況
+                    @Loc.T("MenuItem.Children.Status")
                 </label>
                 <div class="col-md-10">
                     @if (!hasChildren)
                     {
                         <div class="text-muted">
-                            目前沒有任何子選單掛在此選單之下。
+                            @Loc.T("MenuItem.Children.EmptyHint")
                         </div>
                     }
                     else
                     {
                         <p class="text-danger mb-2">
-                            此選單底下目前有 <strong>@childrenCount</strong> 個子選單：
+                            @Loc.T("MenuItem.Children.CountPrefix")
+                            <strong>@childrenCount</strong>
+                            @Loc.T("MenuItem.Children.CountSuffix")
                         </p>
 
                         <div class="table-responsive">
                             <table class="table table-sm table-bordered align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>序號</th>
-                                        <th>選單標題</th>
-                                        <th>顯示順序</th>
-                                        <th>狀態</th>
-                                        <th>連結</th>
+                                        <th>@Loc.T("Common.RowNum")</th>
+                                        <th>@Loc.T("MenuItem.MenuItemTitle")</th>
+                                        <th>@Loc.T("MenuItem.MenuItemDisplayOrder")</th>
+                                        <th>@Loc.T("Common.Status")</th>
+                                        <th>@Loc.T("MenuItem.ResourceKey")</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @for (int i = 0; i < children.Count; i++)
                                     {
                                         var c = children[i];
+                                        var title = c.MenuItemTitleDisplay ?? c.MenuItemTitle;
+
                                         <tr>
                                             <td>@(i + 1)</td>
-                                            <td>@c.MenuItemTitle</td>
+                                            <td>@title</td>
                                             <td>@c.MenuItemDisplayOrder</td>
-                                            <td>@c.MenuItemIsActiveText</td>
-                                            <td>@(c.Resource != null ? c.Resource.ResourceKey : "無")</td>
+                                            <td>@(c.MenuItemIsActive? Loc.T("Common.Enabled") : Loc.T("Common.Disabled"))</td>
+                                            <td>@(c.Resource != null ? c.Resource.ResourceKey : Loc.T("Common.None"))</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -140,15 +140,15 @@
             @if (hasChildren)
             {
                 <div class="alert alert-danger mb-0">
-                    此選單目前仍有子選單，<strong>無法刪除</strong>。<br />
-                    若要刪除，請先將子選單移除或重新指定其上層選單。
+                    @Loc.T("MenuItem.Delete.BlockedLine1")<br />
+                    @Loc.T("MenuItem.Delete.BlockedLine2")
                 </div>
             }
             else
             {
                 <div class="alert alert-warning mb-0">
-                    確定要刪除選單：
-                    <strong>@Model.MenuItemTitle</strong> 嗎？
+                    @Loc.T("Common.ConfirmDelete")
+                    <strong>@(Model.MenuItemTitleDisplay ?? Model.MenuItemTitle)</strong>
                 </div>
             }
 
@@ -169,7 +169,5 @@
 </div>
 
 @section PageScripts {
-    <script nonce="@ViewBag.CspNonce">
-
-    </script>
+    <script nonce="@ViewBag.CspNonce"></script>
 }

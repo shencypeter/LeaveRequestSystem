@@ -1,30 +1,28 @@
-using BioMedDocManager.Interface;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BioMedDocManager.Models;
 
 /// <summary>
-/// 角色資源動作權限
+/// 角色 × 資源 × 動作 權限關聯
 /// </summary>
 public class RolePermission
 {
     /// <summary>
     /// 角色編號
     /// </summary>
-    [Display(Name = "角色編號")]
+    [Display(Name = "RolePermission.RoleId")]
     public int RoleId { get; set; }
 
     /// <summary>
     /// 資源編號
     /// </summary>
-    [Display(Name = "資源編號")]
+    [Display(Name = "RolePermission.ResourceId")]
     public int ResourceId { get; set; }
 
     /// <summary>
     /// 動作編號
     /// </summary>
-    [Display(Name = "動作編號")]
+    [Display(Name = "RolePermission.AppActionId")]
     public int AppActionId { get; set; }
 
     /// <summary>

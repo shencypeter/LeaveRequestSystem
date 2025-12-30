@@ -12,13 +12,15 @@ public class UserGroupRole
     /// <summary>
     /// 群組編號
     /// </summary>
-    [Display(Name = "群組編號")]
+    [Key]
+    [Display(Name = "UserGroupRole.UserGroupId")]
     public int UserGroupId { get; set; }
 
     /// <summary>
     /// 角色編號
     /// </summary>
-    [Display(Name = "角色編號")]
+    [Key]
+    [Display(Name = "UserGroupRole.RoleId")]
     public int RoleId { get; set; }
 
     /// <summary>

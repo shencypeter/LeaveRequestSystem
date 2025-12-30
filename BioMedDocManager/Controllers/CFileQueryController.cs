@@ -2,6 +2,7 @@
 using BioMedDocManager.Factory;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -285,6 +286,9 @@ namespace BioMedDocManager.Controllers
 
             // 5) 分頁＋總筆數
             var (entityList, totalCount) = await q.PaginateWithCountAsync(queryModel.PageNumber, queryModel.PageSize, ct);
+
+            // 讓 NotMapped 計算屬性可以用多語系 Loc.T(...)
+            //範例資料不顯示多語系 entityList.WithLoc(_loc);
 
             // 6) 轉成 View 要的 List<Dictionary<string, object>>
             var result = BuildRows(

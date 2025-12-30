@@ -1,7 +1,7 @@
 ﻿@model BioMedDocManager.Models.MenuItem
 
 @{
-    ViewData["Title"] = "選單項目管理-詳細資料";
+    ViewData["Title"] = Loc.T("MenuItem.Details.Title");
     Layout = "_NoNavLayout";
 }
 
@@ -14,17 +14,17 @@
 
         <div class="row align-items-center my-2">
             <label class="col-md-2 col-form-label text-md-end">
-                上層選單
+                @Loc.T("MenuItem.Parent")
             </label>
             <div class="col-md-10">
                 <p class="form-control-plaintext">
                     @if (Model.Parent != null)
                     {
-                        @Model.Parent.MenuItemTitle
+                        @(Model.Parent.MenuItemTitleDisplay ?? Model.Parent.MenuItemTitle)
                     }
                     else
                     {
-                        @:無
+                        @Loc.T("Common.None")
                     }
                 </p>
             </div>
@@ -43,16 +43,13 @@
                 @if (!string.IsNullOrWhiteSpace(Model.MenuItemIcon))
                 {
                     <div class="d-flex align-items-center gap-3">
-                        <!-- 真正的 Icon -->
                         <i class="@Model.MenuItemIcon"></i>
-
-                        <!-- Icon 代碼文字 -->
                         <span>@Model.MenuItemIcon</span>
                     </div>
                 }
                 else
                 {
-                    <p class="form-control-plaintext text-muted">無</p>
+                    <p class="form-control-plaintext text-muted">@Loc.T("Common.None")</p>
                 }
             </div>
         </div>
@@ -68,22 +65,24 @@
             <label asp-for="MenuItemIsActive" class="col-md-2 col-form-label text-md-end"></label>
             <div class="col-md-10">
                 <p class="form-control-plaintext">
-                    @(Model.MenuItemIsActive ? "啟用" : "停用")
+                    @(Model.MenuItemIsActive? Loc.T("Common.Enabled") : Loc.T("Common.Disabled"))
                 </p>
             </div>
         </div>
 
         <div class="row align-items-center my-2">
-            <label asp-for="ResourceKey" class="col-md-2 col-form-label text-md-end"></label>
+            <label class="col-md-2 col-form-label text-md-end">
+                @Loc.T("MenuItem.ResourceKey")
+            </label>
             <div class="col-md-10">
                 <p class="form-control-plaintext">
-                    @if (Model.Resource != null)
+                    @if (Model.Resource != null && !string.IsNullOrWhiteSpace(Model.Resource.ResourceKey))
                     {
-                        <a href="@Url.Action("Index", Model.Resource.ResourceKey)" target="_blank"> @Model.Resource.ResourceKey</a>
+                        <a href="@Url.Action("Index", Model.Resource.ResourceKey)" target="_blank">@Model.Resource.ResourceKey</a>
                     }
                     else
                     {
-                        @:無
+                        @Loc.T("Common.None")
                     }
                 </p>
             </div>
@@ -93,7 +92,7 @@
             <label asp-for="CreatedAt" class="col-md-2 col-form-label text-md-end"></label>
             <div class="col-md-10">
                 <p class="form-control-plaintext">
-                    @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")
+                    @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? Loc.T("Common.None"))
                 </p>
             </div>
         </div>
@@ -102,7 +101,7 @@
             <label asp-for="UpdatedAt" class="col-md-2 col-form-label text-md-end"></label>
             <div class="col-md-10">
                 <p class="form-control-plaintext">
-                    @(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")
+                    @(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? Loc.T("Common.None"))
                 </p>
             </div>
         </div>

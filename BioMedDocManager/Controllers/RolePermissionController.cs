@@ -39,7 +39,7 @@ namespace BioMedDocManager.Controllers
             // 啟用中的 Resource
             var resources = await _context.Resources
                 .Where(r => r.ResourceIsActive && r.DeletedAt == null)
-                .OrderBy(r => r.ResourceDisplayName)
+                .OrderBy(r => r.ResourceKey)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -47,7 +47,7 @@ namespace BioMedDocManager.Controllers
             var actions = await _context.AppActions
                 .Where(a => a.DeletedAt == null)
                 .OrderBy(a => a.AppActionOrder)
-                .ThenBy(a => a.AppActionName)
+                .ThenBy(a => a.AppActionCode)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -68,7 +68,7 @@ namespace BioMedDocManager.Controllers
             var vm = new RolePermissionEditViewModel
             {
                 RoleId = role.RoleId,
-                RoleName = role.RoleName,
+                RoleCode = role.RoleCode,
                 Resources = resources,
                 AppActions = actions,
                 SelectedPermissionKeys = selectedKeys
@@ -161,7 +161,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"角色-{role.RoleName} 權限設定更新【失敗】";
+                var msg = $"角色-{role.RoleCode} 權限設定更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -170,7 +170,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index), "Role");
             }
 
-            var successMsg = $"角色-{role.RoleName} 權限設定已更新";
+            var successMsg = $"角色-{role.RoleCode} 權限設定已更新";
             TempData["_JSShowSuccess"] = successMsg;
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "權限設定更新成功");

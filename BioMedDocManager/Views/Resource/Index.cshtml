@@ -29,14 +29,14 @@
                  data-bs-parent="#queryAccordion">
                 <div class="accordion-body mx-3">
 
-                    <!-- Row 1: 資源類型 / 資源代號 -->
+                    <!-- Row 1: 資源類型 / 資源代碼 -->
                     <div class="row mb-3 g-3 row-cols-1 row-cols-md-2 align-items-center">
 
                         <!-- 組1：資源類型 -->
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="ResourceType" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    @Loc.T("Resource.Query.ResourceType.Label")：
+                                    @Loc.T("Resource.ResourceType")：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
@@ -49,11 +49,11 @@
                             </div>
                         </div>
 
-                        <!-- 組2：資源代號 -->
+                        <!-- 組2：資源代碼 -->
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="ResourceKey" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    @Loc.T("Resource.Query.ResourceKey.Label")：
+                                    @Loc.T("Resource.ResourceKey")：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
@@ -67,31 +67,13 @@
                         </div>
                     </div>
 
-                    <!-- Row 2: 顯示名稱 / 是否啟用 -->
+                    <!-- Row 2:是否啟用 -->
                     <div class="row mb-3 g-3 row-cols-1 row-cols-md-2 align-items-center">
-
-                        <!-- 組1：顯示名稱 -->
-                        <div class="col">
-                            <div class="row g-2 align-items-center">
-                                <label for="ResourceDisplayName" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    @Loc.T("Resource.Query.ResourceDisplayName.Label")：
-                                </label>
-                                <div class="col-12 col-sm-8">
-                                    <input type="text"
-                                           class="form-control"
-                                           id="ResourceDisplayName"
-                                           name="@nameof(ResourceQueryViewModel.ResourceDisplayName)"
-                                           value="@queryModel.ResourceDisplayName"
-                                           placeholder="@Loc.T("Resource.ResourceDisplayName.Placeholder")" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 組2：是否啟用 -->
+                        <!-- 組1：是否啟用 -->
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="ResourceIsActive" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    @Loc.T("Resource.Query.ResourceIsActive.Label")：
+                                    @Loc.T("Resource.ResourceIsActive")：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     @await Html.PartialAsync("_BoolNullableSelect", new BoolNullableSelectVm
@@ -156,11 +138,11 @@
                     <th data-id="@item.Key">
                         @if (item.Key != "RowNum")
                         {
-                            <a href="#" title="@($"{Loc.T("Common.SortByColumn.TooltipPrefix")}{item.Value}{Loc.T("Common.SortByColumn.TooltipSuffix")}")"> @item.Value </a>
+                            <a href="#" title="@($"{Loc.T("Common.SortByColumn.TooltipPrefix")}{Loc.T(item.Value)}{Loc.T("Common.SortByColumn.TooltipSuffix")}")"> @Loc.T(@item.Value)</a>
                         }
                         else
                         {
-                            @item.Value
+                            @Loc.T(item.Value)
                         }
                     <span class="order-index">
                         @(queryModel.OrderBy?.EndsWith(item.Key) == true

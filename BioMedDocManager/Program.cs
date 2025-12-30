@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Identity.Client;
@@ -74,6 +75,15 @@ namespace BioMedDocManager
             builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
             //builder.Services.AddControllersWithViews();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddDbContext<DocControlContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+            // 用 DB 的 IStringLocalizerFactory 取代預設 ResourceManager
+            builder.Services.AddSingleton<IStringLocalizerFactory, BioMedDocManager.Helpers.DbStringLocalizerFactory>();
+
             builder.Services.AddControllersWithViews(options =>
             {
                 // 所有沒有 [AllowAnonymous] 的 action，都套用這個授權規則
@@ -83,11 +93,10 @@ namespace BioMedDocManager
                     .Build();
 
                 options.Filters.Add(new AuthorizeFilter(policy));
-            });
+            })
+            .AddDataAnnotationsLocalization();
 
-            builder.Services.AddHttpContextAccessor();
-            builder.Services.AddDbContext<DocControlContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
             builder.Services.AddScoped<IAccessLogService, AccessLogService>();// 紀錄連線log
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>

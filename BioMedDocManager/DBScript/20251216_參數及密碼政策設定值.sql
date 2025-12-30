@@ -74,7 +74,7 @@ VALUES
 ('PAGE', 'Parameter', '系統參數管理', 1, GETDATE());
 
 -- insert動作
-INSERT INTO [dbo].[AppAction] ([AppActionName],[AppActionDisplayName],[AppActionOrder]) VALUES
+INSERT INTO [dbo].[AppAction] ([AppActionCode],[AppActionDisplayName],[AppActionOrder]) VALUES
 (N'RegisterTotp',  N'註冊TOTP', 190),
 (N'TotpQrCode',  N'顯示TOTP的QRcode', 200);
 
@@ -102,15 +102,15 @@ DECLARE
     @Act_RegisterTotp       INT,
     @Act_TotpQrCode         INT;
 
-SELECT @Act_Index   = AppActionId FROM AppAction WHERE AppActionName = 'Index';
-SELECT @Act_Details = AppActionId FROM AppAction WHERE AppActionName = 'Details';
-SELECT @Act_Create  = AppActionId FROM AppAction WHERE AppActionName = 'Create';
-SELECT @Act_Edit    = AppActionId FROM AppAction WHERE AppActionName = 'Edit';
-SELECT @Act_Delete  = AppActionId FROM AppAction WHERE AppActionName = 'Delete';
-SELECT @Act_Export  = AppActionId FROM AppAction WHERE AppActionName = 'Export';
-SELECT @Act_Import  = AppActionId FROM AppAction WHERE AppActionName = 'Import';
-SELECT @Act_RegisterTotp  = AppActionId FROM AppAction WHERE AppActionName = 'RegisterTotp';
-SELECT @Act_TotpQrCode  = AppActionId FROM AppAction WHERE AppActionName = 'TotpQrCode';
+SELECT @Act_Index   = AppActionId FROM AppAction WHERE AppActionCode = 'Index';
+SELECT @Act_Details = AppActionId FROM AppAction WHERE AppActionCode = 'Details';
+SELECT @Act_Create  = AppActionId FROM AppAction WHERE AppActionCode = 'Create';
+SELECT @Act_Edit    = AppActionId FROM AppAction WHERE AppActionCode = 'Edit';
+SELECT @Act_Delete  = AppActionId FROM AppAction WHERE AppActionCode = 'Delete';
+SELECT @Act_Export  = AppActionId FROM AppAction WHERE AppActionCode = 'Export';
+SELECT @Act_Import  = AppActionId FROM AppAction WHERE AppActionCode = 'Import';
+SELECT @Act_RegisterTotp  = AppActionId FROM AppAction WHERE AppActionCode = 'RegisterTotp';
+SELECT @Act_TotpQrCode  = AppActionId FROM AppAction WHERE AppActionCode = 'TotpQrCode';
 
 -- insert 角色權限 (系統管理者（RoleId = 1）：全資源全動作)
 

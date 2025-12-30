@@ -8,6 +8,7 @@ using Dapper;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -80,16 +81,18 @@ namespace BioMedDocManager.Controllers
             // 每個Controller的SessionKey
             context.HttpContext.Items["SessionKey"] = SessionKey;
 
-            var menuTree = HttpContext.Session.GetObject<List<MenuItemGroupViewModel>>("MenuTree") ?? new List<MenuItemGroupViewModel>();
+            // 選單
+            var culture = System.Globalization.CultureInfo.CurrentUICulture.Name; // "zh-TW" / "en-US"
+            var cultureSessionKey = $"MenuTree::{culture}";
 
-            // 已登入但沒有選單的話，重建選單 (因為重新compiler會讓session消失，但是login cookie還在)
+            var menuTree = HttpContext.Session.GetObject<List<MenuItemGroupViewModel>>(cultureSessionKey) ?? new List<MenuItemGroupViewModel>();
+
+            // 已登入但沒有選單的話，重建選單 (因為重新compiler會讓session消失，但是login cookie還在，或是切換語系)
             if (User?.Identity?.IsAuthenticated == true && menuTree.Count == 0)
             {
                 menuTree = BuildMenuTreeForUser(User);
-                HttpContext.Session.SetObject("MenuTree", menuTree);
+                HttpContext.Session.SetObject(cultureSessionKey, menuTree);
             }
-
-            // 選單(Login就存入Session中了)
 
             ViewData["MenuTree"] = menuTree;
 
@@ -117,7 +120,7 @@ namespace BioMedDocManager.Controllers
         [NonAction]
         protected List<MenuItemGroupViewModel> BuildMenuTreeForUser(ClaimsPrincipal user)
         {
-            // 1) 取得角色名稱（已在 Login 寫入 Claims Cookie）
+            // 1) 使用者角色
             var userRoles = user.Claims
                 .Where(c => c.Type == ClaimTypes.Role)
                 .Select(c => c.Value)
@@ -125,13 +128,11 @@ namespace BioMedDocManager.Controllers
                 .ToList();
 
             if (!userRoles.Any())
-            {
                 return new List<MenuItemGroupViewModel>();
-            }
 
-            // 2) 取得這些角色允許的 ResourceId
+            // 2) 允許的 ResourceId
             var allowedResourceIds = _context.RolePermissions
-                .Where(rp => userRoles.Contains(rp.Role.RoleName))
+                .Where(rp => userRoles.Contains(rp.Role.RoleCode))
                 .Select(rp => rp.ResourceId)
                 .Distinct()
                 .ToList();
@@ -141,7 +142,7 @@ namespace BioMedDocManager.Controllers
                 return new List<MenuItemGroupViewModel>();
             }
 
-            // 3) 抓出符合 ResourceId 的 MenuItem（可被顯示的子選單們）
+            // 3) 子選單（一定有 ResourceId）
             var menuItems = _context.MenuItems
                 .Include(m => m.Resource)
                 .Where(m =>
@@ -155,7 +156,19 @@ namespace BioMedDocManager.Controllers
                 return new List<MenuItemGroupViewModel>();
             }
 
-            // 4) 依 MenuItemParentId 分組：lookup 的 key = 父選單Id，value = 這個父底下所有子選單
+            // 在Loc還活著時，把顯示文字算好存入MenuItemTitleDisplay
+            foreach (var c in menuItems)
+            {
+                if (c.Resource != null)
+                {
+                    c.Resource.Loc = _loc;   // 關聯過去的Resource，也要給Loc
+                }
+
+                c.MenuItemTitleDisplay = c.MenuItemTitle;
+
+            }
+
+            // 4) 依父層分組
             var childrenLookup = menuItems
                 .Where(m => m.MenuItemParentId != null)
                 .ToLookup(m => m.MenuItemParentId!.Value);
@@ -170,7 +183,7 @@ namespace BioMedDocManager.Controllers
                 return new List<MenuItemGroupViewModel>();
             }
 
-            // 5) 把這些父選單抓出來（不需要管它有沒有 ResourceId，只要是啟用即可）
+            // 5) 父選單（不一定有 ResourceId）
             var parents = _context.MenuItems
                 .Include(m => m.Resource)
                 .Where(m => m.MenuItemIsActive && parentIds.Contains(m.MenuItemId))
@@ -181,9 +194,15 @@ namespace BioMedDocManager.Controllers
                 return new List<MenuItemGroupViewModel>();
             }
 
-            // 6) 排序 + 組成想要的結構
+            foreach (var p in parents)
+            {
+                p.Loc = _loc;
+                p.MenuItemTitleDisplay = p.MenuItemTitle;
+            }
+
+            // 6) 組樹
             var result = parents
-                .OrderBy(p => p.MenuItemDisplayOrder) // 父與父之間先看顯示順序
+                .OrderBy(p => p.MenuItemDisplayOrder)
                 .ThenBy(p => p.MenuItemId)
                 .Select(p => new MenuItemGroupViewModel
                 {
@@ -345,7 +364,7 @@ namespace BioMedDocManager.Controllers
             // 取得所有角色資料
             return await _context.Roles
                   .OrderBy(r => r.RoleGroup)
-                  .ThenBy(r => r.RoleName)
+                  .ThenBy(r => r.RoleCode)
                   .ToListAsync();
         }
 
@@ -1335,7 +1354,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 匯出Word樣板檔案
         /// </summary>
-        /// <param name="code">樣板檔案代號</param>
+        /// <param name="code">樣板檔案代碼</param>
         /// <param name="data">資料</param>
         /// <returns></returns>
         protected IActionResult ExportWordFileSingleData(string code, Dictionary<string, object> data)
@@ -1432,7 +1451,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 【客製化模板】匯出Word樣板檔案
         /// </summary>
-        /// <param name="code">樣板檔案代號</param>
+        /// <param name="code">樣板檔案代碼</param>
         /// <param name="data">資料</param>
         /// <returns></returns>
         protected IActionResult ExportWordFileListData(string code, string DateRange, List<Dictionary<string, object>> BRowData, List<Dictionary<string, object>> ERowData)
@@ -1638,13 +1657,13 @@ namespace BioMedDocManager.Controllers
                 query = query.Where(d => d.DepartmentIsActive);
 
             var items = query
-                .Select(d => new { d.DepartmentName, d.DepartmentIsActive })
+                .Select(d => new { d.DepartmentId, d.DepartmentCode, d.DepartmentIsActive })
                 .Distinct() // 名稱如有重複可保留一筆
                 .AsEnumerable()
                 .Select(d => new SelectOption
                 {
-                    OptionValue = d.DepartmentName,
-                    OptionText = d.DepartmentName + (withInactiveSuffix && !d.DepartmentIsActive ? " (停用)" : "")
+                    OptionValue = d.DepartmentId.ToString(),
+                    OptionText = _loc.T($"Department.{d.DepartmentCode}") + (withInactiveSuffix && !d.DepartmentIsActive ? _loc.T("Common.Disabled") : "")
                 })
                 .OrderBy(x => x.OptionText, Comparer<string>.Create((a, b) =>
                     comparer.Compare(a, b, CompareOptions.StringSort)))
@@ -1663,7 +1682,7 @@ namespace BioMedDocManager.Controllers
             var docAuthors = _context.Users
                 .Where(user => user.UserRoles.Any(ur =>
                     ur.Role.RoleGroup == "文管" &&
-                    (ur.Role.RoleName == "領用人" || ur.Role.RoleName == "負責人")))
+                    (ur.Role.RoleCode == "領用人" || ur.Role.RoleCode == "負責人")))
                 .Select(
                 user => new SelectOption
                 {
@@ -1708,7 +1727,7 @@ namespace BioMedDocManager.Controllers
             var users = _context.Users
                 .Where(user => user.UserRoles.Any(ur =>
                     ur.Role.RoleGroup == "採購" &&
-                    (ur.Role.RoleName == "採購人" || ur.Role.RoleName == "評核人")) && (!IsEnabled || user.UserIsActive))
+                    (ur.Role.RoleCode == "採購人" || ur.Role.RoleCode == "評核人")) && (!IsEnabled || user.UserIsActive))
                 .Select(
                 user => new SelectOption
                 {

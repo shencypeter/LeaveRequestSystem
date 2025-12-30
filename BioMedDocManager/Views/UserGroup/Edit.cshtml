@@ -21,10 +21,10 @@
             <div class="row align-items-center my-3">
                 <div class="col-md-2 col-form-label text-md-end text-start">
                     <span class="text-danger fw-bold">*</span>
-                    <strong>@Html.LabelFor(m => m.UserGroupName)：</strong>
+                    <strong>@Html.LabelFor(m => m.UserGroupCode)：</strong>
                 </div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.UserGroupName,
+                    @Html.TextBoxFor(m => m.UserGroupCode,
                     new
                     {
                         @class = "form-control",
@@ -32,7 +32,7 @@
                         @maxlength = "100",
                         placeholder = "請輸入使用者群組名稱"
                     })
-                    <span asp-validation-for="UserGroupName" class="text-danger"></span>
+                    <span asp-validation-for="UserGroupCode" class="text-danger"></span>
                 </div>
             </div>
 

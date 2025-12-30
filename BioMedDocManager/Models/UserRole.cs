@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace BioMedDocManager.Models;
 
 /// <summary>
-/// 使用者角色
+/// 舊表：使用者角色 (已改用 UserGroupRole 管理，不建議使用)
 /// </summary>
 public class UserRole
 {

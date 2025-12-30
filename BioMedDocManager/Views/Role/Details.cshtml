@@ -19,9 +19,9 @@
         </div>
 
         <div class="row align-items-center my-2">
-            <label asp-for="RoleName" class="col-md-2 col-form-label text-md-end"></label>
+            <label asp-for="RoleCode" class="col-md-2 col-form-label text-md-end"></label>
             <div class="col-md-10">
-                <p class="form-control-plaintext">@Model.RoleName</p>
+                <p class="form-control-plaintext">@Model.RoleCode</p>
             </div>
         </div>
 
@@ -70,7 +70,7 @@
                                 @foreach (var p in perms)
                                 {
                                     <span class="badge bg-success me-1 mb-1"
-                                          title="動作：@p.AppAction!.AppActionName">
+                                          title="動作：@p.AppAction!.AppActionCode">
                                         @p.AppAction!.AppActionDisplayName
                                     </span>
                                 }

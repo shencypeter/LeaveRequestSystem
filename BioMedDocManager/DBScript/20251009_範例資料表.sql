@@ -103,7 +103,7 @@ VALUES
 
 
 -- insert 笆
-INSERT INTO [dbo].[AppAction] ([AppActionName],[AppActionDisplayName],[AppActionOrder]) VALUES
+INSERT INTO [dbo].[AppAction] ([AppActionCode],[AppActionDisplayName],[AppActionOrder]) VALUES
 (N'SearchAll',  N'琩高场', 120),
 (N'GetTreeDataVerLatest',  N'陪ボ程穝セ琩高攫', 130),
 (N'GetTreeDataVer',  N'陪ボ┮Τセ琩高攫', 140),
@@ -143,20 +143,20 @@ DECLARE
     @Act_NewVersion         INT,
     @Act_History            INT;
 
-SELECT @Act_Index   = AppActionId FROM AppAction WHERE AppActionName = 'Index';
-SELECT @Act_Details = AppActionId FROM AppAction WHERE AppActionName = 'Details';
-SELECT @Act_Create  = AppActionId FROM AppAction WHERE AppActionName = 'Create';
-SELECT @Act_Edit    = AppActionId FROM AppAction WHERE AppActionName = 'Edit';
-SELECT @Act_Delete  = AppActionId FROM AppAction WHERE AppActionName = 'Delete';
-SELECT @Act_Export  = AppActionId FROM AppAction WHERE AppActionName = 'Export';
-SELECT @Act_Import  = AppActionId FROM AppAction WHERE AppActionName = 'Import';
-SELECT @Act_SearchAll     = AppActionId FROM AppAction WHERE AppActionName = 'SearchAll';
-SELECT @Act_GetTreeLatest = AppActionId FROM AppAction WHERE AppActionName = 'GetTreeDataVerLatest';
-SELECT @Act_GetTreeAll    = AppActionId FROM AppAction WHERE AppActionName = 'GetTreeDataVer';
-SELECT @Act_GetFile       = AppActionId FROM AppAction WHERE AppActionName = 'GetClaimFile';
-SELECT @Act_GetFileAdmin  = AppActionId FROM AppAction WHERE AppActionName = 'GetClaimFileByAdmin';
-SELECT @Act_NewVersion    = AppActionId FROM AppAction WHERE AppActionName = 'NewVersion';
-SELECT @Act_History       = AppActionId FROM AppAction WHERE AppActionName = 'History';
+SELECT @Act_Index   = AppActionId FROM AppAction WHERE AppActionCode = 'Index';
+SELECT @Act_Details = AppActionId FROM AppAction WHERE AppActionCode = 'Details';
+SELECT @Act_Create  = AppActionId FROM AppAction WHERE AppActionCode = 'Create';
+SELECT @Act_Edit    = AppActionId FROM AppAction WHERE AppActionCode = 'Edit';
+SELECT @Act_Delete  = AppActionId FROM AppAction WHERE AppActionCode = 'Delete';
+SELECT @Act_Export  = AppActionId FROM AppAction WHERE AppActionCode = 'Export';
+SELECT @Act_Import  = AppActionId FROM AppAction WHERE AppActionCode = 'Import';
+SELECT @Act_SearchAll     = AppActionId FROM AppAction WHERE AppActionCode = 'SearchAll';
+SELECT @Act_GetTreeLatest = AppActionId FROM AppAction WHERE AppActionCode = 'GetTreeDataVerLatest';
+SELECT @Act_GetTreeAll    = AppActionId FROM AppAction WHERE AppActionCode = 'GetTreeDataVer';
+SELECT @Act_GetFile       = AppActionId FROM AppAction WHERE AppActionCode = 'GetClaimFile';
+SELECT @Act_GetFileAdmin  = AppActionId FROM AppAction WHERE AppActionCode = 'GetClaimFileByAdmin';
+SELECT @Act_NewVersion    = AppActionId FROM AppAction WHERE AppActionCode = 'NewVersion';
+SELECT @Act_History       = AppActionId FROM AppAction WHERE AppActionCode = 'History';
 
 
 

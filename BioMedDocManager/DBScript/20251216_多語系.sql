@@ -1,3 +1,4 @@
+/*
 CREATE TABLE [dbo].[LocalizationString] (
     [Id] BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_LocalizationString PRIMARY KEY,    
     [Key] NVARCHAR(200) NOT NULL,-- 例如：Security.Password.MinLength.Label    
@@ -20,14 +21,14 @@ CREATE INDEX IX_LocalizationString_Culture_Key
 ON [dbo].[LocalizationString] ([Culture], [Key])
 INCLUDE ([IsActive]);
 
-/*
-清空資料
+*/
+--清空資料
 -- 1) 用 DELETE 依 FK 由子到父清空
 DELETE FROM [dbo].[LocalizationString];
 
 -- 2) 如果有 Identity，要重設從 1 開始
 DBCC CHECKIDENT ('[dbo].[LocalizationString]', RESEED, 0);
-*/
+DBCC CHECKIDENT ('[dbo].[LocalizationString]', RESEED, 0);
 
 
 -- 新增資料
@@ -46,6 +47,8 @@ VALUES
 (N'Common.Required', N'zh-TW', N'必填', N'Common', 1),
 (N'Common.Required', N'en-US', N'Required', N'Common', 1),
 
+(N'Common.Shortcut', N'zh-TW', N'快捷鍵', N'Common', 1),
+(N'Common.Shortcut', N'en-US', N'Shortcut', N'Common', 1),
 
 -- 操作結果
 (N'Common.Success', N'zh-TW', N'操作成功', N'Common', 1),
@@ -62,6 +65,9 @@ VALUES
 
 (N'Common.Cancelled', N'zh-TW', N'操作已取消', N'Common', 1),
 (N'Common.Cancelled', N'en-US', N'Operation cancelled', N'Common', 1),
+
+(N'Common.Message.Prefix', N'zh-TW', N'訊息', N'Common', 1),
+(N'Common.Message.Prefix', N'en-US', N'Message', N'Common', 1),
 
 -- Delete 刪除確認
 (N'Common.ConfirmDelete', N'zh-TW', N'確認刪除該筆資料嗎？', N'Common', 1),
@@ -128,8 +134,33 @@ VALUES
 (N'Common.Disabled', N'zh-TW', N'停用', N'Common', 1),
 (N'Common.Disabled', N'en-US', N'Disabled', N'Common', 1),
 
+(N'Common.Locked',   N'zh-TW', N'已鎖定',   N'Common', 1),
+(N'Common.Locked',   N'en-US', N'Locked',    N'Common', 1),
+
+(N'Common.Unlocked', N'zh-TW', N'未鎖定',   N'Common', 1),
+(N'Common.Unlocked', N'en-US', N'Unlocked',  N'Common', 1),
+
 (N'Common.All', N'zh-TW', N'全部', N'Common', 1),
 (N'Common.All', N'en-US', N'All', N'Common', 1),
+
+-- 稽核欄位
+(N'Common.CreatedAt',N'zh-TW', N'建立日期',  N'Common', 1),
+(N'Common.CreatedAt',N'en-US', N'Created at',N'Common', 1),
+
+(N'Common.CreatedBy',N'zh-TW', N'建立人',    N'Common', 1),
+(N'Common.CreatedBy',N'en-US', N'Created by',N'Common', 1),
+
+(N'Common.UpdatedAt',N'zh-TW', N'更新日期',  N'Common', 1),
+(N'Common.UpdatedAt',N'en-US', N'Updated at',N'Common', 1),
+
+(N'Common.UpdatedBy',N'zh-TW', N'更新人',    N'Common', 1),
+(N'Common.UpdatedBy',N'en-US', N'Updated by',N'Common', 1),
+
+(N'Common.DeletedAt',N'zh-TW', N'刪除日期',  N'Common', 1),
+(N'Common.DeletedAt',N'en-US', N'Deleted at',N'Common', 1),
+
+(N'Common.DeletedBy',N'zh-TW', N'刪除人',    N'Common', 1),
+(N'Common.DeletedBy',N'en-US', N'Deleted by',N'Common', 1),
 
 
 -- 部分視圖：Navbar / Menu / Banner / Breadcrumbs
@@ -160,7 +191,7 @@ VALUES
 (N'Common.BackToUpper', N'en-US', N'Back', N'Common', 1),
 
 
--- ===== 驗證 =====
+-- ===== 身分驗證 =====
 (N'AccountSettings.RegisterTotp', N'zh-TW', N'註冊 TOTP', N'AccountSettings', 1),
 (N'AccountSettings.RegisterTotp', N'en-US', N'Register TOTP', N'AccountSettings', 1),
 
@@ -180,14 +211,37 @@ VALUES
 
 
 -- ===== 密碼政策 ===== 
-(N'Parameter.SEC_PASSWORD_MIN_LENGTH.Label', N'zh-TW', N'密碼最少長度', N'Security', 1),
-(N'Parameter.SEC_PASSWORD_MIN_LENGTH.Label', N'en-US', N'Minimum password length', N'Security', 1),
+(N'PasswordPolicy.Title', N'zh-TW', N'密碼須符合以下規則', N'PasswordPolicy', 1),
+(N'PasswordPolicy.Title', N'en-US', N'Passwords must meet the following rules', N'PasswordPolicy', 1),
 
-(N'Parameter.SEC_PASSWORD_EXPIRE_DAYS.Label', N'zh-TW', N'密碼過期天數', N'Security', 1),
-(N'Parameter.SEC_PASSWORD_EXPIRE_DAYS.Label', N'en-US', N'Password expiry (days)', N'Security', 1),
 
-(N'Parameter.SEC_2FA_TOTP_ENABLED.Label', N'zh-TW', N'啟用 2FA（TOTP）', N'Security',1),
-(N'Parameter.SEC_2FA_TOTP_ENABLED.Label', N'en-US', N'Enable 2FA (TOTP)', N'Security', 1),
+-- Password Policy : Min Length
+(N'PasswordPolicy.MinLength.Prefix', N'zh-TW', N'密碼長度至少需', N'PasswordPolicy', 1),
+(N'PasswordPolicy.MinLength.Prefix', N'en-US', N'Password length must be at least', N'PasswordPolicy', 1),
+
+(N'PasswordPolicy.MinLength.Suffix', N'zh-TW', N'個字元。', N'PasswordPolicy', 1),
+(N'PasswordPolicy.MinLength.Suffix', N'en-US', N'characters.', N'PasswordPolicy', 1),
+
+-- Password Policy : Require Uppercase
+(N'PasswordPolicy.RequireUpper.Text', N'zh-TW', N'至少包含 1 個英文大寫字母（A–Z）。', N'PasswordPolicy', 1),
+(N'PasswordPolicy.RequireUpper.Text', N'en-US', N'At least 1 uppercase letter (A–Z).', N'PasswordPolicy', 1),
+
+-- Password Policy : Require Lowercase
+(N'PasswordPolicy.RequireLower.Text', N'zh-TW', N'至少包含 1 個英文小寫字母（a–z）。', N'PasswordPolicy', 1),
+(N'PasswordPolicy.RequireLower.Text', N'en-US', N'At least 1 lowercase letter (a–z).', N'PasswordPolicy', 1),
+
+-- Password Policy : Require Digit
+(N'PasswordPolicy.RequireDigit.Text', N'zh-TW', N'至少包含 1 個數字（0–9）。', N'PasswordPolicy', 1),
+(N'PasswordPolicy.RequireDigit.Text', N'en-US', N'At least 1 digit (0–9).', N'PasswordPolicy', 1),
+
+-- Password Policy : Require Special (Prefix + Suffix)
+(N'PasswordPolicy.RequireSpecial.Prefix', N'zh-TW', N'至少包含 1 個特殊符號（允許符號：', N'PasswordPolicy', 1),
+(N'PasswordPolicy.RequireSpecial.Prefix', N'en-US', N'At least 1 special character (allowed:', N'PasswordPolicy', 1),
+
+(N'PasswordPolicy.RequireSpecial.Suffix', N'zh-TW', N'）。', N'PasswordPolicy', 1),
+(N'PasswordPolicy.RequireSpecial.Suffix', N'en-US', N').', N'PasswordPolicy', 1),
+
+
 
 -- ===== 頁面分頁 =====
 (N'Pager.First', N'zh-TW', N'首頁', N'Pager', 1),
@@ -215,23 +269,374 @@ VALUES
 (N'Pager.Items', N'en-US', N'items', N'Pager', 1),
 
 
+-- ===== 資料驗證 =====
+-- 字串長度驗證
+(N'Validation.StringLength', N'zh-TW', N'{0} 最多 {1} 字元', N'Validation', 1),
+(N'Validation.StringLength', N'en-US', N'{0} must be at most {1} characters long.', N'Validation', 1),
+
+-- ===== 資料庫欄位文字 =====
+-- 動作
+(N'AppAction.AppActionId',   N'zh-TW', N'動作編號', N'AppAction', 1),
+(N'AppAction.AppActionId',   N'en-US', N'Action ID', N'AppAction', 1),
+
+(N'AppAction.AppActionCode', N'zh-TW', N'動作代碼', N'AppAction', 1),
+(N'AppAction.AppActionCode', N'en-US', N'Action code', N'AppAction', 1),
+
+(N'AppAction.AppActionDisplayName', N'zh-TW', N'顯示名稱', N'AppAction', 1),
+(N'AppAction.AppActionDisplayName', N'en-US', N'Display name', N'AppAction', 1),
+
+(N'AppAction.AppActionOrder', N'zh-TW', N'顯示順序', N'AppAction', 1),
+(N'AppAction.AppActionOrder', N'en-US', N'Display order', N'AppAction', 1),
+
+-- 部門
+(N'Department.DepartmentId',       N'zh-TW', N'部門編號', N'Department', 1),
+(N'Department.DepartmentId',       N'en-US', N'Department ID', N'Department', 1),
+
+(N'Department.DepartmentCode',     N'zh-TW', N'部門代碼', N'Department', 1),
+(N'Department.DepartmentCode',     N'en-US', N'Department code', N'Department', 1),
+
+(N'Department.DepartmentName',     N'zh-TW', N'部門名稱', N'Department', 1),
+(N'Department.DepartmentName',     N'en-US', N'Department name', N'Department', 1),
+
+(N'Department.DepartmentParentId', N'zh-TW', N'上層部門', N'Department', 1),
+(N'Department.DepartmentParentId', N'en-US', N'Parent department', N'Department', 1),
+
+(N'Department.DepartmentIsActive', N'zh-TW', N'是否啟用', N'Department', 1),
+(N'Department.DepartmentIsActive', N'en-US', N'Active', N'Department', 1),
+
+-- 選單
+(N'MenuItem.MenuItemId',           N'zh-TW', N'選單編號',   N'MenuItem', 1),
+(N'MenuItem.MenuItemId',           N'en-US', N'Menu ID',    N'MenuItem', 1),
+
+(N'MenuItem.MenuItemParentId',     N'zh-TW', N'上層選單',   N'MenuItem', 1),
+(N'MenuItem.MenuItemParentId',     N'en-US', N'Parent menu',N'MenuItem', 1),
+
+(N'MenuItem.MenuItemTitle',        N'zh-TW', N'選單標題',   N'MenuItem', 1),
+(N'MenuItem.MenuItemTitle',        N'en-US', N'Menu title', N'MenuItem', 1),
+
+(N'MenuItem.MenuItemIcon',         N'zh-TW', N'圖示',       N'MenuItem', 1),
+(N'MenuItem.MenuItemIcon',         N'en-US', N'Icon',       N'MenuItem', 1),
+
+(N'MenuItem.ResourceKey',          N'zh-TW', N'資源代碼',   N'MenuItem', 1),
+(N'MenuItem.ResourceKey',          N'en-US', N'Resource key', N'MenuItem', 1),
+
+(N'MenuItem.MenuItemDisplayOrder', N'zh-TW', N'顯示順序',   N'MenuItem', 1),
+(N'MenuItem.MenuItemDisplayOrder', N'en-US', N'Display order', N'MenuItem', 1),
+
+(N'MenuItem.MenuItemIsActive',     N'zh-TW', N'是否啟用',   N'MenuItem', 1),
+(N'MenuItem.MenuItemIsActive',     N'en-US', N'Active',     N'MenuItem', 1),
+
+(N'MenuItem.ResourceId',           N'zh-TW', N'連結',       N'MenuItem', 1),
+(N'MenuItem.ResourceId',           N'en-US', N'Link',       N'MenuItem', 1),
+
+-- 參數
+(N'Parameter.ParameterId', N'zh-TW', N'參數編號', N'Parameter', 1),
+(N'Parameter.ParameterId', N'en-US', N'Parameter ID', N'Parameter', 1),
+
+(N'Parameter.ParameterCode', N'zh-TW', N'參數代碼', N'Parameter', 1),
+(N'Parameter.ParameterCode', N'en-US', N'Parameter Code', N'Parameter', 1),
+
+(N'Parameter.ParameterName', N'zh-TW', N'參數名稱', N'Parameter', 1),
+(N'Parameter.ParameterName', N'en-US', N'Parameter Name', N'Parameter', 1),
+
+(N'Parameter.ParameterValue', N'zh-TW', N'參數值', N'Parameter', 1),
+(N'Parameter.ParameterValue', N'en-US', N'Parameter Value', N'Parameter', 1),
+
+(N'Parameter.ParameterFormat', N'zh-TW', N'參數格式', N'Parameter', 1),
+(N'Parameter.ParameterFormat', N'en-US', N'Parameter Format', N'Parameter', 1),
+
+(N'Parameter.ParameterIsActive', N'zh-TW', N'是否啟用', N'Parameter', 1),
+(N'Parameter.ParameterIsActive', N'en-US', N'Active', N'Parameter', 1),
+
+-- 資源
+(N'Resource.ResourceId', N'zh-TW', N'資源編號', N'Resource', 1),
+(N'Resource.ResourceId', N'en-US', N'Resource ID', N'Resource', 1),
+
+(N'Resource.ResourceType', N'zh-TW', N'資源類型', N'Resource', 1),
+(N'Resource.ResourceType', N'en-US', N'Resource type', N'Resource', 1),
+
+(N'Resource.ResourceKey', N'zh-TW', N'資源代碼', N'Resource', 1),
+(N'Resource.ResourceKey', N'en-US', N'Resource key', N'Resource', 1),
+
+(N'Resource.ResourceDisplayName', N'zh-TW', N'顯示名稱', N'Resource', 1),
+(N'Resource.ResourceDisplayName', N'en-US', N'Display name', N'Resource', 1),
+
+(N'Resource.ResourceIsActive', N'zh-TW', N'是否啟用', N'Resource', 1),
+(N'Resource.ResourceIsActive', N'en-US', N'Active', N'Resource', 1),
+
+-- 角色
+(N'Role.RoleId', N'zh-TW', N'角色編號', N'Role', 1),
+(N'Role.RoleId', N'en-US', N'Role ID', N'Role', 1),
+
+(N'Role.RoleGroup', N'zh-TW', N'角色群組', N'Role', 1),
+(N'Role.RoleGroup', N'en-US', N'Role group', N'Role', 1),
+
+(N'Role.RoleCode', N'zh-TW', N'角色代碼', N'Role', 1),
+(N'Role.RoleCode', N'en-US', N'Role code', N'Role', 1),
+
+-- 角色權限
+(N'RolePermission.RoleId',     N'zh-TW', N'角色編號', N'RolePermission', 1),
+(N'RolePermission.RoleId',     N'en-US', N'Role ID',  N'RolePermission', 1),
+
+(N'RolePermission.ResourceId', N'zh-TW', N'資源編號', N'RolePermission', 1),
+(N'RolePermission.ResourceId', N'en-US', N'Resource ID', N'RolePermission', 1),
+
+(N'RolePermission.AppActionId',N'zh-TW', N'動作編號', N'RolePermission', 1),
+(N'RolePermission.AppActionId',N'en-US', N'Action ID', N'RolePermission', 1),
+
+-- 使用者
+(N'User.UserId',                N'zh-TW', N'使用者編號',         N'User', 1),
+(N'User.UserId',                N'en-US', N'User ID',            N'User', 1),
+
+(N'User.UserAccount',           N'zh-TW', N'帳號',              N'User', 1),
+(N'User.UserAccount',           N'en-US', N'Account',           N'User', 1),
+
+(N'User.UserPasswordHash',      N'zh-TW', N'密碼',               N'User', 1),
+(N'User.UserPasswordHash',      N'en-US', N'Password',           N'User', 1),
+
+(N'User.UserCurrentPassword',   N'zh-TW', N'目前密碼',      N'User', 1),
+(N'User.UserCurrentPassword',   N'en-US', N'Current Password',   N'User', 1),
+
+(N'User.UserConfirmPasswordHash',   N'zh-TW', N'確認密碼',      N'User', 1),
+(N'User.UserConfirmPasswordHash',   N'en-US', N'Confirm Password',   N'User', 1),
+
+(N'User.UserNewPasswordHash',   N'zh-TW', N'新密碼',      N'User', 1),
+(N'User.UserNewPasswordHash',   N'en-US', N'New Password',   N'User', 1),
+
+(N'User.UserFullName',          N'zh-TW', N'姓名',               N'User', 1),
+(N'User.UserFullName',          N'en-US', N'Full name',          N'User', 1),
+
+(N'User.UserJobTitle',          N'zh-TW', N'職稱',               N'User', 1),
+(N'User.UserJobTitle',          N'en-US', N'Job title',          N'User', 1),
+
+(N'User.UserEmail',             N'zh-TW', N'電子郵件',           N'User', 1),
+(N'User.UserEmail',             N'en-US', N'Email',              N'User', 1),
+
+(N'User.UserPhone',             N'zh-TW', N'聯絡電話',           N'User', 1),
+(N'User.UserPhone',             N'en-US', N'Phone',              N'User', 1),
+
+(N'User.UserMobile',            N'zh-TW', N'手機',               N'User', 1),
+(N'User.UserMobile',            N'en-US', N'Mobile',             N'User', 1),
+
+(N'User.UserIsActive',          N'zh-TW', N'是否啟用',           N'User', 1),
+(N'User.UserIsActive',          N'en-US', N'Active',             N'User', 1),
+
+(N'User.UserIsLocked',          N'zh-TW', N'是否鎖定',           N'User', 1),
+(N'User.UserIsLocked',          N'en-US', N'Locked',             N'User', 1),
+
+(N'User.UserLockedUntil',       N'zh-TW', N'鎖定解除時間',       N'User', 1),
+(N'User.UserLockedUntil',       N'en-US', N'Lockout end time',   N'User', 1),
+
+(N'User.UserLoginFailedCount',  N'zh-TW', N'登入失敗次數',       N'User', 1),
+(N'User.UserLoginFailedCount',  N'en-US', N'Failed login count', N'User', 1),
+
+(N'User.UserLastLoginAt',       N'zh-TW', N'最後登入時間',       N'User', 1),
+(N'User.UserLastLoginAt',       N'en-US', N'Last login time',    N'User', 1),
+
+(N'User.UserLastLoginIp',       N'zh-TW', N'最後登入 IP',        N'User', 1),
+(N'User.UserLastLoginIp',       N'en-US', N'Last login IP',      N'User', 1),
+
+(N'User.UserPasswordChangedAt', N'zh-TW', N'密碼最後修改時間',   N'User', 1),
+(N'User.UserPasswordChangedAt', N'en-US', N'Password changed at',N'User', 1),
+
+(N'User.UserStatus',            N'zh-TW', N'帳號狀態',           N'User', 1),
+(N'User.UserStatus',            N'en-US', N'Account status',     N'User', 1),
+
+(N'User.UserRemarks',           N'zh-TW', N'備註',               N'User', 1),
+(N'User.UserRemarks',           N'en-US', N'Remarks',            N'User', 1),
+
+(N'User.UserTotpSecret',        N'zh-TW', N'綁定TOTP',           N'User', 1),
+(N'User.UserTotpSecret',        N'en-US', N'TOTP binding',       N'User', 1),
+
+(N'User.DepartmentId',          N'zh-TW', N'部門',               N'User', 1),
+(N'User.DepartmentId',          N'en-US', N'Department',         N'User', 1),
+
+(N'User.RoleCodeList',          N'zh-TW', N'強制指定系統角色',    N'User', 1),
+(N'User.RoleCodeList',          N'en-US', N'Assigned system roles', N'User', 1),
+
+(N'User.UserGroupList',         N'zh-TW', N'使用者群組清單',      N'User', 1),
+(N'User.UserGroupList',         N'en-US', N'User group list',     N'User', 1),
+
+(N'User.UserGroupRoleList',     N'zh-TW', N'使用者群組權限清單',  N'User', 1),
+(N'User.UserGroupRoleList',     N'en-US', N'User group permissions', N'User', 1),
+
+-- 使用者群組
+(N'UserGroup.UserGroupId',          N'zh-TW', N'群組編號',     N'UserGroup', 1),
+(N'UserGroup.UserGroupId',          N'en-US', N'Group ID',     N'UserGroup', 1),
+
+(N'UserGroup.UserGroupCode',        N'zh-TW', N'群組名稱',     N'UserGroup', 1),
+(N'UserGroup.UserGroupCode',        N'en-US', N'Group Name',   N'UserGroup', 1),
+
+(N'UserGroup.UserGroupDescription', N'zh-TW', N'群組說明',     N'UserGroup', 1),
+(N'UserGroup.UserGroupDescription', N'en-US', N'Description', N'UserGroup', 1),
+
+-- 使用者群組成員
+(N'UserGroupMember.UserGroupId', N'zh-TW', N'群組編號',   N'UserGroupMember', 1),
+(N'UserGroupMember.UserGroupId', N'en-US', N'Group ID',   N'UserGroupMember', 1),
+
+(N'UserGroupMember.UserId',      N'zh-TW', N'使用者編號', N'UserGroupMember', 1),
+(N'UserGroupMember.UserId',      N'en-US', N'User ID',    N'UserGroupMember', 1),
+
+-- 使用者群組角色
+(N'UserGroupRole.UserGroupId', N'zh-TW', N'群組編號', N'UserGroupRole', 1),
+(N'UserGroupRole.UserGroupId', N'en-US', N'Group ID', N'UserGroupRole', 1),
+
+(N'UserGroupRole.RoleId',      N'zh-TW', N'角色編號', N'UserGroupRole', 1),
+(N'UserGroupRole.RoleId',      N'en-US', N'Role ID',  N'UserGroupRole', 1),
+
+
 -- ===== 各頁面文字 =====
--- ===== 客製化錯誤頁面 =====
-(N'Error.RedirectCountdown.Prefix', N'zh-TW', N'將在 ', N'Error', 1),
-(N'Error.RedirectCountdown.Prefix', N'en-US', N'Redirecting in ', N'Error', 1),
+-- 帳號管理
+-- Index
+(N'AccountSettings.Index.Title', N'zh-TW', N'帳號管理', N'AccountSettings', 1),
+(N'AccountSettings.Index.Title', N'en-US', N'Account Management', N'AccountSettings', 1),
 
-(N'Error.RedirectCountdown.Suffix', N'zh-TW', N' 秒後自動返回首頁...', N'Error', 1),
-(N'Error.RedirectCountdown.Suffix', N'en-US', N' seconds. You will be redirected to the home page...', N'Error', 1),
+-- Create
+(N'AccountSettings.Create.Title', N'zh-TW', N'帳號設定-新增', N'AccountSettings', 1),
+(N'AccountSettings.Create.Title', N'en-US', N'Account Settings - Create', N'AccountSettings', 1),
+
+(N'User.UserJobTitle.Placeholder',     N'zh-TW', N'例：工程師、經理',          N'User', 1),
+(N'User.UserJobTitle.Placeholder',     N'en-US', N'e.g., Engineer, Manager',   N'User', 1),
+
+(N'User.UserPhone.Placeholder',        N'zh-TW', N'市話（選填）',              N'User', 1),
+(N'User.UserPhone.Placeholder',        N'en-US', N'Phone (optional)',          N'User', 1),
+
+(N'User.UserMobile.Placeholder',       N'zh-TW', N'手機（選填）',              N'User', 1),
+(N'User.UserMobile.Placeholder',       N'en-US', N'Mobile (optional)',         N'User', 1),
+
+(N'User.UserRemarks.Placeholder',      N'zh-TW', N'備註（選填）',              N'User', 1),
+(N'User.UserRemarks.Placeholder',      N'en-US', N'Remarks (optional)',        N'User', 1),
+
+-- Edit
+(N'AccountSettings.Edit.Title', N'zh-TW', N'帳號設定-編輯', N'AccountSettings', 1),
+(N'AccountSettings.Edit.Title', N'en-US', N'Account Settings - Edit', N'AccountSettings', 1),
+
+-- ResetPassword
+(N'AccountSettings.ResetPassword.Title', N'zh-TW', N'帳號設定-密碼重設', N'AccountSettings', 1),
+(N'AccountSettings.ResetPassword.Title', N'en-US', N'Account Settings - Reset Password', N'AccountSettings', 1),
+
+(N'AccountSettings.ResetPassword.Shortcut.Prefix', N'zh-TW', N'快速重設密碼為「Abcd + ', N'AccountSettings', 1),
+(N'AccountSettings.ResetPassword.Shortcut.Prefix', N'en-US', N'Quickly reset password to "Abcd + ', N'AccountSettings', 1),
+(N'AccountSettings.ResetPassword.Shortcut.Suffix', N'zh-TW', N'」', N'AccountSettings', 1),
+(N'AccountSettings.ResetPassword.Shortcut.Suffix', N'en-US', N'"', N'AccountSettings', 1),
+
+(N'AccountSettings.ResetPassword.Shortcut.Button', N'zh-TW', N'快速設定', N'AccountSettings', 1),
+(N'AccountSettings.ResetPassword.Shortcut.Button', N'en-US', N'Quick Set', N'AccountSettings', 1),
+
+(N'AccountSettings.ResetPassword.Hint', N'zh-TW', N'*該功能不受密碼政策限制，但建議密碼長度8個字元以上', N'AccountSettings', 1),
+(N'AccountSettings.ResetPassword.Hint', N'en-US', N'*This function is not restricted by password policy, but an 8+ character password is recommended', N'AccountSettings', 1),
+
+--ChangePassword
+(N'AccountSettings.ChangePassword.Title', N'zh-TW', N'變更密碼', N'AccountSettings', 1),
+(N'AccountSettings.ChangePassword.Title', N'en-US', N'Change Password', N'AccountSettings', 1),
+
+-- Details
+(N'AccountSettings.Details.Title', N'zh-TW', N'帳號設定 使用者明細', N'AccountSettings', 1),
+(N'AccountSettings.Details.Title', N'en-US', N'Account Settings User Details', N'AccountSettings', 1),
+
+(N'UserDetails.Section1.Title', N'zh-TW', N'一 使用者基本資料', N'UserDetails', 1),
+(N'UserDetails.Section1.Title', N'en-US', N'1 User Basic Information', N'UserDetails', 1),
+
+(N'UserDetails.Section2.Title', N'zh-TW', N'二 使用者群組 角色與權限', N'UserDetails', 1),
+(N'UserDetails.Section2.Title', N'en-US', N'2 User Groups Roles and Permissions', N'UserDetails', 1),
+
+(N'UserDetails.EffectiveRoles', N'zh-TW', N'有效角色', N'UserDetails', 1),
+(N'UserDetails.EffectiveRoles', N'en-US', N'Effective roles', N'UserDetails', 1),
+
+(N'UserDetails.EffectivePermissions', N'zh-TW', N'有效權限', N'UserDetails', 1),
+(N'UserDetails.EffectivePermissions', N'en-US', N'Effective permissions', N'UserDetails', 1),
+
+(N'UserDetails.ActionTooltipPrefix', N'zh-TW', N'動作', N'UserDetails', 1),
+(N'UserDetails.ActionTooltipPrefix', N'en-US', N'Action', N'UserDetails', 1),
+
+-- 註冊TOTP
+(N'Totp.Setup.Title', N'zh-TW', N'註冊 TOTP 兩步驟驗證', N'Totp', 1),
+(N'Totp.Setup.Title', N'en-US', N'Register TOTP Two-Factor Authentication', N'Totp', 1),
+
+-- 註冊TOTP-已啟用警告
+(N'Totp.AlreadyEnabled.Warning', N'zh-TW', N'您的帳號已啟用 TOTP 驗證。重新註冊將會覆蓋原本的設定，請謹慎操作。', N'Totp', 1),
+(N'Totp.AlreadyEnabled.Warning', N'en-US', N'Your account already has TOTP enabled. Re-registering will overwrite the existing setup. Please proceed with caution.', N'Totp', 1),
+
+(N'Totp.ReRegister.Confirm', N'zh-TW', N'確定重新註冊', N'Totp', 1),
+(N'Totp.ReRegister.Confirm', N'en-US', N'Confirm Re-register', N'Totp', 1),
+
+-- 註冊TOTP-操作步驟說明
+(N'Totp.Step.InstallApp', N'zh-TW', N'請先在手機安裝 Google Authenticator 或其他支援 TOTP 的驗證器 App。', N'Totp', 1),
+(N'Totp.Step.InstallApp', N'en-US', N'Install Google Authenticator or any TOTP-compatible authenticator app on your phone.', N'Totp', 1),
+
+(N'Totp.Step.ChromeExtension', N'zh-TW', N'Chrome 瀏覽器的外掛套件：', N'Totp', 1),
+(N'Totp.Step.ChromeExtension', N'en-US', N'Chrome browser extension:', N'Totp', 1),
+
+(N'Totp.Step.ScanOrInput', N'zh-TW', N'使用【驗證器】掃描下方的 QR Code，或手動輸入「金鑰」。', N'Totp', 1),
+(N'Totp.Step.ScanOrInput', N'en-US', N'Scan the QR code below with your authenticator app, or manually enter the secret key.', N'Totp', 1),
+
+(N'Totp.Step.InputCode', N'zh-TW', N'【驗證器】會顯示 6 位數驗證碼，請在下方欄位輸入後，按下「啟用 TOTP」。', N'Totp', 1),
+(N'Totp.Step.InputCode', N'en-US', N'Your authenticator app will show a 6-digit code. Enter it below and click “Enable TOTP”.', N'Totp', 1),
+
+-- 註冊TOTP-方式標題
+(N'Totp.Method.QrCode', N'zh-TW', N'方式一：掃描 QR Code', N'Totp', 1),
+(N'Totp.Method.QrCode', N'en-US', N'Method 1: Scan QR Code', N'Totp', 1),
+
+(N'Totp.Method.Manual', N'zh-TW', N'方式二：手動輸入金鑰（若無法掃描）', N'Totp', 1),
+(N'Totp.Method.Manual', N'en-US', N'Method 2: Enter Secret Key Manually (if you cannot scan)', N'Totp', 1),
+
+-- 註冊TOTP-欄位顯示(對應ViewModel)
+(N'Totp.Issuer', N'zh-TW', N'發行者', N'Totp', 1),
+(N'Totp.Issuer', N'en-US', N'Issuer', N'Totp', 1),
+
+(N'Totp.Secret', N'zh-TW', N'金鑰', N'Totp', 1),
+(N'Totp.Secret', N'en-US', N'Secret', N'Totp', 1),
+
+(N'Totp.Code', N'zh-TW', N'驗證碼', N'Totp', 1),
+(N'Totp.Code', N'en-US', N'Authentication Code', N'Totp', 1),
+
+-- 註冊TOTP-驗證碼 Placeholder
+(N'Totp.Code.Placeholder', N'zh-TW', N'請輸入【驗證器】顯示的 6 位數驗證碼', N'Totp', 1),
+(N'Totp.Code.Placeholder', N'en-US', N'Enter the 6-digit code from your authenticator app', N'Totp', 1),
+
+-- 註冊TOTP-Secret 警告文字
+(N'Totp.Secret.Warning', N'zh-TW', N'建議只在必要時手動輸入，並避免洩漏此金鑰。', N'Totp', 1),
+(N'Totp.Secret.Warning', N'en-US', N'Only enter this manually when necessary and keep the secret secure.', N'Totp', 1),
 
 
--- ===== 首頁 =====
+
+-- 系統動作管理
+-- Index
+(N'AppAction.Index.Title', N'zh-TW', N'系統動作管理', N'AppAction', 1),
+(N'AppAction.Index.Title', N'en-US', N'System Action Management', N'AppAction', 1),
+
+(N'AppAction.AppActionCode.Placeholder', N'zh-TW', N'例如：Index / Create / Edit / Delete', N'AppAction', 1),
+(N'AppAction.AppActionCode.Placeholder', N'en-US', N'e.g., Index / Create / Edit / Delete', N'AppAction', 1),
+
+(N'AppAction.AppActionDisplayName.Placeholder', N'zh-TW', N'請輸入顯示名稱', N'AppAction', 1),
+(N'AppAction.AppActionDisplayName.Placeholder', N'en-US', N'Enter display name', N'AppAction', 1),
+
+-- Create
+(N'AppAction.Create.Title', N'zh-TW', N'系統動作管理 - 新增', N'AppAction', 1),
+(N'AppAction.Create.Title', N'en-US', N'System Action Management - Create', N'AppAction', 1),
+
+-- Edit
+(N'AppAction.Edit.Title', N'zh-TW', N'系統動作管理 - 編輯', N'AppAction', 1),
+(N'AppAction.Edit.Title', N'en-US', N'System Action Management - Edit', N'AppAction', 1),
+
+-- Delete
+(N'AppAction.Delete.Title', N'zh-TW', N'系統動作管理 - 刪除', N'AppAction', 1),
+(N'AppAction.Delete.Title', N'en-US', N'System Action Management - Delete', N'AppAction', 1),
+
+(N'AppAction.Delete.Blocked.CannotDelete', N'zh-TW', N'無法刪除', N'AppAction', 1),
+(N'AppAction.Delete.Blocked.CannotDelete', N'en-US', N'cannot be deleted', N'AppAction', 1),
+
+(N'AppAction.Delete.Blocked.Instruction', N'zh-TW', N'若要刪除，請先在「角色管理-權限設定」中，取消所有使用此動作的權限設定。', N'AppAction', 1),
+(N'AppAction.Delete.Blocked.Instruction', N'en-US', N'To delete it, please remove all permissions that use this action in Role Management - Permission Settings.', N'AppAction', 1),
+
+-- 首頁
 (N'Home.Welcome.Title', N'zh-TW', N'歡迎使用', N'Home', 1),
 (N'Home.Welcome.Title', N'en-US', N'Welcome', N'Home', 1),
 
 (N'Home.Welcome.SubTitle', N'zh-TW', N'文管與電子採購系統（範例）', N'Home', 1),
 (N'Home.Welcome.SubTitle', N'en-US', N'Document Control & E-Procurement System (Demo)', N'Home', 1),
 
--- ===== 登入頁 =====
+-- 登入頁
 (N'Login.SessionExpired', N'zh-TW', N'系統偵測到您的登入已過期，請重新登入。', N'Login', 1),
 (N'Login.SessionExpired', N'en-US', N'Your session has expired. Please log in again.', N'Login', 1),
 
@@ -256,8 +661,7 @@ VALUES
 (N'Login.Captcha.RefreshTitle', N'zh-TW', N'點擊重新產生', N'Login', 1),
 (N'Login.Captcha.RefreshTitle', N'en-US', N'Click to regenerate', N'Login', 1),
 
-
--- ===== 兩階段驗證 =====
+-- 登入頁-兩階段驗證
 (N'Login.TwoFactor.Title', N'zh-TW', N'兩步驟驗證', N'Login', 1),
 (N'Login.TwoFactor.Title', N'en-US', N'Two-step verification', N'Login', 1),
 
@@ -288,28 +692,112 @@ VALUES
 (N'Login.TwoFactor.Code.Placeholder', N'zh-TW', N'請輸入 6 位數驗證碼', N'Login', 1),
 (N'Login.TwoFactor.Code.Placeholder', N'en-US', N'Enter the 6-digit code', N'Login', 1),
 
+-- 選單
+-- Index
+(N'MenuItem.Index.Title',                 N'zh-TW', N'選單項目管理', N'MenuItem', 1),
+(N'MenuItem.Index.Title',                 N'en-US', N'Menu Item Management', N'MenuItem', 1),
 
--- ===== 系統資源管理 =====
+(N'MenuItem.MenuItemTitle.Placeholder',   N'zh-TW', N'請輸入選單標題', N'MenuItem', 1),
+(N'MenuItem.MenuItemTitle.Placeholder',   N'en-US', N'Enter menu title', N'MenuItem', 1),
+
+(N'MenuItem.ResourceKey.Placeholder',     N'zh-TW', N'例如 /Resource 或 /Home/Index', N'MenuItem', 1),
+(N'MenuItem.ResourceKey.Placeholder',     N'en-US', N'e.g. /Resource or /Home/Index', N'MenuItem', 1),
+
+-- Create
+(N'MenuItem.Create.Title',                    N'zh-TW', N'選單項目管理 新增',                N'MenuItem', 1),
+(N'MenuItem.Create.Title',                    N'en-US', N'Menu Item Management Create',     N'MenuItem', 1),
+
+(N'MenuItem.MenuItemIcon.Placeholder',        N'zh-TW', N'例如 fas fa-home',                 N'MenuItem', 1),
+(N'MenuItem.MenuItemIcon.Placeholder',        N'en-US', N'e.g. fas fa-home',                 N'MenuItem', 1),
+
+(N'MenuItem.MenuItemDisplayOrder.Placeholder',N'zh-TW', N'例如 10',                           N'MenuItem', 1),
+(N'MenuItem.MenuItemDisplayOrder.Placeholder',N'en-US', N'e.g. 10',                           N'MenuItem', 1),
+
+(N'MenuItem.Icon.SearchTitle',                N'zh-TW', N'查詢 Font Awesome icon',           N'MenuItem', 1),
+(N'MenuItem.Icon.SearchTitle',                N'en-US', N'Search Font Awesome icon',         N'MenuItem', 1),
+
+(N'MenuItem.Icon.SearchLink',                 N'zh-TW', N'查詢Icon',                          N'MenuItem', 1),
+(N'MenuItem.Icon.SearchLink',                 N'en-US', N'Search icon',                        N'MenuItem', 1),
+
+-- Edit
+(N'MenuItem.Edit.Title', N'zh-TW', N'選單項目管理 編輯', N'MenuItem', 1),
+(N'MenuItem.Edit.Title', N'en-US', N'Menu Item Management Edit', N'MenuItem', 1),
+
+
+-- Delete
+(N'MenuItem.Delete.Title',                 N'zh-TW', N'選單項目管理 刪除',                 N'MenuItem', 1),
+(N'MenuItem.Delete.Title',                 N'en-US', N'Menu Item Management Delete',      N'MenuItem', 1),
+
+(N'MenuItem.Parent',                       N'zh-TW', N'上層選單',                         N'MenuItem', 1),
+(N'MenuItem.Parent',                       N'en-US', N'Parent Menu',                      N'MenuItem', 1),
+
+(N'MenuItem.Children.Status',              N'zh-TW', N'子選單狀況',                         N'MenuItem', 1),
+(N'MenuItem.Children.Status',              N'en-US', N'Children Status',                   N'MenuItem', 1),
+
+(N'MenuItem.Children.EmptyHint',           N'zh-TW', N'目前沒有任何子選單掛在此選單之下',   N'MenuItem', 1),
+(N'MenuItem.Children.EmptyHint',           N'en-US', N'No child menu items under this menu', N'MenuItem', 1),
+
+(N'MenuItem.Children.CountPrefix',         N'zh-TW', N'此選單底下目前有',                   N'MenuItem', 1),
+(N'MenuItem.Children.CountPrefix',         N'en-US', N'This menu currently has',           N'MenuItem', 1),
+
+(N'MenuItem.Children.CountSuffix',         N'zh-TW', N'個子選單',                           N'MenuItem', 1),
+(N'MenuItem.Children.CountSuffix',         N'en-US', N'child menu items',                   N'MenuItem', 1),
+
+(N'MenuItem.Delete.BlockedLine1',          N'zh-TW', N'此選單目前仍有子選單，無法刪除',     N'MenuItem', 1),
+(N'MenuItem.Delete.BlockedLine1',          N'en-US', N'This menu still has children and cannot be deleted', N'MenuItem', 1),
+
+(N'MenuItem.Delete.BlockedLine2',          N'zh-TW', N'若要刪除，請先將子選單移除或重新指定其上層選單', N'MenuItem', 1),
+(N'MenuItem.Delete.BlockedLine2',          N'en-US', N'Remove or reassign the child menu items before deleting', N'MenuItem', 1),
+
+
+-- Details
+(N'MenuItem.Details.Title', N'zh-TW', N'選單項目管理 詳細資料', N'MenuItem', 1),
+(N'MenuItem.Details.Title', N'en-US', N'Menu Item Management Details', N'MenuItem', 1),
+
+
+-- 參數
+-- Index
+(N'Parameter.Index.Title',       N'zh-TW', N'系統參數管理',   N'Parameter',       1),
+(N'Parameter.Index.Title',       N'en-US', N'System Parameters', N'Parameter',     1),
+
+(N'Parameter.ParameterCode.Placeholder', N'zh-TW', N'例如 PWD_MIN_LENGTH', N'Parameter', 1),
+(N'Parameter.ParameterCode.Placeholder', N'en-US', N'e.g. PWD_MIN_LENGTH', N'Parameter', 1),
+
+(N'Parameter.ParameterName.Placeholder', N'zh-TW', N'例如 密碼最少長度', N'Parameter', 1),
+(N'Parameter.ParameterName.Placeholder', N'en-US', N'e.g. Minimum password length', N'Parameter', 1),
+
+(N'Parameter.ParameterFormat.Placeholder', N'zh-TW', N'text / int / html / json', N'Parameter', 1),
+(N'Parameter.ParameterFormat.Placeholder', N'en-US', N'text / int / html / json', N'Parameter', 1),
+
+-- Create
+(N'Parameter.Create.Title', N'zh-TW', N'系統參數管理 新增', N'Parameter', 1),
+(N'Parameter.Create.Title', N'en-US', N'Parameter Management Create', N'Parameter', 1),
+
+(N'Parameter.ParameterValue.Placeholder', N'zh-TW', N'可輸入文字 / 數字 / HTML / JSON', N'Parameter', 1),
+(N'Parameter.ParameterValue.Placeholder', N'en-US', N'Enter text / number / HTML / JSON', N'Parameter', 1),
+
+-- Edit
+(N'Parameter.Edit.Title', N'zh-TW', N'系統參數管理 編輯', N'Parameter', 1),
+(N'Parameter.Edit.Title', N'en-US', N'Parameter Management Edit', N'Parameter', 1),
+
+-- Delete
+(N'Parameter.Delete.Title', N'zh-TW', N'系統參數管理 刪除', N'Parameter', 1),
+(N'Parameter.Delete.Title', N'en-US', N'Parameter Management Delete', N'Parameter', 1),
+
+-- Details
+(N'Parameter.Details.Title', N'zh-TW', N'系統參數管理-詳細資料', N'Parameter', 1),
+(N'Parameter.Details.Title', N'en-US', N'Parameter Details',     N'Parameter', 1),
+
+
+-- 系統資源管理
 -- Index
 (N'Resource.Index.Title', N'zh-TW', N'系統資源管理', N'Resource', 1),
 (N'Resource.Index.Title', N'en-US', N'System Resource Management', N'Resource', 1),
 
-(N'Resource.Query.ResourceType.Label', N'zh-TW', N'資源類型', N'Resource', 1),
-(N'Resource.Query.ResourceType.Label', N'en-US', N'Resource type:', N'Resource', 1),
-
-(N'Resource.Query.ResourceKey.Label', N'zh-TW', N'資源代號', N'Resource', 1),
-(N'Resource.Query.ResourceKey.Label', N'en-US', N'Resource key:', N'Resource', 1),
-
-(N'Resource.Query.ResourceDisplayName.Label', N'zh-TW', N'顯示名稱', N'Resource', 1),
-(N'Resource.Query.ResourceDisplayName.Label', N'en-US', N'Display name:', N'Resource', 1),
-
-(N'Resource.Query.ResourceIsActive.Label', N'zh-TW', N'是否啟用', N'Resource', 1),
-(N'Resource.Query.ResourceIsActive.Label', N'en-US', N'Active:', N'Resource', 1),
-
 (N'Resource.ResourceType.Placeholder', N'zh-TW', N'例如：PAGE / API', N'Resource', 1),
 (N'Resource.ResourceType.Placeholder', N'en-US', N'e.g., PAGE / API', N'Resource', 1),
 
-(N'Resource.ResourceKey.Placeholder', N'zh-TW', N'請輸入資源代號', N'Resource', 1),
+(N'Resource.ResourceKey.Placeholder', N'zh-TW', N'請輸入資源代碼', N'Resource', 1),
 (N'Resource.ResourceKey.Placeholder', N'en-US', N'Enter resource key', N'Resource', 1),
 
 (N'Resource.ResourceDisplayName.Placeholder', N'zh-TW', N'請輸入顯示名稱', N'Resource', 1),
@@ -327,7 +815,16 @@ VALUES
 (N'Resource.Delete.Title', N'zh-TW', N'系統資源管理 - 刪除', N'Resource', 1),
 (N'Resource.Delete.Title', N'en-US', N'System Resource Management - Delete', N'Resource', 1),
 
--- 角色權限使用狀況
+(N'Resource.Delete.Blocked.Prefix', N'zh-TW', N'此資源目前仍被角色權限使用，', N'Resource', 1),
+(N'Resource.Delete.Blocked.Prefix', N'en-US', N'This resource is still used by role permissions, ', N'Resource', 1),
+
+(N'Resource.Delete.Blocked.CannotDelete', N'zh-TW', N'無法刪除', N'Resource', 1),
+(N'Resource.Delete.Blocked.CannotDelete', N'en-US', N'cannot be deleted', N'Resource', 1),
+
+(N'Resource.Delete.Blocked.Instruction', N'zh-TW', N'若要刪除，請先在「角色管理-權限設定」中取消此資源相關的權限設定。', N'Resource', 1),
+(N'Resource.Delete.Blocked.Instruction', N'en-US', N'To delete it, please remove the related permission settings under "Role Management - Permission Settings" first.', N'Resource', 1),
+
+-- 角色權限使用狀況(Delete、Details共用)
 (N'Resource.RolePermissionUsage.Title', N'zh-TW', N'角色權限使用狀況', N'Resource', 1),
 (N'Resource.RolePermissionUsage.Title', N'en-US', N'Role permission usage', N'Resource', 1),
 
@@ -341,7 +838,7 @@ VALUES
 (N'Resource.RolePermissionUsage.CountSuffix', N'en-US', N' role(s).', N'Resource', 1),
 
 (N'Resource.RolePermissionUsage.RoleGroupListTitle', N'zh-TW', N'使用此資源的角色／群組：', N'Resource', 1),
-(N'Resource.RolePermissionUsage.RoleGroupListTitle', N'en-US', N'Roles / groups using this resource:', N'Resource', 1),
+(N'Resource.RolePermissionUsage.RoleGroupListTitle', N'en-US', N'Roles / groups using this resource', N'Resource', 1),
 
 (N'Resource.UnassignedGroup', N'zh-TW', N'未指定群組', N'Resource', 1),
 (N'Resource.UnassignedGroup', N'en-US', N'No group assigned', N'Resource', 1),
@@ -349,63 +846,18 @@ VALUES
 (N'Resource.RolePermissionUsage.HasPermissionButNoGroup', N'zh-TW', N'目前已由部分角色設定權限，但尚未指定任何使用者群組。', N'Resource', 1),
 (N'Resource.RolePermissionUsage.HasPermissionButNoGroup', N'en-US', N'Permissions are configured for some roles, but no user groups have been assigned yet.', N'Resource', 1),
 
--- Delete 資源目前仍被角色權限使用
-(N'Resource.Delete.Blocked.Prefix', N'zh-TW', N'此資源目前仍被角色權限使用，', N'Resource', 1),
-(N'Resource.Delete.Blocked.Prefix', N'en-US', N'This resource is still used by role permissions, ', N'Resource', 1),
-
-(N'Resource.Delete.Blocked.CannotDelete', N'zh-TW', N'無法刪除', N'Resource', 1),
-(N'Resource.Delete.Blocked.CannotDelete', N'en-US', N'cannot be deleted', N'Resource', 1),
-
-(N'Resource.Delete.Blocked.Instruction', N'zh-TW', N'若要刪除，請先在「角色管理-權限設定」中取消此資源相關的權限設定。', N'Resource', 1),
-(N'Resource.Delete.Blocked.Instruction', N'en-US', N'To delete it, please remove the related permission settings under "Role Management - Permission Settings" first.', N'Resource', 1),
-
 -- Details
 (N'Resource.Details.Title', N'zh-TW', N'系統資源管理 - 詳細資料', N'Resource', 1),
 (N'Resource.Details.Title', N'en-US', N'System Resource Management - Details', N'Resource', 1),
 
--- ===== 系統動作管理 =====
 
--- Index
-(N'AppAction.Index.Title', N'zh-TW', N'系統動作管理', N'AppAction', 1),
-(N'AppAction.Index.Title', N'en-US', N'System Action Management', N'AppAction', 1),
-
-(N'AppAction.AppActionName.Label', N'zh-TW', N'動作名稱：', N'AppAction', 1),
-(N'AppAction.AppActionName.Label', N'en-US', N'Action name:', N'AppAction', 1),
-
-(N'AppAction.AppActionDisplayName.Label', N'zh-TW', N'顯示名稱：', N'AppAction', 1),
-(N'AppAction.AppActionDisplayName.Label', N'en-US', N'Display name:', N'AppAction', 1),
-
-(N'AppAction.AppActionName.Placeholder', N'zh-TW', N'例如：Index / Create / Edit / Delete', N'AppAction', 1),
-(N'AppAction.AppActionName.Placeholder', N'en-US', N'e.g., Index / Create / Edit / Delete', N'AppAction', 1),
-
-(N'AppAction.AppActionDisplayName.Placeholder', N'zh-TW', N'請輸入顯示名稱', N'AppAction', 1),
-(N'AppAction.AppActionDisplayName.Placeholder', N'en-US', N'Enter display name', N'AppAction', 1),
-
--- Create
-(N'AppAction.Create.Title', N'zh-TW', N'系統動作管理 - 新增', N'AppAction', 1),
-(N'AppAction.Create.Title', N'en-US', N'System Action Management - Create', N'AppAction', 1),
-
--- Edit
-(N'AppAction.Edit.Title', N'zh-TW', N'系統動作管理 - 編輯', N'AppAction', 1),
-(N'AppAction.Edit.Title', N'en-US', N'System Action Management - Edit', N'AppAction', 1),
-
--- Delete
-(N'AppAction.Delete.Title', N'zh-TW', N'系統動作管理 - 刪除', N'AppAction', 1),
-(N'AppAction.Delete.Title', N'en-US', N'System Action Management - Delete', N'AppAction', 1),
-
+-- 角色權限關聯(Delete、Details共用)
 (N'AppAction.RolePermissionUsage.Title', N'zh-TW', N'角色權限關聯', N'AppAction', 1),
 (N'AppAction.RolePermissionUsage.Title', N'en-US', N'Role permission association', N'AppAction', 1),
 
 (N'AppAction.RolePermissionUsage.None', N'zh-TW', N'目前尚未有任何角色使用此動作。', N'AppAction', 1),
 (N'AppAction.RolePermissionUsage.None', N'en-US', N'No roles are currently using this action.', N'AppAction', 1),
 
-(N'AppAction.Delete.Blocked.CannotDelete', N'zh-TW', N'無法刪除', N'AppAction', 1),
-(N'AppAction.Delete.Blocked.CannotDelete', N'en-US', N'cannot be deleted', N'AppAction', 1),
-
-(N'AppAction.Delete.Blocked.Instruction', N'zh-TW', N'若要刪除，請先在「角色管理-權限設定」中，取消所有使用此動作的權限設定。', N'AppAction', 1),
-(N'AppAction.Delete.Blocked.Instruction', N'en-US', N'To delete it, please remove all permissions that use this action in Role Management - Permission Settings.', N'AppAction', 1),
-
---  Delete 動作目前仍被角色使用
 (N'AppAction.RolePermissionUsage.CountPrefix', N'zh-TW', N'此動作目前被 ', N'AppAction', 1),
 (N'AppAction.RolePermissionUsage.CountPrefix', N'en-US', N'This action is currently used by ', N'AppAction', 1),
 
@@ -420,23 +872,170 @@ VALUES
 (N'AppAction.Details.Title', N'en-US', N'System Action Management - Details', N'AppAction', 1),
 
 
+-- 系統角色管理
+(N'Role.Index.Title',            N'zh-TW', N'角色管理',       N'Role',            1),
+(N'Role.Index.Title',            N'en-US', N'Role Management',N'Role',            1),
 
--- ===== 系統角色管理 =====
-(N'Role.RoleGroup', N'zh-TW', N'角色群組', N'Role', 1),
-(N'Role.RoleGroup', N'en-US', N'Role group', N'Role', 1),
+-- Create
 
-(N'Role.RoleName', N'zh-TW', N'角色名稱', N'Role', 1),
-(N'Role.RoleName', N'en-US', N'Role name', N'Role', 1),
+-- Edit
 
+-- Delete
 
-
-
-
-
+-- Details
 
 
-;
 
+-- 角色權限管理
+(N'RolePermission.Index.Title',       N'en-US', N'Role Permission Management', N'RolePermission',   1),
+
+-- Create
+
+-- Edit
+
+-- Delete
+
+-- Details
+
+-- 使用者群組
+(N'UserGroup.Index.Title',       N'zh-TW', N'使用者群組管理', N'UserGroup',       1),
+(N'UserGroup.Index.Title',       N'en-US', N'User Group Management', N'UserGroup',   1),
+
+-- Create
+
+-- Edit
+
+-- Delete
+
+-- Details
+
+
+-- 使用者群組角色
+(N'UserGroupRole.Index.Title',       N'zh-TW', N'使用者群組角色管理', N'UserGroup',       1),
+(N'UserGroupRole.Index.Title',       N'en-US', N'User Group Role Management', N'UserGroup',   1),
+
+-- Create
+
+-- Edit
+
+-- Delete
+
+-- Details
+
+
+
+
+-- 客製化錯誤頁面
+(N'Error.RedirectCountdown.Prefix', N'zh-TW', N'將在 ', N'Error', 1),
+(N'Error.RedirectCountdown.Prefix', N'en-US', N'Redirecting in ', N'Error', 1),
+
+(N'Error.RedirectCountdown.Suffix', N'zh-TW', N' 秒後自動返回首頁...', N'Error', 1),
+(N'Error.RedirectCountdown.Suffix', N'en-US', N' seconds. You will be redirected to the home page...', N'Error', 1),
+
+
+
+
+
+
+-- 額外資料：各表的Value內容
+(N'Department.Admin',  N'zh-TW', N'行政部', N'Department', 1),
+(N'Department.Admin',  N'en-US', N'Admin', N'Department', 1),
+
+(N'Department.IT',  N'zh-TW', N'資訊部', N'Department', 1),
+(N'Department.IT',  N'en-US', N'IT', N'Department', 1),
+
+
+-- 角色群組
+-- System
+(N'Role.SYSTEM', N'zh-TW', N'系統', N'Role', 1),
+(N'Role.SYSTEM', N'en-US', N'System', N'Role', 1),
+
+-- Purchase
+(N'Role.PROCUREMENT', N'zh-TW', N'採購', N'Role', 1),
+(N'Role.PROCUREMENT', N'en-US', N'Purchase', N'Role', 1),
+
+-- Document
+(N'Role.DOCUMENT', N'zh-TW', N'文管', N'Role', 1),
+(N'Role.DOCUMENT', N'en-US', N'Document', N'Role', 1),
+
+-- 角色代碼
+-- SYSTEM_ADMIN
+(N'Role.SYSTEM_ADMIN', N'zh-TW', N'系統管理者', N'Role', 1),
+(N'Role.SYSTEM_ADMIN', N'en-US', N'System Administrator', N'Role', 1),
+
+-- REQUESTER
+(N'Role.REQUESTER', N'zh-TW', N'請購人', N'Role', 1),
+(N'Role.REQUESTER', N'en-US', N'Requester', N'Role', 1),
+
+-- PURCHASER
+(N'Role.PURCHASER', N'zh-TW', N'採購人', N'Role', 1),
+(N'Role.PURCHASER', N'en-US', N'Purchaser', N'Role', 1),
+
+-- EVALUATOR
+(N'Role.EVALUATOR', N'zh-TW', N'評核人', N'Role', 1),
+(N'Role.EVALUATOR', N'en-US', N'Evaluator', N'Role', 1),
+
+-- CONSUMER
+(N'Role.CONSUMER', N'zh-TW', N'領用人', N'Role', 1),
+(N'Role.CONSUMER', N'en-US', N'Consumer', N'Role', 1),
+
+-- OWNER
+(N'Role.OWNER', N'zh-TW', N'負責人', N'Role', 1),
+(N'Role.OWNER', N'en-US', N'Owner', N'Role', 1),
+
+
+-- 系統動作
+-- Index
+(N'AppAction.Index',   N'zh-TW', N'首頁/列表', N'AppAction', 1),
+(N'AppAction.Index',   N'en-US', N'Index/List', N'AppAction', 1),
+
+-- Create
+(N'AppAction.Create',  N'zh-TW', N'新增', N'AppAction', 1),
+(N'AppAction.Create',  N'en-US', N'Create', N'AppAction', 1),
+
+-- Edit
+(N'AppAction.Edit',    N'zh-TW', N'編輯', N'AppAction', 1),
+(N'AppAction.Edit',    N'en-US', N'Edit', N'AppAction', 1),
+
+-- Delete
+(N'AppAction.Delete',  N'zh-TW', N'刪除', N'AppAction', 1),
+(N'AppAction.Delete',  N'en-US', N'Delete', N'AppAction', 1),
+
+-- Details
+(N'AppAction.Details', N'zh-TW', N'檢視明細', N'AppAction', 1),
+(N'AppAction.Details', N'en-US', N'Details', N'AppAction', 1),
+
+-- Export
+(N'AppAction.Export',  N'zh-TW', N'匯出', N'AppAction', 1),
+(N'AppAction.Export',  N'en-US', N'Export', N'AppAction', 1),
+
+-- Import
+(N'AppAction.Import',  N'zh-TW', N'匯入', N'AppAction', 1),
+(N'AppAction.Import',  N'en-US', N'Import', N'AppAction', 1),
+
+-- EditGroup
+(N'AppAction.EditGroup', N'zh-TW', N'編輯群組', N'AppAction', 1),
+(N'AppAction.EditGroup', N'en-US', N'Edit Group', N'AppAction', 1),
+
+-- PreviewPermissions
+(N'AppAction.PreviewPermissions', N'zh-TW', N'預覽使用者群組角色權限', N'AppAction', 1),
+(N'AppAction.PreviewPermissions', N'en-US', N'Preview Group Role Permissions', N'AppAction', 1),
+
+-- ChangePassword
+(N'AppAction.ChangePassword', N'zh-TW', N'變更密碼', N'AppAction', 1),
+(N'AppAction.ChangePassword', N'en-US', N'Change Password', N'AppAction', 1),
+
+-- ResetPassword
+(N'AppAction.ResetPassword', N'zh-TW', N'重設密碼', N'AppAction', 1),
+(N'AppAction.ResetPassword', N'en-US', N'Reset Password', N'AppAction', 1),
+
+-- RegisterTotp
+(N'AppAction.RegisterTotp', N'zh-TW', N'註冊 TOTP', N'AppAction', 1),
+(N'AppAction.RegisterTotp', N'en-US', N'Register TOTP', N'AppAction', 1),
+
+-- TotpQrCode
+(N'AppAction.TotpQrCode', N'zh-TW', N'TOTP QR Code', N'AppAction', 1),
+(N'AppAction.TotpQrCode', N'en-US', N'TOTP QR Code', N'AppAction', 1),
 
 
 

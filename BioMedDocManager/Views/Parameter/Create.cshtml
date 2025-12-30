@@ -1,7 +1,7 @@
 ﻿@model BioMedDocManager.Models.Parameter
 
 @{
-    ViewData["Title"] = "系統參數管理-新增";
+    ViewData["Title"] = Loc.T("Parameter.Create.Title");
     Layout = "_NoNavLayout";
 }
 
@@ -18,7 +18,7 @@
             <div class="row align-items-center my-3">
                 <label asp-for="ParameterCode" class="col-md-2 col-form-label text-md-end"></label>
                 <div class="col-md-10">
-                    <input asp-for="ParameterCode" class="form-control" placeholder="例如：PWD_MIN_LENGTH" />
+                    <input asp-for="ParameterCode" class="form-control" placeholder="@Loc.T("Parameter.ParameterCode.Placeholder")" />
                     <span asp-validation-for="ParameterCode" class="text-danger"></span>
                 </div>
             </div>
@@ -26,7 +26,7 @@
             <div class="row align-items-center my-3">
                 <label asp-for="ParameterName" class="col-md-2 col-form-label text-md-end"></label>
                 <div class="col-md-10">
-                    <input asp-for="ParameterName" class="form-control" placeholder="例如：密碼最少長度" />
+                    <input asp-for="ParameterName" class="form-control" placeholder="@Loc.T("Parameter.ParameterName.Placeholder")" />
                     <span asp-validation-for="ParameterName" class="text-danger"></span>
                 </div>
             </div>
@@ -34,7 +34,7 @@
             <div class="row align-items-center my-3">
                 <label asp-for="ParameterFormat" class="col-md-2 col-form-label text-md-end"></label>
                 <div class="col-md-10">
-                    <input asp-for="ParameterFormat" class="form-control" placeholder="text / int / html / json" />
+                    <input asp-for="ParameterFormat" class="form-control" placeholder="@Loc.T("Parameter.ParameterFormat.Placeholder")" />
                     <span asp-validation-for="ParameterFormat" class="text-danger"></span>
                 </div>
             </div>
@@ -42,7 +42,7 @@
             <div class="row align-items-start my-3">
                 <label asp-for="ParameterValue" class="col-md-2 col-form-label text-md-end"></label>
                 <div class="col-md-10">
-                    <textarea asp-for="ParameterValue" class="form-control" rows="6" placeholder="可輸入文字/ 數字 / HTML / JSON"></textarea>
+                    <textarea asp-for="ParameterValue" class="form-control" rows="4" placeholder="@Loc.T("Parameter.ParameterValue.Placeholder")"></textarea>
                     <span asp-validation-for="ParameterValue" class="text-danger"></span>
                 </div>
             </div>

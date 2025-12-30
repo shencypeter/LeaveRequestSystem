@@ -334,6 +334,9 @@ namespace BioMedDocManager.Controllers
             var (entities, totalCount) =
                 await q.PaginateWithCountAsync(queryModel.PageNumber, queryModel.PageSize, ct);
 
+            // 讓 NotMapped 計算屬性可以用多語系 Loc.T(...)
+            entities.WithLoc(_loc);
+
             var result = BuildRows(
                 entities: entities,
                 tableHeaders: TableHeaders,

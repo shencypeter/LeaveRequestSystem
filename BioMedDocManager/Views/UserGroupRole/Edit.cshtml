@@ -23,7 +23,7 @@
                 </label>
                 <div class="col-md-10">
                     <p class="form-control-plaintext">
-                        @Model.UserGroupName
+                        @Model.UserGroupCode
                     </p>
                 </div>
             </div>
@@ -52,7 +52,7 @@
                                                value="@role.RoleId"
                                                @(isChecked ? "checked=\"checked\"" : "") />
                                         <label class="form-check-label" for="@checkboxId">
-                                            @role.RoleName
+                                            @role.RoleCode
                                         </label>
                                     </div>
                                 </div>
@@ -94,7 +94,7 @@
                                     @foreach (var p in g)
                                     {
                                         <span class="badge bg-success me-1 mb-1"
-                                              title="動作：@p.AppActionName">
+                                              title="動作：@p.AppActionCode">
                                             @p.AppActionDisplayName
                                         </span>
                                     }

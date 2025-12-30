@@ -1,7 +1,7 @@
 ﻿@model BioMedDocManager.Models.Parameter
 
 @{
-    ViewData["Title"] = "系統參數管理-詳細資料";
+    ViewData["Title"] = Loc.T("Parameter.Details.Title");
     Layout = "_NoNavLayout";
 }
 
@@ -50,14 +50,18 @@
         <div class="row align-items-center my-2">
             <label asp-for="CreatedAt" class="col-md-2 col-form-label text-md-end"></label>
             <div class="col-md-10">
-                <p class="form-control-plaintext">@(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")</p>
+                <p class="form-control-plaintext">
+                    @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? Loc.T("Common.None"))
+                </p>
             </div>
         </div>
 
         <div class="row align-items-center my-2">
             <label asp-for="UpdatedAt" class="col-md-2 col-form-label text-md-end"></label>
             <div class="col-md-10">
-                <p class="form-control-plaintext">@(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無")</p>
+                <p class="form-control-plaintext">
+                    @(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? Loc.T("Common.None"))
+                </p>
             </div>
         </div>
 

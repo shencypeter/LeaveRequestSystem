@@ -1570,12 +1570,12 @@ function renderRoles(roles) {
             : '';
 
         const groupsText = (r.fromGroups && r.fromGroups.length)
-            ? r.fromGroups.map(g => escapeHtml(g.userGroupName)).join('、')
+            ? r.fromGroups.map(g => escapeHtml(g.UserGroupCode)).join('、')
             : '（無）';
 
         html += `
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span>${escapeHtml(r.roleGroup)} - ${escapeHtml(r.roleName)} ${previewTag}</span>
+                  <span>${escapeHtml(r.roleGroup)} - ${escapeHtml(r.RoleCode)} ${previewTag}</span>
                   <span class="badge bg-primary">
                     ${groupsText}
                   </span>
@@ -1626,7 +1626,7 @@ function renderPermissions(perms) {
                 : 'badge bg-success me-1 mb-1';
 
             html += `
-                    <span class="badge ${badgeClass} me-1 mb-1" title="動作：${escapeHtml(p.appActionName)}">
+                    <span class="badge ${badgeClass} me-1 mb-1" title="動作：${escapeHtml(p.AppActionCode)}">
                       ${escapeHtml(p.appActionDisplayName)}${previewTag}
                     </span>`;
         });

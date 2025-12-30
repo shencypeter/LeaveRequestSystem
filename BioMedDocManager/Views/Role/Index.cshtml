@@ -51,15 +51,15 @@
                         <!-- 角色名稱 -->
                         <div class="col">
                             <div class="row g-2 align-items-center">
-                                <label for="RoleName" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                <label for="RoleCode" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
                                     角色名稱：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
                                            class="form-control"
-                                           id="RoleName"
-                                           name="@nameof(RoleQueryViewModel.RoleName)"
-                                           value="@queryModel.RoleName"
+                                           id="RoleCode"
+                                           name="@nameof(RoleQueryViewModel.RoleCode)"
+                                           value="@queryModel.RoleCode"
                                            placeholder="請輸入角色名稱" />
                                 </div>
                             </div>
@@ -117,11 +117,11 @@
                     <th data-id="@item.Key">
                         @if (!string.Equals(item.Key, "RowNum", StringComparison.OrdinalIgnoreCase))
                         {
-                            <a href="#" title="點選「@(item.Value)」欄位進行排序">@item.Value</a>
+                            <a href="#" title="@($"{Loc.T("Common.SortByColumn.TooltipPrefix")}{Loc.T(item.Value)}{Loc.T("Common.SortByColumn.TooltipSuffix")}")"> @Loc.T(@item.Value)</a>
                         }
                         else
                         {
-                            @item.Value
+                            @Loc.T(item.Value)
                         }
                     <span class="order-index">
                         @(queryModel.OrderBy?.EndsWith(item.Key) == true
@@ -130,14 +130,14 @@
                     </span>
                 </th>
                                 }
-                <th class="col-actions">功能</th>
+                <th class="col-actions">@Loc.T("Common.Actions")</th>
             </tr>
         </thead>
         <tbody>
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="@(headers.Count + 1)">查無資料</td>
+                    <td colspan="@(headers.Count + 1)">@Loc.T("Common.NoData")</td>
                 </tr>
             }
             else

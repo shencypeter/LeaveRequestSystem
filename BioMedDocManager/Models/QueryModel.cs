@@ -15,7 +15,7 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 群組名稱（模糊查詢）
         /// </summary>
-        public string? UserGroupName { get; set; }
+        public string? UserGroupCode { get; set; }
 
         /// <summary>
         /// 群組說明（模糊查詢）
@@ -35,16 +35,10 @@ namespace BioMedDocManager.Models
         public string? ResourceType { get; set; }
 
         /// <summary>
-        /// 資源代號
+        /// 資源代碼
         /// </summary>
-        [Display(Name = "資源代號")]
+        [Display(Name = "資源代碼")]
         public string? ResourceKey { get; set; }
-
-        /// <summary>
-        /// 顯示名稱
-        /// </summary>
-        [Display(Name = "顯示名稱")]
-        public string? ResourceDisplayName { get; set; }
 
         /// <summary>
         /// 是否啟用
@@ -64,7 +58,7 @@ namespace BioMedDocManager.Models
         /// 角色名稱
         /// </summary>
         [Display(Name = "角色名稱")]
-        public string? RoleName { get; set; }
+        public string? RoleCode { get; set; }
 
         /// <summary>
         /// 角色群組
@@ -83,7 +77,7 @@ namespace BioMedDocManager.Models
         /// 動作名稱（模糊查詢）
         /// </summary>
         [Display(Name = "動作名稱")]
-        public string? AppActionName { get; set; }
+        public string? AppActionCode { get; set; }
 
         /// <summary>
         /// 顯示名稱（模糊查詢）

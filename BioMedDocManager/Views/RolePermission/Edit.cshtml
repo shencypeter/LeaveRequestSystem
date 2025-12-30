@@ -38,7 +38,7 @@
                 </label>
                 <div class="col-md-10">
                     <p class="form-control-plaintext">
-                        @Model.RoleName
+                        @Model.RoleCode
                     </p>
                 </div>
             </div>
@@ -75,11 +75,11 @@
                                         @foreach (var act in actions)
                                         {
                                             <th>
-                                                <div class="fw-semibold" title="@act.AppActionName">
+                                                <div class="fw-semibold" title="@act.AppActionCode">
                                                     @act.AppActionDisplayName
                                                 </div>
                                                 <div class="text-muted small">
-                                                    @act.AppActionName
+                                                    @act.AppActionCode
                                                 </div>
                                             </th>
                                         }

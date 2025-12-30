@@ -20,7 +20,7 @@ public partial class IssueTable
     /// </summary>    
     [Column("name")]
     [Display(Name = "紀錄名稱")]
-    [DisplayFormat(NullDisplayText = "無")]
+    
     [StringLength(4000, ErrorMessage = "{0}最多{1}字元")]
     public string? Name { get; set; }
 
@@ -29,7 +29,7 @@ public partial class IssueTable
     /// </summary>    
     [Column("issue_datetime")]
     [Display(Name = "發行日期")]
-    [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true, NullDisplayText = "無")]
+    
     public DateTime? IssueDatetime { get; set; }
 
     /// <summary>
@@ -37,7 +37,7 @@ public partial class IssueTable
     /// </summary>    
     [Column("original_doc_no")]
     [Display(Name = "表單編號")]
-    [DisplayFormat(NullDisplayText = "無")]
+    
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
     public string OriginalDocNo { get; set; } = null!;
 
@@ -46,7 +46,7 @@ public partial class IssueTable
     /// </summary>
     [Column("doc_ver")]
     [Display(Name = "表單版次")]
-    [DisplayFormat(NullDisplayText = "無")]
+    
     [StringLength(10, ErrorMessage = "{0}最多{1}字元")]
     public string DocVer { get; set; } = null!;
 
@@ -55,7 +55,7 @@ public partial class IssueTable
     /// </summary>    
     [Column("file_extension")]
     [Display(Name = "檔案類型")]
-    [DisplayFormat(NullDisplayText = "無")]
+    
     [StringLength(10, ErrorMessage = "{0}最多{1}字元")]
     public string? FileExtension { get; set; }
 

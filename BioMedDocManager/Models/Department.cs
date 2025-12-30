@@ -13,34 +13,47 @@ public class Department : AuditableEntity
     /// 部門編號
     /// </summary>
     [Key]
-    [Display(Name = "部門編號")]
+    [Display(Name = "Department.DepartmentId")]
     public int DepartmentId { get; set; }
 
     /// <summary>
     /// 部門代碼
     /// </summary>
-    [Display(Name = "部門代碼")]
-    [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
+    [Display(Name = "Department.DepartmentCode")]
+    [StringLength(
+        50,
+        ErrorMessage = "Validation.StringLength"
+    )]
     public string DepartmentCode { get; set; } = null!;
 
     /// <summary>
-    /// 部門名稱
+    /// 部門名稱（改用多語系，不再存 DB 欄位）
     /// </summary>
-    [Display(Name = "部門名稱")]
-    [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
-    public string DepartmentName { get; set; } = null!;
+    [NotMapped]
+    [Display(Name = "Department.DepartmentName")]
+    public string DepartmentName => Loc?.T($"Department.{DepartmentCode}") ?? DepartmentCode;
 
     /// <summary>
     /// 上層部門 Id（自我參照）
     /// </summary>
-    [Display(Name = "上層部門")]
+    [Display(Name = "Department.DepartmentParentId")]
     public int? DepartmentParentId { get; set; }
 
     /// <summary>
     /// 是否啟用
     /// </summary>
-    [Display(Name = "是否啟用")]
+    [Display(Name = "Department.DepartmentIsActive")]
     public bool DepartmentIsActive { get; set; } = true;
+
+    /// <summary>
+    /// 是否啟用 文字
+    /// </summary>
+    [NotMapped]
+    [Display(Name = "Department.DepartmentIsActive")]
+    public string DepartmentIsActiveText =>
+        DepartmentIsActive
+            ? (Loc?.T("Common.Enabled") ?? "Enabled")
+            : (Loc?.T("Common.Disabled") ?? "Disabled");
 
     /* ===========================
        導覽屬性

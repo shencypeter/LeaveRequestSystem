@@ -1,6 +1,6 @@
 ﻿@model BioMedDocManager.Models.AccountViewModel
 @{
-    ViewData["Title"] = "帳號設定-編輯";
+    ViewData["Title"] = Loc.T("AccountSettings.Edit.Title");
     Layout = "_NoNavLayout";
 }
 
@@ -14,7 +14,7 @@
 
             <!-- 帳號(工號) - 唯讀 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserAccount)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserAccount)</strong></div>
                 <div class="col-md-10">
                     @Html.DisplayFor(m => m.UserAccount)
                 </div>
@@ -22,7 +22,7 @@
 
             <!-- 姓名 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserFullName)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserFullName)</strong></div>
                 <div class="col-md-10">
                     @Html.TextBoxFor(m => m.UserFullName, new { @class = "form-control", @required = "required", @maxlength = "100" })
                 </div>
@@ -30,82 +30,84 @@
 
             <!-- 職稱 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserJobTitle)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserJobTitle)</strong></div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.UserJobTitle, new { @class = "form-control", @maxlength = "100", placeholder = "例：工程師、經理" })
+                    @Html.TextBoxFor(m => m.UserJobTitle, new { @class = "form-control", @maxlength = "100", placeholder = Loc.T("User.UserJobTitle.Placeholder") })
                 </div>
             </div>
 
-            <!-- 部門名稱 -->
+            <!-- 部門 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.DepartmentName)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start">
+                    <strong>@Html.LabelFor(m => m.DepartmentId)</strong>
+                </div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.DepartmentName, new { @class = "form-control", @maxlength = "100", placeholder = "例：資訊部、人資部" })
+                    @await Html.PartialAsync("_DepartmentSelect",
+                    Model.DepartmentId?.ToString(),
+                                        new ViewDataDictionary(ViewData)
+                                        {
+                                            ["Options"] = ViewBag.DepartmentOptions,
+                                            ["IsRequired"] = true,
+                                            ["FieldName"] = "DepartmentId",
+                                            ["LabelText"] = Loc.T("Common.PleaseSelect")
+                                        })
                 </div>
             </div>
 
             <!-- Email -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserEmail)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserEmail)</strong></div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.UserEmail, new { @class = "form-control", @type = "email", @maxlength = "255", placeholder = "name@example.com" })
+                    @Html.TextBoxFor(m => m.UserEmail, new { @class = "form-control", @type = "email", @maxlength = "255", placeholder = Loc.T("User.UserEmail.Placeholder") })
                     <span asp-validation-for="UserEmail" class="text-danger"></span>
                 </div>
             </div>
 
             <!-- 聯絡電話 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserPhone)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserPhone)</strong></div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.UserPhone, new { @class = "form-control", @maxlength = "50", placeholder = "市話（選填）" })
+                    @Html.TextBoxFor(m => m.UserPhone, new { @class = "form-control", @maxlength = "50", placeholder = Loc.T("User.UserPhone.Placeholder") })
                 </div>
             </div>
 
             <!-- 手機 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserMobile)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserMobile)</strong></div>
                 <div class="col-md-10">
-                    @Html.TextBoxFor(m => m.UserMobile, new { @class = "form-control", @maxlength = "50", placeholder = "手機（選填）" })
+                    @Html.TextBoxFor(m => m.UserMobile, new { @class = "form-control", @maxlength = "50", placeholder = Loc.T("User.UserMobile.Placeholder") })
                 </div>
             </div>
 
             <!-- 使用者是否啟用 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserIsActive)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserIsActive)</strong></div>
                 <div class="col-md-10">
                     @Html.DropDownListFor(model => model.UserIsActive, new List<SelectListItem>
                     {
-                        new SelectListItem { Text = "啟用", Value = "true" },
-                                        new SelectListItem { Text = "停用", Value = "false" }
+                        new SelectListItem { Text = Loc.T("Common.Enabled"), Value = "true" },
+                                        new SelectListItem { Text = Loc.T("Common.Disabled"), Value = "false" }
                                         }, new { @class = "form-select" })
                 </div>
             </div>
 
             <!-- 是否鎖定 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserIsLocked)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserIsLocked)</strong></div>
                 <div class="col-md-10">
                     @Html.DropDownListFor(model => model.UserIsLocked, new List<SelectListItem>
                                         {
-                        new SelectListItem { Text = "未鎖定", Value = "false" },
-                                        new SelectListItem { Text = "鎖定", Value = "true" }
+                        new SelectListItem { Text = Loc.T("Common.Unlocked"), Value = "false" },
+                                        new SelectListItem { Text = Loc.T("Common.Locked"), Value = "true" }
                                         }, new { @class = "form-select" })
                 </div>
             </div>
 
             <!-- 備註 -->
             <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserRemarks)：</strong></div>
+                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.UserRemarks)</strong></div>
                 <div class="col-md-10">
-                    @Html.TextAreaFor(m => m.UserRemarks, 4, 50, new { @class = "form-control", @maxlength = "255", placeholder = "備註（選填）" })
-                </div>
-            </div>
-
-            <!-- 建立日期 - 唯讀 -->
-            <div class="row align-items-center my-3">
-                <div class="col-md-2 col-form-label text-md-end text-start"><strong>@Html.LabelFor(m => m.CreatedAt)：</strong></div>
-                <div class="col-md-10">
-                    @Html.DisplayFor(m => m.CreatedAt)
+                    @Html.TextAreaFor(m => m.UserRemarks, 4, 50, new { @class = "form-control", @maxlength = "255", placeholder = Loc.T("User.UserRemarks.Placeholder") })
                 </div>
             </div>
 

@@ -35,16 +35,16 @@
                         <!-- 組1：動作名稱 -->
                         <div class="col">
                             <div class="row g-2 align-items-center">
-                                <label for="AppActionName" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    @Loc.T("AppAction.AppActionName.Label")
+                                <label for="AppActionCode" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    @Loc.T("AppAction.AppActionCode")：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
                                            class="form-control"
-                                           id="AppActionName"
-                                           name="@nameof(AppActionQueryViewModel.AppActionName)"
-                                           value="@queryModel.AppActionName"
-                                           placeholder="@Loc.T("AppAction.AppActionName.Placeholder")" />
+                                           id="AppActionCode"
+                                           name="@nameof(AppActionQueryViewModel.AppActionCode)"
+                                           value="@queryModel.AppActionCode"
+                                           placeholder="@Loc.T("AppAction.AppActionCode.Placeholder")" />
                                 </div>
                             </div>
                         </div>
@@ -53,7 +53,7 @@
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="AppActionDisplayName" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    @Loc.T("AppAction.AppActionDisplayName.Label")
+                                    @Loc.T("AppAction.AppActionDisplayName")：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
@@ -118,13 +118,11 @@
                     <th data-id="@item.Key">
                         @if (item.Key != "RowNum")
                         {
-                        <a href="#" title="@Loc.T("Common.SortByColumn.TooltipPrefix")@(item.Value)@Loc.T("Common.SortByColumn.TooltipSuffix")">
-                                @item.Value
-                            </a>
+                            <a href="#" title="@($"{Loc.T("Common.SortByColumn.TooltipPrefix")}{Loc.T(item.Value)}{Loc.T("Common.SortByColumn.TooltipSuffix")}")"> @Loc.T(@item.Value)</a>
                         }
                         else
                         {
-                            @item.Value
+                            @Loc.T(item.Value)
                         }
                     <span class="order-index">
                         @(queryModel.OrderBy?.EndsWith(item.Key) == true

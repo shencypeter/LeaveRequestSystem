@@ -14,7 +14,7 @@ it，資訊部
 CREATE TABLE [dbo].[Department] (
     [DepartmentId]          INT IDENTITY(1,1) NOT NULL,
     [DepartmentCode]        NVARCHAR(50)  NOT NULL,
-    [DepartmentName]        NVARCHAR(100) NOT NULL,
+    --[DepartmentName]        NVARCHAR(100) NOT NULL,
     [DepartmentParentId]    INT NULL,  -- 自我參照
     [DepartmentIsActive]    BIT NOT NULL DEFAULT 1,
     [CreatedAt]             DATETIME NOT NULL DEFAULT GETDATE(),
@@ -35,7 +35,7 @@ GO
 
 -- 角色表
 /*
-RoleName，RoleGroup
+RoleCode，RoleGroup
 系統管理者，系統
 請購人，採購
 採購人，採購
@@ -45,7 +45,7 @@ RoleName，RoleGroup
 */
 CREATE TABLE [dbo].[Role] (
     [RoleId]       INT IDENTITY(1,1) NOT NULL,
-    [RoleName]     NVARCHAR(100) NOT NULL,
+    [RoleCode]     NVARCHAR(100) NOT NULL,-- 從角色名稱變成角色代碼
     [RoleGroup]    NVARCHAR(100) NOT NULL,
     [CreatedAt]    DATETIME NOT NULL DEFAULT GETDATE(),
     [CreatedBy]    INT NULL,
@@ -99,14 +99,14 @@ GO
 
 -- 使用者群組
 /*
-UserGroupName，UserGroupDescription
+UserGroupCode，UserGroupDescription
 研發部門，研發部門所有成員
 A專案小組，負責A專案的成員
 行政部B組，行政部B組所有成員
 */
 CREATE TABLE [dbo].[UserGroup] (
     [UserGroupId]           INT IDENTITY(1,1) NOT NULL,
-    [UserGroupName]         NVARCHAR(100) NOT NULL,
+    [UserGroupCode]         NVARCHAR(100) NOT NULL, -- 從群組名稱變成群組代碼
     [UserGroupDescription]  NVARCHAR(255) NULL,
     [CreatedAt]             DATETIME NOT NULL DEFAULT GETDATE(),
     [CreatedBy]             INT NULL,
@@ -179,7 +179,7 @@ CREATE TABLE [dbo].[Resource] (
     [ResourceId]            INT IDENTITY(1,1) NOT NULL,
     [ResourceType]          NVARCHAR(50)  NOT NULL, -- PAGE/API
     [ResourceKey]           NVARCHAR(200) NOT NULL, -- 唯一識別，例如：Controller、/API/V1/Controller等
-    [ResourceDisplayName]   NVARCHAR(200) NOT NULL, -- 顯示名稱
+    --[ResourceDisplayName]   NVARCHAR(200) NOT NULL, -- 顯示名稱 改由多語系表處理(自動抓ResourceKey.Index.Title)
     [ResourceIsActive]      BIT NOT NULL DEFAULT 1,
     [CreatedAt]             DATETIME NOT NULL DEFAULT GETDATE(),
     [CreatedBy]             INT NULL,
@@ -193,7 +193,7 @@ GO
 
 -- 動作表
 /*
-AppActionName，AppActionDisplayName
+AppActionCode，AppActionDisplayName
 index，首頁/列表
 create，新增
 edit，編輯
@@ -204,8 +204,8 @@ import，匯入
 */
 CREATE TABLE [dbo].[AppAction] (
     [AppActionId]           INT IDENTITY(1,1) NOT NULL,
-    [AppActionName]         NVARCHAR(50)  NOT NULL, -- 'index','create','edit','delete','details','export','import',...    
-    [AppActionDisplayName]  NVARCHAR(100) NOT NULL,
+    [AppActionCode]         NVARCHAR(50)  NOT NULL, --從動作名稱變成動作代碼 'index','create','edit','delete','details','export','import',...    
+    --[AppActionDisplayName]  NVARCHAR(100) NOT NULL, -- 從多語系表取得顯示名稱
     [AppActionOrder]        INT NOT NULL DEFAULT 0,
     [CreatedAt]             DATETIME NOT NULL DEFAULT GETDATE(),
     [CreatedBy]             INT NULL,
@@ -261,7 +261,8 @@ MenuItemId，ParentId，MenuItemTitle，MenuItemIcon，ResourceId，MenuItemDisp
 CREATE TABLE [dbo].[MenuItem] (
     [MenuItemId]            INT IDENTITY(1,1) NOT NULL,
     [MenuItemParentId]      INT NULL,       -- 自我參照
-    [MenuItemTitle]         NVARCHAR(100) NOT NULL,
+    [MenuItemCode]          NVARCHAR(100) NOT NULL, -- 選單代碼(因為父類別沒有ResourceId可以對照
+    --[MenuItemTitle]         NVARCHAR(100) NOT NULL, -- 改由[資源表]參照，[資源表]本來就有多語系處理
     [MenuItemIcon]          NVARCHAR(100) NULL,
     [MenuItemDisplayOrder]  INT NOT NULL DEFAULT 0,
     [MenuItemIsActive]      BIT NOT NULL DEFAULT 1,
@@ -349,13 +350,11 @@ CREATE VIEW RolePermissionViewer
 AS
 SELECT 
     r.RoleId,
-    r.RoleName,
+    r.RoleCode,
     res.ResourceId,
-    res.ResourceDisplayName,
     res.ResourceKey,
     a.AppActionId,
-    a.AppActionName,
-    a.AppActionDisplayName
+    a.AppActionCode
 FROM RolePermission rp
 INNER JOIN Role r 
     ON rp.RoleId = r.RoleId
@@ -397,27 +396,36 @@ DBCC CHECKIDENT ('[dbo].[User]', RESEED, 0);
 
 -- insert 初始範例資料
 -- insert部門
-INSERT INTO [dbo].[Department] ([DepartmentCode],[DepartmentName],[DepartmentParentId],[DepartmentIsActive])
+INSERT INTO [dbo].[Department] ([DepartmentCode],[DepartmentParentId],[DepartmentIsActive])
 VALUES
-(N'admin', N'行政部', NULL, 1),
-(N'it',    N'資訊部', NULL, 1);
+(N'Admin', NULL, 1),
+(N'IT',    NULL, 1);
 
 -- insert使用者 (密碼：Abcd+帳號)
-INSERT INTO [dbo].[User] ( [UserAccount], [UserPasswordHash], [UserFullName], [UserJobTitle], [UserEmail], [UserPhone], [UserMobile],    [UserIsActive], [UserIsLocked], [UserLoginFailedCount],  [UserLastLoginAt], [UserLastLoginIp], [UserPasswordChangedAt], [UserStatus], [UserRemarks], [DepartmentId],   [CreatedAt], [CreatedBy], [UpdatedAt], [UpdatedBy], [DeletedAt], [DeletedBy]) VALUES
-(N'534159', N'AQAAAAIAAYagAAAAEAuGmeU7ZK3mDlRyENROFEB45r8V9rk2pVH4BJUZYQ3Nwgz0UDiBQxcpicRd1MlSfw==', N'範例使用者1', NULL, N'User1@example.com', NULL, NULL, 1, 0, 0, NULL, NULL, NULL, NULL, NULL, 1,  GETDATE(), NULL, NULL, NULL, NULL, NULL),
-(N'970265', N'AQAAAAIAAYagAAAAECpu7Md8zrZ5a5JhFj+q16dQI4zk04yj2jRIiBCzUn2DSfM4tPhPZnPxHzwIu/cjxg==', N'範例使用者2', NULL, N'User2@example.com', NULL, NULL, 1, 0, 0, NULL, NULL, NULL, NULL, NULL, 1,  GETDATE(), NULL, NULL, NULL, NULL, NULL),
-(N'990205', N'AQAAAAIAAYagAAAAEP1XSiS1hCBP1//TP7veqi+o1YGV+cfxjzDdShk+m5pdg6OjQSpLeZNCkbiQs3VlrA==', N'範例使用者3', NULL, N'User3@example.com', NULL, NULL, 1, 0, 0, NULL, NULL, NULL, NULL, NULL, 2,  GETDATE(), NULL, NULL, NULL, NULL, NULL);
+INSERT INTO [dbo].[User]
+([UserAccount],[UserPasswordHash],[UserFullName],[UserJobTitle],[UserEmail],[UserPhone],[UserMobile],
+ [UserIsActive],[UserIsLocked],[UserLoginFailedCount],[UserLastLoginAt],[UserLastLoginIp],[UserPasswordChangedAt],
+ [UserStatus],[UserRemarks],[DepartmentId],
+ [CreatedBy],[UpdatedAt],[UpdatedBy],[DeletedAt],[DeletedBy])
+VALUES
+(N'534159', N'AQAAAAIAAYagAAAAEAuGmeU7ZK3mDlRyENROFEB45r8V9rk2pVH4BJUZYQ3Nwgz0UDiBQxcpicRd1MlSfw==', N'範例使用者1', NULL, N'User1@example.com', NULL, NULL, 1, 0, 0, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL),
+(N'970265', N'AQAAAAIAAYagAAAAECpu7Md8zrZ5a5JhFj+q16dQI4zk04yj2jRIiBCzUn2DSfM4tPhPZnPxHzwIu/cjxg==', N'範例使用者2', NULL, N'User2@example.com', NULL, NULL, 1, 0, 0, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL),
+(N'990205', N'AQAAAAIAAYagAAAAEP1XSiS1hCBP1//TP7veqi+o1YGV+cfxjzDdShk+m5pdg6OjQSpLeZNCkbiQs3VlrA==', N'範例使用者3', NULL, N'User3@example.com', NULL, NULL, 1, 0, 0, NULL, NULL, NULL, NULL, NULL, 2, NULL, NULL, NULL, NULL, NULL);
+
 
 -- insert角色
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'系統管理者', N'系統');
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'請購人', N'採購');
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'採購人', N'採購');
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'評核人', N'採購');
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'領用人', N'文管');
-INSERT [dbo].[Role] ([RoleName], [RoleGroup]) VALUES (N'負責人', N'文管');
+INSERT [dbo].[Role] ([RoleCode], [RoleGroup]) VALUES
+(N'SYSTEM_ADMIN', N'SYSTEM'),        -- 系統管理者 / 系統
+(N'REQUESTER',    N'PROCUREMENT'),   -- 請購人 / 採購
+(N'PURCHASER',    N'PROCUREMENT'),   -- 採購人 / 採購
+(N'EVALUATOR',    N'PROCUREMENT'),   -- 評核人 / 採購
+(N'CONSUMER',     N'DOCUMENT'),      -- 領用人 / 文管
+(N'OWNER',        N'DOCUMENT');      -- 負責人 / 文管
+
+
 
 -- insert使用者群組
-INSERT INTO [dbo].[UserGroup] ([UserGroupName],[UserGroupDescription])
+INSERT INTO [dbo].[UserGroup] ([UserGroupCode],[UserGroupDescription])
 VALUES
 (N'系統組', N'系統管理所有成員'),
 (N'研發部門', N'研發部門所有成員'),
@@ -435,31 +443,30 @@ VALUES
 (1, 1);   -- 系統組有系統管理者
 
 -- insert資源
-INSERT INTO Resource (ResourceType, ResourceKey, ResourceDisplayName, ResourceIsActive, CreatedAt)
+INSERT INTO Resource ([ResourceType], [ResourceKey], [ResourceIsActive])
 VALUES
-('PAGE', 'Resource', '系統資源管理', 1, GETDATE()),  -- id=1
-('PAGE', 'AppAction', '系統動作管理', 1, GETDATE()),  -- id=2
-('PAGE', 'MenuItem', '選單項目管理', 1, GETDATE()), -- id=3
-('PAGE', 'AccountSettings', '帳號管理', 1, GETDATE()), -- id=4
-('PAGE', 'UserGroup', '使用者群組', 1, GETDATE()), -- id=5
-('PAGE', 'Role', '角色管理', 1, GETDATE()), -- id=6
-('PAGE', 'UserGroupRole', '使用者群組權限管理', 1, GETDATE()), -- id=7
-('PAGE', 'RolePermission', '角色權限管理', 1, GETDATE()); -- id=8
+('PAGE', 'Resource',        1),  -- id=1 系統資源管理
+('PAGE', 'AppAction',       1),  -- id=2 系統動作管理
+('PAGE', 'MenuItem',        1),  -- id=3 選單項目管理
+('PAGE', 'AccountSettings', 1),  -- id=4 帳號管理
+('PAGE', 'UserGroup',       1),  -- id=5 使用者群組
+('PAGE', 'Role',            1),  -- id=6 角色管理
+('PAGE', 'UserGroupRole',   1),  -- id=7 使用者群組權限管理
+('PAGE', 'RolePermission',  1);  -- id=8 角色權限管理
 
 -- insert動作
-INSERT INTO [dbo].[AppAction] ([AppActionName],[AppActionDisplayName],[AppActionOrder]) VALUES
-(N'Index',   N'首頁/列表', 10),
-(N'Create',  N'新增',      20),
-(N'Edit',    N'編輯',      30),
-(N'Delete',  N'刪除',      40),
-(N'Details', N'檢視明細',  50),
-(N'Export',  N'匯出',      60),
-(N'Import',  N'匯入',      70),
-(N'EditGroup',  N'編輯群組', 80),
-(N'PreviewPermissions',  N'預覽使用者群組角色權限', 90),
-(N'ChangePassword',  N'變更密碼', 100),
-(N'ResetPassword',  N'重設密碼', 110);
-;
+INSERT INTO [dbo].[AppAction] ([AppActionCode],[AppActionOrder]) VALUES
+(N'Index',              10),   -- 首頁 / 列表
+(N'Create',             20),   -- 新增
+(N'Edit',               30),   -- 編輯
+(N'Delete',             40),   -- 刪除
+(N'Details',            50),   -- 檢視明細
+(N'Export',             60),   -- 匯出
+(N'Import',             70),   -- 匯入
+(N'EditGroup',          80),   -- 編輯群組
+(N'PreviewPermissions', 90),   -- 預覽使用者群組角色權限
+(N'ChangePassword',     100),  -- 變更密碼
+(N'ResetPassword',      110);  -- 重設密碼
 
 -- 系統管理者：全資源全動作
 INSERT INTO [dbo].[RolePermission] ([RoleId],[ResourceId],[AppActionId])
@@ -527,13 +534,13 @@ VALUES
 
 -- insert選單
 -- 系統選單(固定)
-INSERT INTO MenuItem (MenuItemParentId, MenuItemTitle, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedAt, CreatedBy)
+INSERT INTO MenuItem (MenuItemParentId, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedBy)
 VALUES
-(NULL, '系統管理', 'fa-solid fa-gear', 1, 1, NULL, GETDATE(), 1),
-(1, '系統資源管理', 'fa-solid fa-square-poll-horizontal', 1, 1, 1, GETDATE(), 1),
-(1, '系統動作管理', 'fa-solid fa-wrench', 2, 1, 2, GETDATE(), 1),
-(1, '選單項目管理', 'fa-brands fa-elementor', 3, 1, 3, GETDATE(), 1),
-(NULL, '帳號管理', 'fa-solid fa-id-badge', 2, 1, NULL, GETDATE(), 1),
-(5, '使用者帳號管理', 'fa-solid fa-id-badge', 1, 1, 4, GETDATE(), 1),
-(5, '使用者群組管理', 'fa-solid fa-people-group', 2, 1, 5, GETDATE(), 1),
-(5, '角色管理', 'fa-solid fa-person', 3, 1, 6, GETDATE(), 1);
+(NULL, 'fa-solid fa-gear',                   1, 1, NULL, 1), -- 系統管理
+(1,    'fa-solid fa-square-poll-horizontal', 1, 1, 1,    1), -- 系統資源管理
+(1,    'fa-solid fa-wrench',                 2, 1, 2,    1), -- 系統動作管理
+(1,    'fa-brands fa-elementor',             3, 1, 3,    1), -- 選單項目管理
+(NULL, 'fa-solid fa-id-badge',               2, 1, NULL, 1), -- 帳號管理
+(5,    'fa-solid fa-id-badge',               1, 1, 4,    1), -- 使用者帳號管理
+(5,    'fa-solid fa-people-group',           2, 1, 5,    1), -- 使用者群組管理
+(5,    'fa-solid fa-person',                 3, 1, 6,    1); -- 角色管理

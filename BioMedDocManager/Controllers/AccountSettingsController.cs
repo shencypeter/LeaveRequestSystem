@@ -4,6 +4,7 @@ using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
 using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,6 +13,7 @@ using OtpNet;
 using QRCoder;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using static Fable.React.Props.SVGAttr;
 
 namespace BioMedDocManager.Controllers
 {
@@ -39,7 +41,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         public Dictionary<string, string> TableHeaders = TableHeaderFactory.Build<User>(
             includeRowNum: true,
-            onlyProps: new[] { "UserAccount", "Department.Department_Name", "UserJobTitle", "UserFullName", "UserIsActiveText", "UserIsLockedText", "CreatedAt", "UserGroupRoleList" }
+            onlyProps: new[] { "UserAccount", "DepartmentName", "UserJobTitle", "UserFullName", "UserIsActiveText", "UserIsLockedText", "CreatedAt", "UserGroupRoleList" }
         );
 
         /// <summary>
@@ -144,8 +146,8 @@ namespace BioMedDocManager.Controllers
             try
             {
 
-                ModelState.Remove("RoleName");//不用驗證
-                ModelState.Remove("RoleNameList");//不用驗證
+                ModelState.Remove("RoleCode");//不用驗證
+                ModelState.Remove("RoleCodeList");//不用驗證
 
                 if (!ModelState.IsValid)
                 {
@@ -204,7 +206,7 @@ namespace BioMedDocManager.Controllers
                 UserAccount = user.UserAccount,
                 UserFullName = user.UserFullName,
                 UserJobTitle = user.UserJobTitle,
-                DepartmentName = user.Department.DepartmentName,
+                DepartmentId = user.DepartmentId,
                 UserEmail = user.UserEmail,
                 UserPhone = user.UserPhone,
                 UserMobile = user.UserMobile,
@@ -546,8 +548,8 @@ namespace BioMedDocManager.Controllers
             // 所有群組
             var allGroups = await _context.UserGroups
                 .AsNoTracking()
-                .OrderBy(g => g.UserGroupName)
-                .Select(g => new { g.UserGroupId, g.UserGroupName, g.UserGroupDescription })
+                .OrderBy(g => g.UserGroupCode)
+                .Select(g => new { g.UserGroupId, g.UserGroupCode, g.UserGroupDescription })
                 .ToListAsync();
 
             // 目前DB已有的群組
@@ -565,7 +567,7 @@ namespace BioMedDocManager.Controllers
                 AllUserGroups = allGroups.Select(g => new SelectListItem
                 {
                     Value = g.UserGroupId.ToString(),
-                    Text = g.UserGroupName,
+                    Text = g.UserGroupCode,
                     Selected = currentGroupIds.Contains(g.UserGroupId)
                 }).ToList()
             };
@@ -709,7 +711,7 @@ namespace BioMedDocManager.Controllers
                     {
                         ugr.RoleId,
                         ug.UserGroupId,
-                        ug.UserGroupName
+                        ug.UserGroupCode
                     })
                 .ToListAsync();
 
@@ -726,7 +728,7 @@ namespace BioMedDocManager.Controllers
                 .Select(r => new PreviewRoleViewModel
                 {
                     RoleId = r.RoleId,
-                    RoleName = r.RoleName,
+                    RoleCode = r.RoleCode,
                     RoleGroup = r.RoleGroup,
                     IsNew = !currentRoleIds.Contains(r.RoleId),   // 這裡沿用原本「是不是新角色」
                     FromGroups = roleFromGroups
@@ -734,13 +736,13 @@ namespace BioMedDocManager.Controllers
                         .Select(x => new PreviewRoleSourceGroupViewModel
                         {
                             UserGroupId = x.UserGroupId,
-                            UserGroupName = x.UserGroupName
+                            UserGroupCode = x.UserGroupCode
                         })
                         .Distinct()
                         .ToList()
                 })
                 .OrderBy(r => r.RoleGroup)
-                .ThenBy(r => r.RoleName)
+                .ThenBy(r => r.RoleCode)
                 .ToList();
 
             // 權限：RolePermission + Resource + AppAction
@@ -760,7 +762,7 @@ namespace BioMedDocManager.Controllers
                         j.rp.AppActionId,
                         j.res.ResourceKey,
                         j.res.ResourceDisplayName,
-                        act.AppActionName,
+                        act.AppActionCode,
                         act.AppActionDisplayName,
                         act.AppActionOrder,
                     })
@@ -774,7 +776,7 @@ namespace BioMedDocManager.Controllers
                     p.ResourceKey,
                     p.ResourceDisplayName,
                     p.AppActionId,
-                    p.AppActionName,
+                    p.AppActionCode,
                     p.AppActionDisplayName,
                     p.AppActionOrder,
                 })
@@ -784,7 +786,7 @@ namespace BioMedDocManager.Controllers
                     ResourceKey = g.Key.ResourceKey,
                     ResourceDisplayName = g.Key.ResourceDisplayName,
                     AppActionId = g.Key.AppActionId,
-                    AppActionName = g.Key.AppActionName,
+                    AppActionCode = g.Key.AppActionCode,
                     AppActionDisplayName = g.Key.AppActionDisplayName,
                     AppActionOrder = g.Key.AppActionOrder,
                     IsNew = !currentPermSet.Contains((g.Key.ResourceId, g.Key.AppActionId)) // 原本沒有 → 預覽
@@ -1069,13 +1071,13 @@ namespace BioMedDocManager.Controllers
                 .Where(r => roleIds.Contains(r.RoleId))
                 .AsNoTracking()
                 .OrderBy(r => r.RoleGroup)
-                .ThenBy(r => r.RoleName)
+                .ThenBy(r => r.RoleCode)
                 .ToListAsync();
 
             vm.EffectiveRoles = roles.Select(r => new EffectiveRoleViewModel
             {
                 RoleId = r.RoleId,
-                RoleName = r.RoleName,
+                RoleCode = r.RoleCode,
                 RoleGroup = r.RoleGroup,
                 FromUserGroupIds = roleIdToGroupIds.TryGetValue(r.RoleId, out var list) ? list : new List<int>()
             }).ToList();
@@ -1083,7 +1085,7 @@ namespace BioMedDocManager.Controllers
             // ===== 以下原本權限計算維持不動（你這段是在記憶體再做 GroupBy，不會有翻譯問題） =====
 
             var actionOrders = await _context.AppActions
-                .Select(a => new { a.AppActionId, a.AppActionOrder, a.AppActionName, a.AppActionDisplayName })
+                .Select(a => new { a.AppActionId, a.AppActionOrder, a.AppActionCode, a.AppActionDisplayName })
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -1098,23 +1100,23 @@ namespace BioMedDocManager.Controllers
                     j.rp.ResourceId,
                     j.rp.AppActionId,
                     j.res.ResourceKey,
-                    j.res.ResourceDisplayName,
-                    AppActionName = act.AppActionName,
-                    AppActionDisplayName = act.AppActionDisplayName
+                    //j.res.ResourceDisplayName,
+                    AppActionCode = act.AppActionCode,
+                    //AppActionDisplayName = act.AppActionDisplayName
                 })
                 .AsNoTracking()
                 .ToListAsync();
 
             var permGroups = rawPerms
-                .GroupBy(p => new { p.ResourceId, p.ResourceKey, p.ResourceDisplayName, p.AppActionId, p.AppActionName, p.AppActionDisplayName })
+                .GroupBy(p => new { p.ResourceId, p.ResourceKey, /*p.ResourceDisplayName,*/ p.AppActionId, p.AppActionCode/*, p.AppActionDisplayName*/ })
                 .Select(g => new EffectivePermissionViewModel
                 {
                     ResourceId = g.Key.ResourceId,
                     ResourceKey = g.Key.ResourceKey,
-                    ResourceDisplayName = g.Key.ResourceDisplayName,
+                    ResourceDisplayName = _loc.T($"{g.Key.ResourceKey}.Index.Title"),
                     AppActionId = g.Key.AppActionId,
-                    AppActionName = g.Key.AppActionName,
-                    AppActionDisplayName = g.Key.AppActionDisplayName,
+                    AppActionCode = g.Key.AppActionCode,
+                    AppActionDisplayName = _loc.T($"AppAction.{g.Key.AppActionCode}"),
                     FromRoleIds = g.Select(x => x.RoleId).Distinct().ToList()
                 })
                 .ToList();
@@ -1141,7 +1143,8 @@ namespace BioMedDocManager.Controllers
 
             // 2) 產生查詢物件（載入角色關聯）
             IQueryable<User> q = _context.Users
-                .Include(u => u.UserRoles)
+                .Include(u => u.Department)
+                .Include(u => u.UserRoles)                
                 .ThenInclude(ur => ur.Role)
                 .AsNoTracking();
 
@@ -1196,11 +1199,24 @@ namespace BioMedDocManager.Controllers
         );
 
             // 5) 分頁＋總筆數
-            var (entityList, totalCount) =
+            var (entities, totalCount) =
                 await q.PaginateWithCountAsync(queryModel.PageNumber, queryModel.PageSize, ct);
 
-            // 6) 投影顯示：把 RoleName 串成字串（在記憶體端處理）
-            var shaped = entityList.Select(u => new
+            // 讓 NotMapped 計算屬性可以用多語系 Loc.T(...)
+            entities.WithLoc(_loc);
+
+            // Department 也要有 Loc（不然 DepartmentName 抓不到）
+            foreach (var m in entities)
+            {
+                if (m.Department != null)
+                {
+                    m.Department.WithLoc(_loc);
+                }
+            }
+
+
+            // 6) 投影顯示：把 RoleCode 串成字串（在記憶體端處理）
+            var shaped = entities.Select(u => new
             {
                 u.UserId,
                 u.UserAccount,
@@ -1223,7 +1239,7 @@ namespace BioMedDocManager.Controllers
                 u.UpdatedBy,
                 u.DeletedAt,
                 u.DeletedBy,
-                u.RoleNameList,
+                u.RoleCodeList,
             }).ToList();
 
             // 7) 轉成 View 需要的 List<Dictionary<string, object>>

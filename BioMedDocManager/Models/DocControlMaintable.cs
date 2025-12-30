@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace BioMedDocManager.Models;
 
@@ -9,12 +7,13 @@ namespace BioMedDocManager.Models;
 /// </summary>
 public partial class DocControlMaintable
 {
+
     /// <summary>
     /// 文件類別：廠內文件(B)、外來文件(E)
     /// </summary>    
     [Column("type")]
     [Display(Name = "文件類別")]
-    [DisplayFormat(NullDisplayText = "無")]
+    
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
     public string? Type { get; set; }
 
@@ -22,16 +21,14 @@ public partial class DocControlMaintable
     /// 領用日期
     /// </summary>    
     [Column("date_time")]
-    [Display(Name = "領用日期")]
-    [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true, NullDisplayText = "無")]
+    [Display(Name = "領用日期")]    
     public DateTime? DateTime { get; set; }
 
     /// <summary>
     /// 工號
     /// </summary>    
     [Column("id")]
-    [Display(Name = "工號")]
-    [DisplayFormat(NullDisplayText = "無")]
+    [Display(Name = "工號")]    
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
     public string? Id { get; set; }
 
@@ -39,28 +36,25 @@ public partial class DocControlMaintable
     /// 領用人(理論上用不到，要用關聯user方式找出姓名)
     /// </summary>
     [Column("person_name")]
-    [Display(Name = "領用人")]
-    [DisplayFormat(NullDisplayText = "無")]
+    [Display(Name = "領用人")]    
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
     public string? PersonName0 { get; set; }
 
     [NotMapped]
     [Display(Name = "領用人")]
-    public string PersonName => Person?.UserFullName ?? "無";
+    public string PersonName => Person?.UserFullName ?? "Common.None";
 
 
     /// <summary>
     /// 領用人-關聯User
     /// </summary>
-    [Display(Name = "領用人")]
-    public virtual User? Person { get; set; }
+    [Display(Name = "領用人")]    public virtual User? Person { get; set; }
 
     /// <summary>
     /// 文件編號(年月流水號3碼，BYYYYMM???，例如:B202504001)
     /// </summary>    
     [Column("id_no")]
-    [Display(Name = "文件編號")]
-    [DisplayFormat(NullDisplayText = "無")]
+    [Display(Name = "文件編號")]    
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
     public string IdNo { get; set; } = null!;
 
@@ -68,8 +62,7 @@ public partial class DocControlMaintable
     /// 表單名稱
     /// </summary>    
     [Column("name")]
-    [Display(Name = "表單名稱")]
-    [DisplayFormat(NullDisplayText = "無")]
+    [Display(Name = "表單名稱")]    
     [StringLength(4000, ErrorMessage = "{0}最多{1}字元")]
     public string? Name { get; set; }
 
@@ -78,7 +71,7 @@ public partial class DocControlMaintable
     /// </summary>    
     [Column("purpose")]
     [Display(Name = "領用目的")]
-    [DisplayFormat(NullDisplayText = "無")]
+    
     [StringLength(4000, ErrorMessage = "{0}最多{1}字元")]
     [DataType(DataType.MultilineText)]
     public string? Purpose { get; set; }
@@ -87,8 +80,7 @@ public partial class DocControlMaintable
     /// BMP表單編號
     /// </summary>
     [Column("original_doc_no")]
-    [Display(Name = "表單編號")]
-    [DisplayFormat(NullDisplayText = "無")]
+    [Display(Name = "表單編號")]    
     [StringLength(4000, ErrorMessage = "{0}最多{1}字元")]
     public string? OriginalDocNo { get; set; }
 
@@ -96,8 +88,7 @@ public partial class DocControlMaintable
     /// 表單版次
     /// </summary>
     [Column("doc_ver")]
-    [Display(Name = "表單版次")]
-    [DisplayFormat(NullDisplayText = "無")]
+    [Display(Name = "表單版次")]    
     [StringLength(10, ErrorMessage = "{0}最多{1}字元")]
     public string? DocVer { get; set; }
 
@@ -106,7 +97,6 @@ public partial class DocControlMaintable
     /// </summary>
     [Column("in_time")]
     [Display(Name = "入庫日期")]
-    [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true, NullDisplayText = "無")]
     public DateTime? InTime { get; set; }
 
     /// <summary>
@@ -114,7 +104,6 @@ public partial class DocControlMaintable
     /// </summary>
     [Column("unuse_time")]
     [Display(Name = "註銷日期")]
-    [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true, NullDisplayText = "無")]
     public DateTime? UnuseTime { get; set; }
 
     /// <summary>
@@ -122,8 +111,7 @@ public partial class DocControlMaintable
     /// </summary>
     [Column("reject_reason")]
     [Display(Name = "註銷原因")]
-    [DataType(DataType.MultilineText)]
-    [DisplayFormat(NullDisplayText = "無")]
+    [DataType(DataType.MultilineText)]    
     [StringLength(4000, ErrorMessage = "{0}最多{1}字元")]
     public string? RejectReason { get; set; }
 
@@ -131,8 +119,7 @@ public partial class DocControlMaintable
     /// 文件所屬之專案代碼
     /// </summary>
     [Column("project_name")]
-    [Display(Name = "專案代碼")]
-    [DisplayFormat(NullDisplayText = "無")]
+    [Display(Name = "專案代碼")]    
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
     public string? ProjectName { get; set; }
 
@@ -140,8 +127,7 @@ public partial class DocControlMaintable
     /// 檔案類型：docx、xlsx等
     /// </summary>
     [Column("file_extension")]
-    [Display(Name = "檔案類型")]
-    [DisplayFormat(NullDisplayText = "無")]
+    [Display(Name = "檔案類型")]    
     [StringLength(10, ErrorMessage = "{0}最多{1}字元")]
     public string? FileExtension { get; set; }
 
@@ -149,8 +135,7 @@ public partial class DocControlMaintable
     /// 是否機密
     /// </summary>
     [Column("is_confidential")]
-    [Display(Name = "是否機密")]
-    [DisplayFormat(NullDisplayText = "無")]
+    [Display(Name = "是否機密")]    
     public bool? IsConfidential { get; set; }
 
     /// <summary>
@@ -158,15 +143,14 @@ public partial class DocControlMaintable
     /// </summary>
     [NotMapped]
     [Display(Name = "是否機密")]
-    public string IsConfidentialText =>
-        !IsConfidential.HasValue ? "無" : (IsConfidential.Value ? "是" : "否");
+    public string IsConfidentialText => IsConfidential.HasValue ? (IsConfidential.Value ? "Common.Yes" : "Common.No") : "Common.None";
 
     /// <summary>
     /// 是否機敏
     /// </summary>
     [Column("is_sensitive")]
     [Display(Name = "是否機敏")]
-    [DisplayFormat(NullDisplayText = "無")]
+    
     public bool? IsSensitive { get; set; }
 
     /// <summary>
@@ -174,9 +158,7 @@ public partial class DocControlMaintable
     /// </summary>
     [NotMapped]
     [Display(Name = "是否機敏")]
-    public string IsSensitiveText =>
-        !IsSensitive.HasValue ? "無" : (IsSensitive.Value ? "是" : "否");
-
+    public string IsSensitiveText => IsSensitive.HasValue ? (IsSensitive.Value ? "Common.Yes" : "Common.No") : "Common.None";
 
     [NotMapped]
     [Display(Name = "文件狀態")]
@@ -277,7 +259,7 @@ public partial class DocControlMaintable
     /// </summary>
     [Column("in_time_modify_by")]
     [Display(Name = "入庫處理人員")]
-    [DisplayFormat(NullDisplayText = "無")]
+    
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
     public string? InTimeModifyBy { get; set; }
 
@@ -286,7 +268,7 @@ public partial class DocControlMaintable
     /// </summary>
     [ForeignKey(nameof(InTimeModifyBy))]
     [Display(Name = "入庫處理人員")]
-    [DisplayFormat(NullDisplayText = "無")]
+    
     public virtual User? InTimeModifyUser { get; set; }
 
     /// <summary>
@@ -302,7 +284,7 @@ public partial class DocControlMaintable
     /// </summary>
     [Column("unuse_time_modify_by")]
     [Display(Name = "註銷處理人員")]
-    [DisplayFormat(NullDisplayText = "無")]
+    
     [StringLength(50, ErrorMessage = "{0}最多{1}字元")]
     public string? UnuseTimeModifyBy { get; set; }
 
@@ -311,7 +293,7 @@ public partial class DocControlMaintable
     /// </summary>
     [ForeignKey(nameof(UnuseTimeModifyBy))]
     [Display(Name = "註銷處理人員")]
-    [DisplayFormat(NullDisplayText = "無")]
+    
     public virtual User? UnuseTimeModifyUser { get; set; }
 
     /// <summary>

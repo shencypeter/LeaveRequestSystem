@@ -1,9 +1,7 @@
-﻿@using BioMedDocManager.Extensions
-@using BioMedDocManager.Models
-@model IEnumerable<Dictionary<string, object>>
+﻿@model IEnumerable<Dictionary<string, object>>
 
 @{
-    ViewData["Title"] = "系統參數管理";
+    ViewData["Title"] = Loc.T("Parameter.Index.Title");
     Layout = "_AssetLayout";
 
     var queryModel = QueryableExtensions.GetSessionQueryModel<ParameterQueryViewModel>(Context);
@@ -35,7 +33,7 @@
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="Code" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    參數代碼：
+                                    @Loc.T("Parameter.ParameterCode")：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
@@ -43,7 +41,7 @@
                                            id="Code"
                                            name="@nameof(ParameterQueryViewModel.ParameterCode)"
                                            value="@queryModel.ParameterCode"
-                                           placeholder="例如：PWD_MIN_LENGTH" />
+                                           placeholder="@Loc.T("Parameter.ParameterCode.Placeholder")" />
                                 </div>
                             </div>
                         </div>
@@ -51,7 +49,7 @@
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="Name" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    參數名稱：
+                                    @Loc.T("Parameter.ParameterName")：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
@@ -59,7 +57,7 @@
                                            id="Name"
                                            name="@nameof(ParameterQueryViewModel.ParameterName)"
                                            value="@queryModel.ParameterName"
-                                           placeholder="例如：密碼最少長度" />
+                                           placeholder="@Loc.T("Parameter.ParameterName.Placeholder")" />
                                 </div>
                             </div>
                         </div>
@@ -71,7 +69,7 @@
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="Format" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    參數格式：
+                                    @Loc.T("Parameter.ParameterFormat")：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
@@ -79,7 +77,7 @@
                                            id="Format"
                                            name="@nameof(ParameterQueryViewModel.ParameterFormat)"
                                            value="@queryModel.ParameterFormat"
-                                           placeholder="text / int / html / json" />
+                                           placeholder="@Loc.T("Parameter.ParameterFormat.Placeholder")" />
                                 </div>
                             </div>
                         </div>
@@ -87,15 +85,15 @@
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="IsActive" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    是否啟用：
+                                    @Loc.T("Parameter.ParameterIsActive")：
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <select id="IsActive"
                                             name="@nameof(ParameterQueryViewModel.ParameterIsActive)"
                                             class="form-select">
-                                        <option value="" selected="@(queryModel.ParameterIsActive == null ? "selected" : null)">全部顯示</option>
-                                        <option value="true" selected="@(queryModel.ParameterIsActive == true ? "selected" : null)">啟用</option>
-                                        <option value="false" selected="@(queryModel.ParameterIsActive == false ? "selected" : null)">停用</option>
+                                        <option value="" selected="@(queryModel.ParameterIsActive == null ? "selected" : null)">@Loc.T("Common.All")</option>
+                                        <option value="true" selected="@(queryModel.ParameterIsActive == true ? "selected" : null)">@Loc.T("Common.Enabled")</option>
+                                        <option value="false" selected="@(queryModel.ParameterIsActive == false ? "selected" : null)">@Loc.T("Common.Disabled")</option>
                                     </select>
                                 </div>
                             </div>
@@ -107,16 +105,16 @@
                         <div class="col-12 d-flex justify-content-center flex-wrap gap-2">
 
                             <button type="submit" class="btn2 btn-primary mt-2 search_btn">
-                                <i class="fas fa-search"></i>&ensp;查詢
+                                <i class="fas fa-search"></i> @Loc.T("Common.Search")
                             </button>
 
                             <a id="create_btn" href="@Url.Action("Create", "Parameter")"
                                class="btn2 btn-success mt-2">
-                                <i class="fas fa-plus-circle"></i>&ensp;新增參數
+                                <i class="fas fa-plus-circle"></i> @Loc.T("Common.Create")
                             </a>
 
                             <button type="button" class="btn2 btn-secondary mt-2 clear_btn" data-form="myForm">
-                                 <i class="fas fa-eraser"></i> @Loc.T("Common.Reset")
+                                <i class="fas fa-eraser"></i> @Loc.T("Common.Reset")
                             </button>
                         </div>
                     </div>
@@ -141,11 +139,11 @@
                     <th data-id="@item.Key">
                         @if (item.Key != "RowNum")
                         {
-                            <a href="#" title="點選「@(item.Value)」欄位進行排序">@item.Value</a>
+                            <a href="#" title="@($"{Loc.T("Common.SortByColumn.TooltipPrefix")}{Loc.T(item.Value)}{Loc.T("Common.SortByColumn.TooltipSuffix")}")"> @Loc.T(@item.Value)</a>
                         }
                         else
                         {
-                            @item.Value
+                            @Loc.T(item.Value)
                         }
 
                     <span class="order-index">
@@ -155,14 +153,14 @@
                     </span>
                 </th>
                                 }
-                <th class="col-actions">功能</th>
+                <th class="col-actions">@Loc.T("Common.Actions")</th>
             </tr>
         </thead>
         <tbody>
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="@(headers.Count + 1)">查無資料</td>
+                    <td colspan="@(headers.Count + 1)">@Loc.T("Common.NoData")</td>
                 </tr>
             }
             else
@@ -173,7 +171,7 @@
                         @foreach (var key in headers.Keys)
                         {
                             if (!row.TryGetValue(key, out var cell)) { cell = ""; }
-                            string value =TableHelper.FormatValue(cell, Loc);
+                            string value = TableHelper.FormatValue(cell, Loc);
 
                             <td class="@(value == "(" + Loc.T("Common.None") + ")" ? "none-data" : "") @((key.Equals("RowNum", StringComparison.OrdinalIgnoreCase)) ? "text-nowrap" : "")">
                                 @Html.Raw(value)
@@ -183,12 +181,12 @@
                         <td class="col-actions">
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    功能
+                                    @Loc.T("Common.Actions")
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "Parameter", new { id = row["ParameterId"] })">檢視</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "Parameter", new { id = row["ParameterId"] })">編輯</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "Parameter", new { id = row["ParameterId"] })">刪除</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "Parameter", new { id = row["ParameterId"] })">@Loc.T("Common.View")</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "Parameter", new { id = row["ParameterId"] })">@Loc.T("Common.Edit")</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "Parameter", new { id = row["ParameterId"] })">@Loc.T("Common.Delete")</a></li>
                                 </ul>
                             </div>
                         </td>

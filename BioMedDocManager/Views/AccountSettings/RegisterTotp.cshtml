@@ -1,6 +1,6 @@
 ﻿@model BioMedDocManager.Models.TotpSetupViewModel
 @{
-    ViewData["Title"] = "註冊 TOTP 兩步驟驗證";
+    ViewData["Title"] = Loc.T("Totp.Setup.Title");
     Layout = "_NoNavLayout";
 
     var alert = TempData["_JSShowAlert"] as string;
@@ -32,88 +32,99 @@
         {
             <div class="alert alert-warning mx-3 my-2">
                 <i class="fas fa-info-circle me-2"></i>
-                您的帳號已啟用 TOTP 驗證。重新註冊將會覆蓋原本的設定，請謹慎操作。
+                @Loc.T("Totp.AlreadyEnabled.Warning")
 
                 <div class="mt-3 text-end">
                     <button type="button"
                             class="btn btn-sm btn-danger"
                             data-bs-toggle="collapse"
-                            data-bs-target="#totpSetupContent"
-                            aria-expanded="false"
-                            aria-controls="totpSetupContent">
-                        確定重新註冊
+                            data-bs-target="#totpSetupContent">
+                        @Loc.T("Totp.ReRegister.Confirm")
                     </button>
                 </div>
             </div>
         }
 
-
         <div id="totpSetupContent" class="collapse @(isAlreadyEnabled ? "" : "show")">
+
+            <!-- ===== 說明 ===== -->
             <div class="mx-3 my-3">
                 <ol>
-                    <li>請先在手機安裝 <strong>Google Authenticator</strong> 或其他支援 TOTP 的驗證器 App。</li>
-                    <li>Chrome瀏覽器的外掛套件：<a href="https://chromewebstore.google.com/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai?hl=zh-TW">Authenticator</a></li>
-                    <li>使用【驗證器】掃描下方的QR Code，或手動輸入「金鑰」。</li>
-                    <li>【驗證器】會顯示6位數驗證碼，請在下方欄位輸入後，按下「啟用 TOTP」。</li>
+                    <li>@Loc.T("Totp.Step.InstallApp")</li>
+                    <li>
+                        @Loc.T("Totp.Step.ChromeExtension")
+                        <a href="https://chromewebstore.google.com/detail/authenticator/bhghoamapcdpbohphigoooaddinpkbai?hl=zh-TW"
+                           target="_blank">Authenticator</a>
+                    </li>
+                    <li>@Loc.T("Totp.Step.ScanOrInput")</li>
+                    <li>@Loc.T("Totp.Step.InputCode")</li>
                 </ol>
             </div>
 
+            <!-- ===== QR / 手動 ===== -->
             <div class="row my-3 mx-2">
                 <div class="col-md-6 text-center mb-3">
-                    <h5 class="mb-3">方式一：掃描 QR Code</h5>
+                    <h5 class="mb-3">@Loc.T("Totp.Method.QrCode")</h5>
                     <div class="d-inline-block p-2 bg-white border rounded">
-                        <img src="@Url.Action("TotpQrCode", "AccountSettings")" class="totp-qr-img" alt="TOTP QR Code" />
+                        <img src="@Url.Action("TotpQrCode", "AccountSettings")"
+                             class="totp-qr-img"
+                             alt="TOTP QR Code" />
                     </div>
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <h5 class="mb-3">方式二：手動輸入金鑰（若無法掃描）</h5>
+                    <h5 class="mb-3">@Loc.T("Totp.Method.Manual")</h5>
 
                     <div class="mb-2">
-                        <strong>帳號：</strong>
+                        <strong>@Html.DisplayNameFor(m => m.UserAccount)：</strong>
                         <span>@Model.UserAccount</span>
                     </div>
+
                     <div class="mb-2">
-                        <strong>發行者 (Issuer)：</strong>
+                        <strong>@Html.DisplayNameFor(m => m.Issuer)：</strong>
                         <span>@Model.Issuer</span>
                     </div>
+
                     <div class="mb-2">
-                        <strong>金鑰 (Secret)：</strong>
+                        <strong>@Html.DisplayNameFor(m => m.Secret)：</strong>
                         <code class="user-select-all">@Model.Secret</code>
                     </div>
+
                     <div class="text-muted small">
-                        建議只在必要時手動輸入，並避免洩漏此金鑰。
+                        @Loc.T("Totp.Secret.Warning")
                     </div>
                 </div>
             </div>
 
             <hr />
 
+            <!-- ===== 輸入驗證碼 ===== -->
             <form asp-action="RegisterTotp" method="post" class="mx-3 my-3" target="_top">
                 @Html.AntiForgeryToken()
 
                 <div class="row align-items-center my-3">
                     <div class="col-md-2 col-form-label text-md-end text-start">
                         <span class="text-danger fw-bold">*</span>
-                        <strong>@Html.DisplayNameFor(m => m.Code)：</strong>
+                        <strong>@Html.LabelFor(m => m.Code)</strong>
                     </div>
                     <div class="col-md-10">
-                        <div class="input-group">
-                            <input asp-for="Code"
-                                   class="form-control text-center text-uppercase"
-                                   placeholder="請輸入【驗證器】顯示的6位數驗證碼"
-                                   maxlength="6"
-                                   inputmode="numeric"
-                                   autocomplete="one-time-code" />
-                        </div>
+                        <input asp-for="Code"
+                               class="form-control text-center text-uppercase"
+                               maxlength="6"
+                               inputmode="numeric"
+                               autocomplete="one-time-code"
+                               placeholder="@Loc.T("Totp.Code.Placeholder")" />
+
                         <span asp-validation-for="Code" class="text-danger"></span>
                     </div>
                 </div>
 
                 <div class="row align-items-center my-3">
                     <div class="col-md-12 d-flex justify-content-center">
-                        <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
-                            <i class="fas fa-check-circle"></i>&ensp;啟用 TOTP
+                        <button type="submit"
+                                class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                            <i class="fas fa-check-circle"></i>
+                            @Loc.T("Common.Enabled")
                         </button>
                     </div>
                 </div>
@@ -124,7 +135,6 @@
 
 @section PageScripts {
     <script nonce="@ViewBag.CspNonce">
-        $(function () {
-        });
+        $(function () { });
     </script>
 }

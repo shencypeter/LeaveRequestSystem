@@ -34,7 +34,7 @@ namespace BioMedDocManager.Controllers
             includeRowNum: true,
             onlyProps: new[]
             {
-                "AppActionName",
+                "AppActionCode",
                 "AppActionDisplayName",
                 "AppActionOrder",
                 "CreatedAt",
@@ -113,7 +113,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"動作-{posted.AppActionName} 新增【失敗】";
+                var msg = $"動作-{posted.AppActionCode} 新增【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -121,7 +121,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"動作-{posted.AppActionName} 新增成功";
+            TempData["_JSShowSuccess"] = $"動作-{posted.AppActionCode} 新增成功";
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
@@ -169,15 +169,14 @@ namespace BioMedDocManager.Controllers
 
             try
             {
-                dbEntity.AppActionName = posted.AppActionName?.Trim() ?? "";
-                dbEntity.AppActionDisplayName = posted.AppActionDisplayName?.Trim() ?? "";
+                dbEntity.AppActionCode = posted.AppActionCode?.Trim() ?? "";
                 dbEntity.AppActionOrder = posted.AppActionOrder;
 
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                var msg = $"動作-{dbEntity.AppActionName} 更新【失敗】";
+                var msg = $"動作-{dbEntity.AppActionCode} 更新【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -185,7 +184,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"動作-{dbEntity.AppActionName} 更新成功";
+            TempData["_JSShowSuccess"] = $"動作-{dbEntity.AppActionCode} 更新成功";
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
@@ -241,7 +240,7 @@ namespace BioMedDocManager.Controllers
                         rp.Resource!.ResourceDisplayName,
                         rp.RoleId,
                         rp.Role!.RoleGroup,
-                        rp.Role!.RoleName
+                        rp.Role!.RoleCode
                     })
                     .Select(g => new AppActionRoleUsageViewModel
                     {
@@ -250,10 +249,10 @@ namespace BioMedDocManager.Controllers
                         ResourceDisplayName = g.Key.ResourceDisplayName,
                         RoleId = g.Key.RoleId,
                         RoleGroup = g.Key.RoleGroup,
-                        RoleName = g.Key.RoleName
+                        RoleCode = g.Key.RoleCode
                     })
                     .OrderBy(u => u.RoleGroup)
-                    .ThenBy(u => u.RoleName)
+                    .ThenBy(u => u.RoleCode)
                     .ThenBy(u => u.ResourceKey)
                     .ToList();
             }
@@ -313,7 +312,7 @@ namespace BioMedDocManager.Controllers
                         rp.Resource!.ResourceDisplayName,
                         rp.RoleId,
                         rp.Role!.RoleGroup,
-                        rp.Role!.RoleName
+                        rp.Role!.RoleCode
                     })
                     .Select(g => new AppActionRoleUsageViewModel
                     {
@@ -322,10 +321,10 @@ namespace BioMedDocManager.Controllers
                         ResourceDisplayName = g.Key.ResourceDisplayName,
                         RoleId = g.Key.RoleId,
                         RoleGroup = g.Key.RoleGroup,
-                        RoleName = g.Key.RoleName
+                        RoleCode = g.Key.RoleCode
                     })
                     .OrderBy(u => u.RoleGroup)
-                    .ThenBy(u => u.RoleName)
+                    .ThenBy(u => u.RoleCode)
                     .ThenBy(u => u.ResourceKey)
                     .ToList();
             }
@@ -361,7 +360,7 @@ namespace BioMedDocManager.Controllers
 
                 if (hasAnyRolePermission)
                 {
-                    var msg = $"系統動作-{entity.AppActionName} 目前仍被角色權限使用，無法刪除。";
+                    var msg = $"系統動作-{entity.AppActionCode} 目前仍被角色權限使用，無法刪除。";
                     TempData["_JSShowAlert"] = msg;
 
                     await _accessLog.NewActionAsync(
@@ -380,7 +379,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"系統動作-{entity.AppActionName} 刪除【失敗】";
+                var msg = $"系統動作-{entity.AppActionCode} 刪除【失敗】";
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -389,7 +388,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"系統動作-{entity.AppActionName} 已刪除";
+            TempData["_JSShowSuccess"] = $"系統動作-{entity.AppActionCode} 已刪除";
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));
@@ -406,10 +405,10 @@ namespace BioMedDocManager.Controllers
             IQueryable<AppAction> q = _context.AppActions.AsNoTracking();
 
             // 動作名稱
-            if (!string.IsNullOrWhiteSpace(queryModel.AppActionName))
+            if (!string.IsNullOrWhiteSpace(queryModel.AppActionCode))
             {
-                var s = $"%{queryModel.AppActionName.Trim()}%";
-                q = q.Where(a => EF.Functions.Like(a.AppActionName, s));
+                var s = $"%{queryModel.AppActionCode.Trim()}%";
+                q = q.Where(a => EF.Functions.Like(a.AppActionCode, s));
             }
 
             // 顯示名稱
@@ -428,6 +427,9 @@ namespace BioMedDocManager.Controllers
 
             var (entities, totalCount) =
                 await q.PaginateWithCountAsync(queryModel.PageNumber, queryModel.PageSize, ct);
+
+            // 讓 NotMapped 計算屬性可以用多語系 Loc.T(...)
+            entities.WithLoc(_loc);
 
             var result = BuildRows(
                 entities: entities,

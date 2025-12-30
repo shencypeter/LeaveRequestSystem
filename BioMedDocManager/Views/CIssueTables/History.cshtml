@@ -67,7 +67,7 @@
                         <th data-id="@item.Key">
                             @if (item.Key != "RowNum")
                             {
-                                <a href="#" title="點選「@(item.Value)」欄位進行排序"> @item.Value </a>
+                                <a href="#" title="@($"{Loc.T("Common.SortByColumn.TooltipPrefix")}{Loc.T(item.Value)}{Loc.T("Common.SortByColumn.TooltipSuffix")}")"> @Loc.T(@item.Value)</a>
                             }
                             else
                             {
