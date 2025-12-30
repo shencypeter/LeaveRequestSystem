@@ -1,6 +1,6 @@
 ﻿@model BioMedDocManager.Models.Role
 @{
-    ViewData["Title"] = "角色管理-新增";
+    ViewData["Title"] = Loc.T("Role.Create.Title");
     Layout = "_NoNavLayout";
 }
 
@@ -17,7 +17,7 @@
             <div class="row align-items-center my-3">
                 <label asp-for="RoleGroup" class="col-md-2 col-form-label text-md-end"></label>
                 <div class="col-md-10">
-                    <input asp-for="RoleGroup" class="form-control" />
+                    <input asp-for="RoleGroup" class="form-control" placeholder="@Loc.T("Role.RoleGroup.Placeholder")" />
                     <span asp-validation-for="RoleGroup" class="text-danger"></span>
                 </div>
             </div>
@@ -25,7 +25,7 @@
             <div class="row align-items-center my-3">
                 <label asp-for="RoleCode" class="col-md-2 col-form-label text-md-end"></label>
                 <div class="col-md-10">
-                    <input asp-for="RoleCode" class="form-control" />
+                    <input asp-for="RoleCode" class="form-control" placeholder="@Loc.T("Role.RoleCode.Placeholder")" />
                     <span asp-validation-for="RoleCode" class="text-danger"></span>
                 </div>
             </div>

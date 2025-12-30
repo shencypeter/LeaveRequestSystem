@@ -59,7 +59,7 @@
         <!--<select class="form-select" style="width:250px;" disabled>
             <option>共 @($"{totalItems:N0}") 項, 每頁顯示: </option>
         </select> -->
-        <font>@Loc.T("Pager.TotalPrefix") @($"{totalItems:N0}") @Loc.T("Pager.TotalSuffix")</font>
+        <font>@Loc.T("Pager.Total.Prefix") @($"{totalItems:N0}") @Loc.T("Pager.Total.Suffix")</font>
         <font>@Loc.T("Pager.PageSize.Label")&nbsp;&nbsp;</font>
 
         <select id="Select@(nameof(Model.PageSize))" class="form-select" aria-label="Page size select">

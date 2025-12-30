@@ -664,11 +664,13 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 角色編號
         /// </summary>
+        [Display(Name = "Role.RoleId")] 
         public int RoleId { get; set; }
 
         /// <summary>
         /// 角色名稱（純顯示用）
         /// </summary>
+        [Display(Name = "Role.RoleCode")]
         public string RoleCode { get; set; } = string.Empty;
 
         /// <summary>
@@ -685,6 +687,7 @@ namespace BioMedDocManager.Models
         /// 當前這個角色已存在的 RolePermission key 清單（"resourceId:appActionId"）
         /// 主要用來在 View 端預設打勾 & 在 POST 回傳使用。
         /// </summary>
+        [Display(Name = "Role.EditPermission.PermissionSetting")] 
         public List<string> SelectedPermissionKeys { get; set; } = new();
     }
 

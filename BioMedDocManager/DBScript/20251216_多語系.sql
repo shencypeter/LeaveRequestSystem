@@ -111,11 +111,11 @@ VALUES
 (N'Common.PleaseSelect', N'en-US', N'Please select', N'Common', 1),
 
 -- 排序按鈕
-(N'Common.SortByColumn.TooltipPrefix', N'zh-TW', N'點選「', N'Common', 1),
-(N'Common.SortByColumn.TooltipPrefix', N'en-US', N'Click "', N'Common', 1),
+(N'Common.SortByColumn.Tooltip.Prefix', N'zh-TW', N'點選「', N'Common', 1),
+(N'Common.SortByColumn.Tooltip.Prefix', N'en-US', N'Click "', N'Common', 1),
 
-(N'Common.SortByColumn.TooltipSuffix', N'zh-TW', N'」欄位進行排序', N'Common', 1),
-(N'Common.SortByColumn.TooltipSuffix', N'en-US', N'" to sort by this column', N'Common', 1),
+(N'Common.SortByColumn.Tooltip.Suffix', N'zh-TW', N'」欄位進行排序', N'Common', 1),
+(N'Common.SortByColumn.Tooltip.Suffix', N'en-US', N'" to sort by this column', N'Common', 1),
 
 
 -- 狀態
@@ -256,11 +256,11 @@ VALUES
 (N'Pager.Last', N'zh-TW', N'末頁', N'Pager', 1),
 (N'Pager.Last', N'en-US', N'Last', N'Pager', 1),
 
-(N'Pager.TotalPrefix', N'zh-TW', N'總共 ', N'Pager', 1),
-(N'Pager.TotalPrefix', N'en-US', N'Total ', N'Pager', 1),
+(N'Pager.Total.Prefix', N'zh-TW', N'總共 ', N'Pager', 1),
+(N'Pager.Total.Prefix', N'en-US', N'Total ', N'Pager', 1),
 
-(N'Pager.TotalSuffix', N'zh-TW', N' 筆，', N'Pager', 1),
-(N'Pager.TotalSuffix', N'en-US', N' items, ', N'Pager', 1),
+(N'Pager.Total.Suffix', N'zh-TW', N' 筆，', N'Pager', 1),
+(N'Pager.Total.Suffix', N'en-US', N' items, ', N'Pager', 1),
 
 (N'Pager.PageSize.Label', N'zh-TW', N'每頁顯示', N'Pager', 1),
 (N'Pager.PageSize.Label', N'en-US', N'Per page', N'Pager', 1),
@@ -358,7 +358,7 @@ VALUES
 (N'Resource.ResourceKey', N'zh-TW', N'資源代碼', N'Resource', 1),
 (N'Resource.ResourceKey', N'en-US', N'Resource key', N'Resource', 1),
 
-(N'Resource.ResourceDisplayName', N'zh-TW', N'顯示名稱', N'Resource', 1),
+(N'Resource.ResourceDisplayName', N'zh-TW', N'資源名稱', N'Resource', 1),
 (N'Resource.ResourceDisplayName', N'en-US', N'Display name', N'Resource', 1),
 
 (N'Resource.ResourceIsActive', N'zh-TW', N'是否啟用', N'Resource', 1),
@@ -546,8 +546,8 @@ VALUES
 (N'UserDetails.EffectivePermissions', N'zh-TW', N'有效權限', N'UserDetails', 1),
 (N'UserDetails.EffectivePermissions', N'en-US', N'Effective permissions', N'UserDetails', 1),
 
-(N'UserDetails.ActionTooltipPrefix', N'zh-TW', N'動作', N'UserDetails', 1),
-(N'UserDetails.ActionTooltipPrefix', N'en-US', N'Action', N'UserDetails', 1),
+(N'UserDetails.ActionTooltip.Prefix', N'zh-TW', N'動作', N'UserDetails', 1),
+(N'UserDetails.ActionTooltip.Prefix', N'en-US', N'Action', N'UserDetails', 1),
 
 -- 註冊TOTP
 (N'Totp.Setup.Title', N'zh-TW', N'註冊 TOTP 兩步驟驗證', N'Totp', 1),
@@ -599,7 +599,6 @@ VALUES
 (N'Totp.Secret.Warning', N'en-US', N'Only enter this manually when necessary and keep the secret secure.', N'Totp', 1),
 
 
-
 -- 系統動作管理
 -- Index
 (N'AppAction.Index.Title', N'zh-TW', N'系統動作管理', N'AppAction', 1),
@@ -629,12 +628,14 @@ VALUES
 (N'AppAction.Delete.Blocked.Instruction', N'zh-TW', N'若要刪除，請先在「角色管理-權限設定」中，取消所有使用此動作的權限設定。', N'AppAction', 1),
 (N'AppAction.Delete.Blocked.Instruction', N'en-US', N'To delete it, please remove all permissions that use this action in Role Management - Permission Settings.', N'AppAction', 1),
 
+
 -- 首頁
 (N'Home.Welcome.Title', N'zh-TW', N'歡迎使用', N'Home', 1),
 (N'Home.Welcome.Title', N'en-US', N'Welcome', N'Home', 1),
 
 (N'Home.Welcome.SubTitle', N'zh-TW', N'文管與電子採購系統（範例）', N'Home', 1),
 (N'Home.Welcome.SubTitle', N'en-US', N'Document Control & E-Procurement System (Demo)', N'Home', 1),
+
 
 -- 登入頁
 (N'Login.SessionExpired', N'zh-TW', N'系統偵測到您的登入已過期，請重新登入。', N'Login', 1),
@@ -692,6 +693,7 @@ VALUES
 (N'Login.TwoFactor.Code.Placeholder', N'zh-TW', N'請輸入 6 位數驗證碼', N'Login', 1),
 (N'Login.TwoFactor.Code.Placeholder', N'en-US', N'Enter the 6-digit code', N'Login', 1),
 
+
 -- 選單
 -- Index
 (N'MenuItem.Index.Title',                 N'zh-TW', N'選單項目管理', N'MenuItem', 1),
@@ -723,7 +725,6 @@ VALUES
 (N'MenuItem.Edit.Title', N'zh-TW', N'選單項目管理 編輯', N'MenuItem', 1),
 (N'MenuItem.Edit.Title', N'en-US', N'Menu Item Management Edit', N'MenuItem', 1),
 
-
 -- Delete
 (N'MenuItem.Delete.Title',                 N'zh-TW', N'選單項目管理 刪除',                 N'MenuItem', 1),
 (N'MenuItem.Delete.Title',                 N'en-US', N'Menu Item Management Delete',      N'MenuItem', 1),
@@ -737,18 +738,17 @@ VALUES
 (N'MenuItem.Children.EmptyHint',           N'zh-TW', N'目前沒有任何子選單掛在此選單之下',   N'MenuItem', 1),
 (N'MenuItem.Children.EmptyHint',           N'en-US', N'No child menu items under this menu', N'MenuItem', 1),
 
-(N'MenuItem.Children.CountPrefix',         N'zh-TW', N'此選單底下目前有',                   N'MenuItem', 1),
-(N'MenuItem.Children.CountPrefix',         N'en-US', N'This menu currently has',           N'MenuItem', 1),
+(N'MenuItem.Children.Count.Prefix',         N'zh-TW', N'此選單底下目前有',                   N'MenuItem', 1),
+(N'MenuItem.Children.Count.Prefix',         N'en-US', N'This menu currently has',           N'MenuItem', 1),
 
-(N'MenuItem.Children.CountSuffix',         N'zh-TW', N'個子選單',                           N'MenuItem', 1),
-(N'MenuItem.Children.CountSuffix',         N'en-US', N'child menu items',                   N'MenuItem', 1),
+(N'MenuItem.Children.Count.Suffix',         N'zh-TW', N'個子選單',                           N'MenuItem', 1),
+(N'MenuItem.Children.Count.Suffix',         N'en-US', N'child menu items',                   N'MenuItem', 1),
 
 (N'MenuItem.Delete.BlockedLine1',          N'zh-TW', N'此選單目前仍有子選單，無法刪除',     N'MenuItem', 1),
 (N'MenuItem.Delete.BlockedLine1',          N'en-US', N'This menu still has children and cannot be deleted', N'MenuItem', 1),
 
 (N'MenuItem.Delete.BlockedLine2',          N'zh-TW', N'若要刪除，請先將子選單移除或重新指定其上層選單', N'MenuItem', 1),
 (N'MenuItem.Delete.BlockedLine2',          N'en-US', N'Remove or reassign the child menu items before deleting', N'MenuItem', 1),
-
 
 -- Details
 (N'MenuItem.Details.Title', N'zh-TW', N'選單項目管理 詳細資料', N'MenuItem', 1),
@@ -831,11 +831,11 @@ VALUES
 (N'Resource.RolePermissionUsage.None', N'zh-TW', N'目前尚未有任何角色權限使用此資源。', N'Resource', 1),
 (N'Resource.RolePermissionUsage.None', N'en-US', N'No role permissions are currently using this resource.', N'Resource', 1),
 
-(N'Resource.RolePermissionUsage.CountPrefix', N'zh-TW', N'此資源目前被 ', N'Resource', 1),
-(N'Resource.RolePermissionUsage.CountPrefix', N'en-US', N'This resource is currently assigned to ', N'Resource', 1),
+(N'Resource.RolePermissionUsage.Count.Prefix', N'zh-TW', N'此資源目前被 ', N'Resource', 1),
+(N'Resource.RolePermissionUsage.Count.Prefix', N'en-US', N'This resource is currently assigned to ', N'Resource', 1),
 
-(N'Resource.RolePermissionUsage.CountSuffix', N'zh-TW', N' 個角色設定權限。', N'Resource', 1),
-(N'Resource.RolePermissionUsage.CountSuffix', N'en-US', N' role(s).', N'Resource', 1),
+(N'Resource.RolePermissionUsage.Count.Suffix', N'zh-TW', N' 個角色設定權限。', N'Resource', 1),
+(N'Resource.RolePermissionUsage.Count.Suffix', N'en-US', N' role(s).', N'Resource', 1),
 
 (N'Resource.RolePermissionUsage.RoleGroupListTitle', N'zh-TW', N'使用此資源的角色／群組：', N'Resource', 1),
 (N'Resource.RolePermissionUsage.RoleGroupListTitle', N'en-US', N'Roles / groups using this resource', N'Resource', 1),
@@ -850,7 +850,6 @@ VALUES
 (N'Resource.Details.Title', N'zh-TW', N'系統資源管理 - 詳細資料', N'Resource', 1),
 (N'Resource.Details.Title', N'en-US', N'System Resource Management - Details', N'Resource', 1),
 
-
 -- 角色權限關聯(Delete、Details共用)
 (N'AppAction.RolePermissionUsage.Title', N'zh-TW', N'角色權限關聯', N'AppAction', 1),
 (N'AppAction.RolePermissionUsage.Title', N'en-US', N'Role permission association', N'AppAction', 1),
@@ -858,11 +857,11 @@ VALUES
 (N'AppAction.RolePermissionUsage.None', N'zh-TW', N'目前尚未有任何角色使用此動作。', N'AppAction', 1),
 (N'AppAction.RolePermissionUsage.None', N'en-US', N'No roles are currently using this action.', N'AppAction', 1),
 
-(N'AppAction.RolePermissionUsage.CountPrefix', N'zh-TW', N'此動作目前被 ', N'AppAction', 1),
-(N'AppAction.RolePermissionUsage.CountPrefix', N'en-US', N'This action is currently used by ', N'AppAction', 1),
+(N'AppAction.RolePermissionUsage.Count.Prefix', N'zh-TW', N'此動作目前被 ', N'AppAction', 1),
+(N'AppAction.RolePermissionUsage.Count.Prefix', N'en-US', N'This action is currently used by ', N'AppAction', 1),
 
-(N'AppAction.RolePermissionUsage.CountSuffix', N'zh-TW', N' 組角色使用。', N'AppAction', 1),
-(N'AppAction.RolePermissionUsage.CountSuffix', N'en-US', N' role-permission pair(s).', N'AppAction', 1),
+(N'AppAction.RolePermissionUsage.Count.Suffix', N'zh-TW', N' 組角色使用。', N'AppAction', 1),
+(N'AppAction.RolePermissionUsage.Count.Suffix', N'en-US', N' role-permission pair(s).', N'AppAction', 1),
 
 (N'AppAction.RolePermissionUsage.NoDetail', N'zh-TW', N'已有角色權限使用此動作，但無法取得對應的詳細資料。', N'AppAction', 1),
 (N'AppAction.RolePermissionUsage.NoDetail', N'en-US', N'Permissions exist for this action, but related details could not be retrieved.', N'AppAction', 1),
@@ -873,33 +872,97 @@ VALUES
 
 
 -- 系統角色管理
+-- Index
 (N'Role.Index.Title',            N'zh-TW', N'角色管理',       N'Role',            1),
 (N'Role.Index.Title',            N'en-US', N'Role Management',N'Role',            1),
 
+(N'Role.RoleGroup.Placeholder', N'zh-TW', N'請輸入角色群組', N'Role', 1),
+(N'Role.RoleGroup.Placeholder', N'en-US', N'Please enter role group', N'Role', 1),
+
+(N'Role.RoleCode.Placeholder', N'zh-TW', N'請輸入角色代碼', N'Role', 1),
+(N'Role.RoleCode.Placeholder', N'en-US', N'Please enter role code', N'Role', 1),
+
+(N'Role.EditPermission', N'zh-TW', N'編輯【權限】', N'UserGroup', 1),
+(N'Role.EditPermission', N'en-US', N'Edit Permissions', N'UserGroup', 1),
+
 -- Create
+(N'Role.Create.Title', N'zh-TW', N'角色管理-新增', N'Role', 1),
+(N'Role.Create.Title', N'en-US', N'Role Management - Create', N'Role', 1),
 
 -- Edit
+(N'Role.Edit.Title', N'zh-TW', N'角色管理-編輯', N'Role', 1),
+(N'Role.Edit.Title', N'en-US', N'Role Management - Edit', N'Role', 1),
 
 -- Delete
+(N'Role.Delete.Title', N'zh-TW', N'刪除角色', N'Role', 1),
+(N'Role.Delete.Title', N'en-US', N'Delete Role', N'Role', 1),
+
+-- Delete-使用者明細 (User)
+(N'Role.Delete.UserUsageCount.Prefix', N'zh-TW', N'使用者明細：', N'Role', 1),
+(N'Role.Delete.UserUsageCount.Prefix', N'en-US', N'User Details: ', N'Role', 1),
+
+(N'Role.Delete.UserUsageCount.Suffix', N'zh-TW', N' 筆', N'Role', 1),
+(N'Role.Delete.UserUsageCount.Suffix', N'en-US', N' items', N'Role', 1),
+
+-- Delete-群組明細 (Group)
+(N'Role.Delete.GroupUsageCount.Prefix', N'zh-TW', N'使用者群組明細：', N'Role', 1),
+(N'Role.Delete.GroupUsageCount.Prefix', N'en-US', N'User Group Details: ', N'Role', 1),
+
+(N'Role.Delete.GroupUsageCount.Suffix', N'zh-TW', N' 筆', N'Role', 1),
+(N'Role.Delete.GroupUsageCount.Suffix', N'en-US', N' items', N'Role', 1),
+
+-- Delete-警告訊息 (包含 HTML 格式)
+(N'Role.Delete.CannotDeleteMsg', N'zh-TW', N'此角色目前被上述使用者或群組使用，故<strong>無法刪除</strong>。<br />若要刪除，請先解除上述的使用者或群組角色設定。', N'Role', 1),
+(N'Role.Delete.CannotDeleteMsg', N'en-US', N'This role is currently used by the above users or groups, so it <strong>cannot be deleted</strong>.<br />Please remove the user or group role settings first.', N'Role', 1),
+
+(N'Role.Delete.PermissionWarning', N'zh-TW', N'（角色相關的權限將一併刪除）', N'Role', 1),
+(N'Role.Delete.PermissionWarning', N'en-US', N'(Related role permissions will also be deleted)', N'Role', 1),
 
 -- Details
+(N'Role.Details.Title', N'zh-TW', N'角色管理-詳細資料', N'Role', 1),
+(N'Role.Details.Title', N'en-US', N'Role Management - Details', N'Role', 1),
 
-
+-- 權限(Delete、Details共用)
+(N'Role.NoPermissions', N'zh-TW', N'(沒有任何啟用中的資源權限)', N'Role', 1),
+(N'Role.NoPermissions', N'en-US', N'(No active resource permissions)', N'Role', 1),
 
 -- 角色權限管理
-(N'RolePermission.Index.Title',       N'en-US', N'Role Permission Management', N'RolePermission',   1),
-
--- Create
+-- Index(在資源中顯示用，其實沒有Index)
+(N'RolePermission.Index.Title', N'zh-TW', N'角色管理-權限設定', N'RolePermission',   1),
+(N'RolePermission.Index.Title', N'en-US', N'Role Permission Management', N'RolePermission',   1),
 
 -- Edit
+(N'RolePermission.Edit.Title', N'zh-TW', N'角色管理-權限設定', N'Role', 1),
+(N'RolePermission.Edit.Title', N'en-US', N'Role Management - Permission Settings', N'Role', 1),
 
--- Delete
+(N'Role.EditPermission.PermissionSetting', N'zh-TW', N'權限設定', N'Role', 1),
+(N'Role.EditPermission.PermissionSetting', N'en-US', N'Permission Settings', N'Role', 1),
 
--- Details
+-- 提示訊息
+(N'Role.EditPermission.NoResources', N'zh-TW', N'目前尚無任何啟用中的資源可設定。', N'Role', 1),
+(N'Role.EditPermission.NoResources', N'en-US', N'No active resources available for configuration.', N'Role', 1),
+
+(N'Role.EditPermission.NoActions', N'zh-TW', N'目前尚無任何動作(AppAction)可設定。', N'Role', 1),
+(N'Role.EditPermission.NoActions', N'en-US', N'No actions (AppAction) available for configuration.', N'Role', 1),
+
+(N'Role.EditPermission.Note', N'zh-TW', N'說明：勾選代表此角色對應資源擁有該動作權限；取消勾選將刪除原有的權限設定。', N'Role', 1),
+(N'Role.EditPermission.Note', N'en-US', N'Note: Checked means the role has permission for the action on the resource; unchecking will remove the existing permission.', N'Role', 1),
+
 
 -- 使用者群組
+-- Index
 (N'UserGroup.Index.Title',       N'zh-TW', N'使用者群組管理', N'UserGroup',       1),
 (N'UserGroup.Index.Title',       N'en-US', N'User Group Management', N'UserGroup',   1),
+
+(N'UserGroup.UserGroupCode.Placeholder', N'zh-TW', N'請輸入群組名稱', N'UserGroup', 1),
+(N'UserGroup.UserGroupCode.Placeholder', N'en-US', N'Please enter group code', N'UserGroup', 1),
+
+(N'UserGroup.UserGroupDescription.Placeholder', N'zh-TW', N'請輸入群組說明', N'UserGroup', 1),
+(N'UserGroup.UserGroupDescription.Placeholder', N'en-US', N'Please enter description', N'UserGroup', 1),
+
+(N'UserGroup.EditRole', N'zh-TW', N'編輯【角色】', N'UserGroup', 1),
+(N'UserGroup.EditRole', N'en-US', N'Edit Roles', N'UserGroup', 1),
+
 
 -- Create
 
@@ -911,8 +974,10 @@ VALUES
 
 
 -- 使用者群組角色
+-- Index
 (N'UserGroupRole.Index.Title',       N'zh-TW', N'使用者群組角色管理', N'UserGroup',       1),
 (N'UserGroupRole.Index.Title',       N'en-US', N'User Group Role Management', N'UserGroup',   1),
+
 
 -- Create
 

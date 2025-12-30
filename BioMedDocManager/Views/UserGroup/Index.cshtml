@@ -2,7 +2,7 @@
 @model IEnumerable<Dictionary<string,object>>
 
 @{
-    ViewData["Title"] = "使用者群組管理";
+    ViewData["Title"] = Loc.T("UserGroup.Index.Title");
     Layout = "_AssetLayout";
 
     var queryModel = QueryableExtensions.GetSessionQueryModel<UserGroupQueryViewModel>(Context);
@@ -35,12 +35,12 @@
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="UserGroupCode" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    群組名稱：
+                                    @Loc.T("UserGroup.UserGroupCode")
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text" class="form-control" id="UserGroupCode"
                                            name="@nameof(UserGroupQueryViewModel.UserGroupCode)"
-                                           value="@queryModel.UserGroupCode" placeholder="請輸入群組名稱" />
+                                           value="@queryModel.UserGroupCode" placeholder="@Loc.T("UserGroup.UserGroupCode.Placeholder")"/>
                                 </div>
                             </div>
                         </div>
@@ -49,12 +49,12 @@
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="UserGroupDescription" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    群組說明：
+                                    @Loc.T("UserGroup.UserGroupDescription")
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text" class="form-control" id="UserGroupDescription"
                                            name="@nameof(UserGroupQueryViewModel.UserGroupDescription)"
-                                           value="@queryModel.UserGroupDescription" placeholder="請輸入群組說明" />
+                                           value="@queryModel.UserGroupDescription" placeholder="@Loc.T("UserGroup.UserGroupDescription.Placeholder")" />
                                 </div>
                             </div>
                         </div>
@@ -65,16 +65,16 @@
                         <div class="col-12 d-flex justify-content-center flex-wrap gap-2">
 
                             <button type="submit" class="btn2 btn-primary mt-2 search_btn">
-                                <i class="fas fa-search"></i>&ensp;查詢
+                                <i class="fas fa-search"></i> @Loc.T("Common.Search")
                             </button>
 
                             <a id="create_btn" href="@Url.Action("Create", "UserGroup")"
                                class="btn2 btn-success mt-2">
-                                <i class="fas fa-plus-circle"></i>&ensp;建立
+                                <i class="fas fa-plus-circle"></i> @Loc.T("Common.Create")
                             </a>
 
                             <button type="button" class="btn2 btn-secondary mt-2 clear_btn" data-form="myForm">
-                                 <i class="fas fa-eraser"></i> @Loc.T("Common.Reset")
+                                <i class="fas fa-eraser"></i> @Loc.T("Common.Reset")
                             </button>
 
                         </div>
@@ -100,7 +100,7 @@
                     <th data-id="@item.Key">
                         @if (item.Key != "RowNum")
                         {
-                            <a href="#" title="@($"{Loc.T("Common.SortByColumn.TooltipPrefix")}{Loc.T(item.Value)}{Loc.T("Common.SortByColumn.TooltipSuffix")}")"> @Loc.T(@item.Value)</a>
+                            <a href="#" title="@($"{Loc.T("Common.SortByColumn.Tooltip.Prefix")}{Loc.T(item.Value)}{Loc.T("Common.SortByColumn.Tooltip.Suffix")}")"> @Loc.T(@item.Value)</a>
                         }
                         else
                         {
@@ -142,13 +142,13 @@
                         <td class="col-actions">
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    功能
+                                    @Loc.T("Common.Actions")
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "UserGroup", new { id = row["UserGroupId"] })"> 檢視 </a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "UserGroup", new { id = row["UserGroupId"] })">編輯</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "UserGroupRole", new { id = row["UserGroupId"] })">編輯【角色】</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "UserGroup", new { id = row["UserGroupId"] })">刪除</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "UserGroup", new { id = row["UserGroupId"] })">@Loc.T("Common.View")</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "UserGroup", new { id = row["UserGroupId"] })">@Loc.T("Common.Edit")</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "UserGroupRole", new { id = row["UserGroupId"] })">@Loc.T("UserGroup.EditRole")</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "UserGroup", new { id = row["UserGroupId"] })">@Loc.T("Common.Delete")</a></li>
                                     @* TODO：如果要做「編輯群組成員」，在這裡再加 *@
                                     @* <li><a class="dropdown-item detail" href="@Url.Action("EditMembers", "UserGroup", new { id = row["UserGroupId"] })">編輯【成員】</a></li> *@
                                 </ul>

@@ -3,7 +3,7 @@
 @model IEnumerable<Dictionary<string, object>>
 
 @{
-    ViewData["Title"] = "角色管理";
+    ViewData["Title"] = Loc.T("Role.Index.Title");
     Layout = "_AssetLayout";
 
     var queryModel = QueryableExtensions.GetSessionQueryModel<RoleQueryViewModel>(Context);
@@ -17,7 +17,7 @@
     @Html.AntiForgeryToken()
 
     <div class="accordion" id="queryAccordion">
-        <!-- ✅ 角色查詢條件 -->
+        <!-- 角色查詢條件 -->
         <div class="accordion-item border border-secondary-subtle bg-light">
             <h2 class="accordion-header" id="roleHeading">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -35,7 +35,7 @@
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="RoleGroup" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    角色群組：
+                                    @Loc.T("Role.RoleGroup")
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
@@ -43,7 +43,7 @@
                                            id="RoleGroup"
                                            name="@nameof(RoleQueryViewModel.RoleGroup)"
                                            value="@queryModel.RoleGroup"
-                                           placeholder="請輸入角色群組" />
+                                           placeholder="@Loc.T("Role.RoleGroup.Placeholder")" />
                                 </div>
                             </div>
                         </div>
@@ -52,7 +52,7 @@
                         <div class="col">
                             <div class="row g-2 align-items-center">
                                 <label for="RoleCode" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
-                                    角色名稱：
+                                    @Loc.T("Role.RoleCode")
                                 </label>
                                 <div class="col-12 col-sm-8">
                                     <input type="text"
@@ -60,7 +60,7 @@
                                            id="RoleCode"
                                            name="@nameof(RoleQueryViewModel.RoleCode)"
                                            value="@queryModel.RoleCode"
-                                           placeholder="請輸入角色名稱" />
+                                           placeholder="@Loc.T("Role.RoleCode.Placeholder")" />
                                 </div>
                             </div>
                         </div>
@@ -71,16 +71,16 @@
                     <div class="row mb-3">
                         <div class="col-12 d-flex justify-content-center flex-wrap gap-2">
                             <button type="submit" class="btn2 btn-primary mt-2 search_btn">
-                                <i class="fas fa-search"></i>&ensp;查詢
+                                <i class="fas fa-search"></i> @Loc.T("Common.Search")
                             </button>
 
                             <a id="create_btn" href="@Url.Action("Create", "Role")"
                                class="btn2 btn-success mt-2">
-                                <i class="fas fa-plus-circle"></i>&ensp;新增角色
+                                <i class="fas fa-plus-circle"></i> @Loc.T("Common.Create")
                             </a>
 
                             <button type="button" class="btn2 btn-secondary mt-2 clear_btn" data-form="myForm">
-                                 <i class="fas fa-eraser"></i> @Loc.T("Common.Reset")
+                                <i class="fas fa-eraser"></i> @Loc.T("Common.Reset")
                             </button>
                         </div>
                     </div>
@@ -117,7 +117,7 @@
                     <th data-id="@item.Key">
                         @if (!string.Equals(item.Key, "RowNum", StringComparison.OrdinalIgnoreCase))
                         {
-                            <a href="#" title="@($"{Loc.T("Common.SortByColumn.TooltipPrefix")}{Loc.T(item.Value)}{Loc.T("Common.SortByColumn.TooltipSuffix")}")"> @Loc.T(@item.Value)</a>
+                            <a href="#" title="@($"{Loc.T("Common.SortByColumn.Tooltip.Prefix")}{Loc.T(item.Value)}{Loc.T("Common.SortByColumn.Tooltip.Suffix")}")"> @Loc.T(@item.Value)</a>
                         }
                         else
                         {
@@ -149,7 +149,7 @@
                         {
                             if (!row.TryGetValue(key, out var cell)) { cell = ""; }
 
-                            string value =TableHelper.FormatValue(cell, Loc);
+                            string value = TableHelper.FormatValue(cell, Loc);
 
                             <td class="@(value == "(" + Loc.T("Common.None") + ")" ? "none-data" : "") @((key.Equals("RowNum", StringComparison.OrdinalIgnoreCase)) ? "text-nowrap" : "")">
                                 @Html.Raw(value)
@@ -159,13 +159,13 @@
                         <td class="col-actions">
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    功能
+                                    @Loc.T("Common.Actions")
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "Role", new { id = row["RoleId"] })">檢視</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "Role", new { id = row["RoleId"] })">編輯</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "RolePermission", new { id = row["RoleId"] })">編輯【權限】</a></li>
-                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "Role", new { id = row["RoleId"] })">刪除</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "Role", new { id = row["RoleId"] })"> @Loc.T("Common.View") </a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "Role", new { id = row["RoleId"] })"> @Loc.T("Common.Edit") </a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "RolePermission", new { id = row["RoleId"] })"> @Loc.T("Role.EditPermission") </a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "Role", new { id = row["RoleId"] })"> @Loc.T("Common.Delete") </a></li>
                                 </ul>
                             </div>
                         </td>
