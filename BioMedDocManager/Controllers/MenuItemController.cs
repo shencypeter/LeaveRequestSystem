@@ -14,7 +14,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    
+
     public class MenuItemController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
@@ -103,6 +103,7 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，posted為null");
                 return NotFound();
             }
 
@@ -112,6 +113,7 @@ namespace BioMedDocManager.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，必填資料未填寫");
                     return View(posted);
                 }
 
@@ -120,7 +122,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"選單-{posted.MenuItemTitle} 新增【失敗】";
+                var msg = _loc.T("MenuItem.Create.Title") + "-" + posted.MenuItemTitle + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -128,7 +130,8 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"選單-{posted.MenuItemTitle} 新增成功";
+            TempData["_JSShowSuccess"] = _loc.T("MenuItem.Create.Title") + "-" + posted.MenuItemTitle + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
@@ -139,6 +142,7 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
@@ -147,6 +151,7 @@ namespace BioMedDocManager.Controllers
 
             if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -164,6 +169,7 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null || id != posted.MenuItemId)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
@@ -174,7 +180,14 @@ namespace BioMedDocManager.Controllers
 
             if (dbEntity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，dbEntity為null");
                 return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，必填資料未填寫");
+                return View(posted);
             }
 
             try
@@ -189,7 +202,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"選單-{dbEntity.MenuItemTitle} 更新【失敗】";
+                var msg = _loc.T("MenuItem.Edit.Title") + "-" + dbEntity.MenuItemTitle + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -197,7 +210,8 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"選單-{dbEntity.MenuItemTitle} 更新成功";
+            TempData["_JSShowSuccess"] = _loc.T("MenuItem.Edit.Title") + "-" + dbEntity.MenuItemTitle + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
@@ -208,6 +222,7 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
@@ -219,6 +234,7 @@ namespace BioMedDocManager.Controllers
 
             if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -226,7 +242,7 @@ namespace BioMedDocManager.Controllers
             {
                 entity.Resource.WithLoc(_loc);
             }
-            
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示詳細資料");
 
             return View(entity);
@@ -237,6 +253,7 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
@@ -248,6 +265,7 @@ namespace BioMedDocManager.Controllers
 
             if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -277,6 +295,8 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.MenuItemId)
             {
+
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
@@ -285,6 +305,7 @@ namespace BioMedDocManager.Controllers
 
             if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除頁儲存", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -295,7 +316,7 @@ namespace BioMedDocManager.Controllers
 
                 if (hasChildren)
                 {
-                    var msg = $"選單-{entity.MenuItemTitle} 目前仍有子選單，無法刪除。";
+                    var msg = _loc.T("MenuItem.Delete.BlockedLine1") + "，" + _loc.T("MenuItem.Delete.BlockedLine2");
                     TempData["_JSShowAlert"] = msg;
 
                     await _accessLog.NewActionAsync(
@@ -314,7 +335,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"選單-{entity.MenuItemTitle} 刪除【失敗】";
+                var msg = _loc.T("MenuItem.Delete.Title") + "-" + entity.MenuItemTitle + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -323,7 +344,8 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"選單-{entity.MenuItemTitle} 已刪除";
+            TempData["_JSShowSuccess"] = _loc.T("MenuItem.Delete.Title") + "-" + entity.MenuItemTitle + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));
@@ -368,7 +390,7 @@ namespace BioMedDocManager.Controllers
             // ===== 樹狀排序：父層依自己的 DisplayOrder，子層跟在各自父層後面 =====
             q =
                 from m in q
-                join p in _context.MenuItems.Include(m=>m.Resource).AsNoTracking()
+                join p in _context.MenuItems.Include(m => m.Resource).AsNoTracking()
                     on m.MenuItemParentId equals p.MenuItemId into parentJoin
                 from parent in parentJoin.DefaultIfEmpty()
                 orderby

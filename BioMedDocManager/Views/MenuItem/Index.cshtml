@@ -95,7 +95,7 @@
                                 <i class="fas fa-search"></i> @Loc.T("Common.Search")
                             </button>
 
-                            <a href="@Url.Action("Create", "MenuItem")"
+                            <a id="create_btn" href="@Url.Action("Create", "MenuItem")"
                                class="btn2 btn-success mt-2">
                                 <i class="fas fa-plus-circle"></i> @Loc.T("Common.Create")
                             </a>
@@ -173,7 +173,7 @@
                                 cell = "";
                             }
 
-                            string value =TableHelper.FormatValue(cell, Loc);
+                            string value = TableHelper.FormatValue(cell, Loc);
 
                             var isRowNum = key.Equals("RowNum", StringComparison.OrdinalIgnoreCase);
                             var classes = new List<string>();

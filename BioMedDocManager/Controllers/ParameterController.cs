@@ -91,6 +91,7 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，posted為null");
                 return NotFound();
             }
 
@@ -100,6 +101,7 @@ namespace BioMedDocManager.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，必填資料未填寫");
                     return View(posted);
                 }
 
@@ -107,7 +109,13 @@ namespace BioMedDocManager.Controllers
                 var exists = await _context.Parameters.AnyAsync(p => p.ParameterCode == posted.ParameterCode);
                 if (exists)
                 {
-                    ModelState.AddModelError(nameof(Parameter.ParameterCode), "參數代碼已存在，請更換。");
+                    ModelState.AddModelError(
+                        nameof(Parameter.ParameterCode),
+                        _loc.T("Parameter.ParameterCode.Duplicate")
+                    );
+
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，Parameter Code重複，不可儲存");
+
                     return View(posted);
                 }
 
@@ -116,7 +124,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"系統參數-{posted.ParameterCode} 新增【失敗】";
+                var msg = _loc.T("Parameter.Create.Title") + "-" + posted.ParameterCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -124,7 +132,8 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"系統參數-{posted.ParameterCode} 新增成功";
+            TempData["_JSShowSuccess"] = _loc.T("Parameter.Create.Title") + "-" + posted.ParameterCode + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
@@ -135,12 +144,14 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
             var entity = await _context.Parameters.FirstOrDefaultAsync(p => p.ParameterId == id);
             if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -154,6 +165,7 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.ParameterId)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
@@ -162,6 +174,7 @@ namespace BioMedDocManager.Controllers
             var dbEntity = await _context.Parameters.FirstOrDefaultAsync(p => p.ParameterId == id);
             if (dbEntity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，dbEntity為null");
                 return NotFound();
             }
 
@@ -169,6 +182,7 @@ namespace BioMedDocManager.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，必填資料未填寫");
                     return View(posted);
                 }
 
@@ -176,7 +190,13 @@ namespace BioMedDocManager.Controllers
                 var exists = await _context.Parameters.AnyAsync(p => p.ParameterId != dbEntity.ParameterId && p.ParameterCode == posted.ParameterCode);
                 if (exists)
                 {
-                    ModelState.AddModelError(nameof(Parameter.ParameterCode), "參數代碼已存在，請更換。");
+                    ModelState.AddModelError(
+                        nameof(Parameter.ParameterCode),
+                        _loc.T("Parameter.ParameterCode.Duplicate")
+                    );
+
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，Parameter Code重複，不可儲存");
+
                     return View(posted);
                 }
 
@@ -190,7 +210,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"系統參數管理-更新【失敗】";
+                var msg = _loc.T("Parameter.Edit.Title") + "-" + dbEntity.ParameterCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -198,7 +218,8 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"系統參數管理-更新成功";
+            TempData["_JSShowSuccess"] = _loc.T("Parameter.Edit.Title") + "-" + dbEntity.ParameterCode + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
@@ -209,6 +230,7 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
@@ -218,6 +240,7 @@ namespace BioMedDocManager.Controllers
 
             if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -231,6 +254,7 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
@@ -240,6 +264,7 @@ namespace BioMedDocManager.Controllers
 
             if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -254,12 +279,14 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.ParameterId)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
             var entity = await _context.Parameters.FirstOrDefaultAsync(p => p.ParameterId == posted.ParameterId);
             if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除頁儲存", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -270,7 +297,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"系統參數-{entity.ParameterCode} 刪除【失敗】";
+                var msg = _loc.T("Parameter.Delete.Title") + "-" + entity.ParameterCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -278,7 +305,8 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"系統參數-{entity.ParameterCode} 已刪除";
+            TempData["_JSShowSuccess"] = _loc.T("Parameter.Delete.Title") + "-" + entity.ParameterCode + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));

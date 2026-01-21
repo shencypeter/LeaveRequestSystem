@@ -6,6 +6,8 @@
                     ?? ViewData["Title"]?.ToString();
 
     var htmlClass = ViewData["HtmlClass"] as string ?? "";
+
+    var culture = System.Globalization.CultureInfo.CurrentUICulture.Name;// 多語系
 }
 <!DOCTYPE html>
 <html lang="zh-Hant" data-bs-theme="auto" class="@htmlClass">
@@ -30,7 +32,7 @@
     @* 額外 <head> 內容（如 og/meta/script 等） *@
     @RenderSection("HeadExtra", required: false)
 </head>
-<body>
+<body class="culture-@culture">
 
     @RenderBody()
 

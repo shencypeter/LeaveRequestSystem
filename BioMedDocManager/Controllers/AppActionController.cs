@@ -113,7 +113,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"動作-{posted.AppActionCode} 新增【失敗】";
+                var msg = _loc.T("AppAction.Create.Title") + "-" + posted.AppActionCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -121,7 +121,8 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"動作-{posted.AppActionCode} 新增成功";
+            TempData["_JSShowSuccess"] = _loc.T("AppAction.Create.Title") + "-" + posted.AppActionCode + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
@@ -176,7 +177,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"動作-{dbEntity.AppActionCode} 更新【失敗】";
+                var msg = _loc.T("AppAction.Edit.Title") + "-" + dbEntity.AppActionCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -184,7 +185,8 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"動作-{dbEntity.AppActionCode} 更新成功";
+            TempData["_JSShowSuccess"] = _loc.T("AppAction.Edit.Title") + "-" + dbEntity.AppActionCode + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
             return RedirectToAction(nameof(Index));
@@ -360,7 +362,9 @@ namespace BioMedDocManager.Controllers
 
                 if (hasAnyRolePermission)
                 {
-                    var msg = $"系統動作-{entity.AppActionCode} 目前仍被角色權限使用，無法刪除。";
+                    var msg = _loc.T("AppAction.Delete.InUse.Prefix")
+                             + entity.AppActionCode
+                             + _loc.T("AppAction.Delete.InUse.Suffix");
                     TempData["_JSShowAlert"] = msg;
 
                     await _accessLog.NewActionAsync(
@@ -379,7 +383,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"系統動作-{entity.AppActionCode} 刪除【失敗】";
+                var msg = _loc.T("AppAction.Delete.Title") + "-" + entity.AppActionCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -388,7 +392,8 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"系統動作-{entity.AppActionCode} 已刪除";
+            TempData["_JSShowSuccess"] = _loc.T("AppAction.Delete.Title") + "-" + entity.AppActionCode + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));

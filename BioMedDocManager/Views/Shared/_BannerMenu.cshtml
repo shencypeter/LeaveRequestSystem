@@ -40,7 +40,7 @@
         {
             // 沒有任何 MenuItem（未登入或沒有可用選單）
             var isLoggedIn = User?.Identity?.IsAuthenticated == true;
-            var linkUrl = isLoggedIn ? Url.Content("~/Login/Logout") : Url.Content("~/Login");
+            var linkUrl = isLoggedIn ? Url.Action("Logout", "Login") : Url.Action("Index", "Login");
             var message = isLoggedIn
             ? $"{Loc.T("Auth.AccessDenied")} — {Loc.T("Common.ContactAdminIfAnyQuestion")}"
             : Loc.T("Auth.LoginRequired");
@@ -54,7 +54,7 @@
 
             if (currentGroup == null)
             {
-                // ===== 第一層：父層選單（結構跟之前一樣，用 <a> 直接掛在 .banner-menu 底下） =====
+                // ===== 第一層：父層選單（用 <a> 直接掛在 .banner-menu 底下） =====
                 @foreach (var group in menuTree
                         .OrderBy(g => g.Parent?.MenuItemDisplayOrder ?? int.MaxValue)
                         .ThenBy(g => g.Parent?.MenuItemId ?? int.MaxValue))
@@ -101,7 +101,7 @@
             // ===== 第二層：子選單（有 currentGroup 時才顯示） =====
             else
             {
-                <a href="@Url.Content("~/")"
+                <a href="@Url.Action("Index", "Home")"
                    class="btn btn-outline-secondary btn-sm me-2">
                     <i class="fa fa-arrow-left"></i> @Loc.T("Common.BackToUpper")
                 </a>
@@ -138,6 +138,7 @@
                 }
             }
         }
+
     </div>
 
     <button class="scroll-btn right">

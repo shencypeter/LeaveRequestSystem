@@ -171,7 +171,7 @@ table {
 }
 
 .col-form-label {
-    min-width: 7rem;
+   /* min-width: 7rem;*/
 }
 
 
@@ -286,11 +286,36 @@ marquee {
     }
 }
 
-@media screen and (max-width: 600px) {
-    .user-nav {
+/* 中文 */
+/* 大標題*/
+@media screen and (max-width: 680px) {
+    body.culture-zh-TW .navbar-brand {
         display: none;
     }
 }
+
+/* 副選單 */
+@media screen and (max-width: 380px) {
+    body.culture-zh-TW .user-nav {
+        display: none;
+    }
+}
+
+/* 英文 */
+/* 大標題*/
+@media screen and (max-width: 960px) {
+    body.culture-en-US .navbar-brand {
+        display: none;
+    }
+}
+/* 副選單 */
+@media screen and (max-width: 430px) {
+    body.culture-en-US .user-nav {
+        display: none;
+    }
+}
+
+
 
 @media screen and (max-width: 503px) {
 

@@ -113,6 +113,7 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，posted為null");
                 return NotFound();
             }
 
@@ -123,6 +124,7 @@ namespace BioMedDocManager.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，必填資料未填寫");
                     return View(posted);
                 }
 
@@ -131,14 +133,14 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{posted.UserGroupCode} 資料新增【失敗】";
+                var msg = _loc.T("UserGroup.Create.Title") + "-" + posted.UserGroupCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "資料新增【失敗】", msg, true);
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{posted.UserGroupCode} 資料新增成功";
+            TempData["_JSShowSuccess"] = _loc.T("UserGroup.Create.Title") + "-" + posted.UserGroupCode + _loc.T("Common.Success");
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁資料新增成功");
 
@@ -152,20 +154,22 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
-            var group = await _context.UserGroups
+            var entity = await _context.UserGroups
                 .FirstOrDefaultAsync(g => g.UserGroupId == id);
 
-            if (group == null)
+            if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，entity為null");
                 return NotFound();
             }
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
 
-            return View(group);
+            return View(entity);
         }
 
         /// <summary>
@@ -177,23 +181,25 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserGroupId)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
             // 過濾字串
             QueryableExtensions.TrimStringProperties(posted);
 
-            var dbGroup = await _context.UserGroups.FirstOrDefaultAsync(g => g.UserGroupId == posted.UserGroupId);
+            var dbEntity = await _context.UserGroups.FirstOrDefaultAsync(g => g.UserGroupId == posted.UserGroupId);
 
-            if (dbGroup == null)
+            if (dbEntity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，dbEntity為null");
                 return NotFound();
             }
 
             try
             {
-                dbGroup.UserGroupCode = posted.UserGroupCode?.Trim() ?? string.Empty;
-                dbGroup.UserGroupDescription = string.IsNullOrWhiteSpace(posted.UserGroupDescription)
+                dbEntity.UserGroupCode = posted.UserGroupCode?.Trim() ?? string.Empty;
+                dbEntity.UserGroupDescription = string.IsNullOrWhiteSpace(posted.UserGroupDescription)
                     ? null
                     : posted.UserGroupDescription.Trim();
 
@@ -201,7 +207,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{dbGroup.UserGroupCode} 資料更新【失敗】";
+                var msg = _loc.T("UserGroup.Edit.Title") + "-" + dbEntity.UserGroupCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新【失敗】", msg, true);
@@ -209,7 +215,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{dbGroup.UserGroupCode} 資料更新成功";
+            TempData["_JSShowSuccess"] = _loc.T("UserGroup.Edit.Title") + "-" + dbEntity.UserGroupCode + _loc.T("Common.Success");
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁資料更新成功");
 
@@ -223,10 +229,11 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
-            var group = await _context.UserGroups
+            var entity = await _context.UserGroups
                 .Include(g => g.UserGroupMembers)
                 .ThenInclude(m => m.User)
                 .Include(g => g.UserGroupRoles)
@@ -234,14 +241,15 @@ namespace BioMedDocManager.Controllers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(g => g.UserGroupId == id);
 
-            if (group == null)
+            if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁", "錯誤，entity為null");
                 return NotFound();
             }
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁");
 
-            return View(group);
+            return View(entity);
         }
 
         /// <summary>
@@ -251,10 +259,11 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
-            var group = await _context.UserGroups
+            var entity = await _context.UserGroups
                 .Include(g => g.UserGroupMembers)
                 .ThenInclude(m => m.User)
                 .Include(g => g.UserGroupRoles)
@@ -262,14 +271,15 @@ namespace BioMedDocManager.Controllers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(g => g.UserGroupId == id);
 
-            if (group == null)
+            if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁", "錯誤，entity為null");
                 return NotFound();
             }
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
 
-            return View(group);
+            return View(entity);
         }
 
         /// <summary>
@@ -281,26 +291,28 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserGroupId)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
-            var group = await _context.UserGroups.FirstOrDefaultAsync(g => g.UserGroupId == posted.UserGroupId);
+            var entity = await _context.UserGroups.FirstOrDefaultAsync(g => g.UserGroupId == posted.UserGroupId);
 
-            if (group == null)
+            if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除頁儲存", "錯誤，entity為null");
                 return NotFound();
             }
 
             try
             {
                 // 標記為刪除
-                _context.UserGroups.Remove(group);
+                _context.UserGroups.Remove(entity);
 
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{group.UserGroupCode} 刪除【失敗】";
+                var msg = _loc.T("UserGroup.Delete.Title") + "-" + entity.UserGroupCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗】", msg, true);
@@ -308,7 +320,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupCode} 已刪除";
+            TempData["_JSShowSuccess"] = _loc.T("UserGroup.Delete.Title") + "-" + entity.UserGroupCode + _loc.T("Common.Success");
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 

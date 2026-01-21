@@ -14,7 +14,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    
+
     public class RoleController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
@@ -95,6 +95,7 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，posted為null");
                 return NotFound();
             }
 
@@ -104,6 +105,7 @@ namespace BioMedDocManager.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，必填資料未填寫");
                     return View(posted);
                 }
 
@@ -112,7 +114,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"角色-{posted.RoleCode} 新增【失敗】";
+                var msg = _loc.T("Role.Create.Title") + "-" + posted.RoleCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -120,7 +122,8 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"角色-{posted.RoleCode} 新增成功";
+            TempData["_JSShowSuccess"] = _loc.T("Role.Create.Title") + "-" + posted.RoleCode + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
             return RedirectToAction(nameof(Index));
@@ -131,6 +134,7 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
@@ -138,6 +142,7 @@ namespace BioMedDocManager.Controllers
 
             if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -150,8 +155,9 @@ namespace BioMedDocManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([FromRoute] int? id, Role posted)
         {
-            if (posted == null || id != posted.RoleId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.RoleId)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
@@ -162,6 +168,7 @@ namespace BioMedDocManager.Controllers
 
             if (dbEntity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，dbEntity為null");
                 return NotFound();
             }
 
@@ -174,7 +181,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"角色-{dbEntity.RoleCode} 更新【失敗】";
+                var msg = _loc.T("Role.Edit.Title") + "-" + dbEntity.RoleCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -182,174 +189,9 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"角色-{dbEntity.RoleCode} 更新成功";
+            TempData["_JSShowSuccess"] = _loc.T("Role.Edit.Title") + "-" + dbEntity.RoleCode + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        // ======================= EditPermission =======================
-        public async Task<IActionResult> EditPermission([FromRoute] int? id)
-        {
-            if (id.GetValueOrDefault() <= 0)
-            {
-                return NotFound();
-            }
-
-            var role = await _context.Roles
-                .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.RoleId == id);
-
-            if (role == null)
-            {
-                return NotFound();
-            }
-
-            // 啟用中的 Resource
-            var resources = await _context.Resources
-                .Where(r => r.ResourceIsActive && r.DeletedAt == null)
-                .OrderBy(r => r.ResourceKey)
-                .AsNoTracking()
-                .ToListAsync();
-
-            // 所有 AppAction（照 AppActionOrder）
-            var actions = await _context.AppActions
-                .Where(a => a.DeletedAt == null)
-                .OrderBy(a => a.AppActionOrder)
-                .ThenBy(a => a.AppActionCode)
-                .AsNoTracking()
-                .ToListAsync();
-
-            // 目前這個角色既有的 RolePermission
-            var existingPerms = await _context.RolePermissions
-                .Where(rp => rp.RoleId == id)
-                .Select(rp => new
-                {
-                    rp.ResourceId,
-                    rp.AppActionId
-                })
-                .ToListAsync();
-
-            var selectedKeys = existingPerms
-                .Select(p => $"{p.ResourceId}:{p.AppActionId}")
-                .ToList();
-
-            var vm = new RolePermissionEditViewModel
-            {
-                RoleId = role.RoleId,
-                RoleCode = role.RoleCode,
-                Resources = resources,
-                AppActions = actions,
-                SelectedPermissionKeys = selectedKeys
-            };
-
-            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示權限編輯頁");
-
-            return View(vm);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditPermission([FromRoute] int? id, RolePermissionEditViewModel posted)
-        {
-            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.RoleId)
-            {
-                return NotFound();
-            }
-
-            var role = await _context.Roles
-                .FirstOrDefaultAsync(r => r.RoleId == posted.RoleId);
-
-            if (role == null)
-            {
-                return NotFound();
-            }
-
-            // 1) 解析 SelectedPermissionKeys -> HashSet<(int ResourceId, int AppActionId)>
-            var newKeys = new HashSet<(int ResourceId, int AppActionId)>();
-
-            var rawKeys = posted.SelectedPermissionKeys ?? new List<string>();
-            foreach (var key in rawKeys.Distinct())
-            {
-                if (string.IsNullOrWhiteSpace(key))
-                {
-                    continue;
-                }
-
-                var parts = key.Split(':', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length != 2)
-                {
-                    continue;
-                }
-
-                if (int.TryParse(parts[0], out var resId) &&
-                    int.TryParse(parts[1], out var actId))
-                {
-                    newKeys.Add((resId, actId));
-                }
-            }
-
-            try
-            {
-                // 2) 讀取目前 DB 中此角色的 RolePermission
-                var existingPerms = await _context.RolePermissions
-                    .Where(rp => rp.RoleId == role.RoleId)
-                    .ToListAsync();
-
-                var existingKeySet = existingPerms
-                    .Select(p => (p.ResourceId, p.AppActionId))
-                    .ToHashSet();
-
-                // 3) 找出要刪除的：DB 有，但勾選已取消
-                var toDelete = existingPerms
-                    .Where(p => !newKeys.Contains((p.ResourceId, p.AppActionId)))
-                    .ToList();
-
-                if (toDelete.Count > 0)
-                {
-                    _context.RolePermissions.RemoveRange(toDelete);
-                }
-
-                // 4) 找出要新增的：勾選有，但 DB 沒有
-                var toAddKeys = newKeys
-                    .Where(k => !existingKeySet.Contains(k))
-                    .ToList();
-
-                foreach (var (resId, actId) in toAddKeys)
-                {
-                    var rp = new RolePermission
-                    {
-                        RoleId = role.RoleId,
-                        ResourceId = resId,
-                        AppActionId = actId
-                    };
-                    await _context.RolePermissions.AddAsync(rp);
-                }
-
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                var msg = $"角色-{role.RoleCode} 權限設定更新【失敗】";
-                Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
-                TempData["_JSShowAlert"] = msg;
-
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "權限設定更新【失敗】", msg, true);
-
-                // 失敗就回到 Details 或 Index 都可以，這邊回 Details
-                return RedirectToAction(nameof(Details), new { roleId = role.RoleId });
-            }
-
-            var successMsg = $"角色-{role.RoleCode} 權限設定已更新";
-            TempData["_JSShowSuccess"] = successMsg;
-
-            await _accessLog.NewActionAsync(
-                GetLoginUser(),
-                "角色管理",
-                "權限設定更新成功",
-                successMsg
-            );
-
 
             return RedirectToAction(nameof(Index));
         }
@@ -358,14 +200,19 @@ namespace BioMedDocManager.Controllers
         public async Task<IActionResult> Details([FromRoute] int? id)
         {
             if (id.GetValueOrDefault() <= 0)
+            {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁", "錯誤，id小於等於0");
                 return NotFound();
-
+            }
             var entity = await _context.Roles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.RoleId == id);
 
             if (entity == null)
+            {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示明細頁", "錯誤，entity為null");
                 return NotFound();
+            }
 
             // 取有效權限（ResourceIsActive = 1）
             var perms = await _context.RolePermissions
@@ -398,9 +245,12 @@ namespace BioMedDocManager.Controllers
         public async Task<IActionResult> Delete([FromRoute] int? id)
         {
             if (id.GetValueOrDefault() <= 0)
+            {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁", "錯誤，id小於等於0");
                 return NotFound();
+            }
 
-            var role = await _context.Roles
+            var entity = await _context.Roles
                 .Include(r => r.UserRoles)
                     .ThenInclude(ur => ur.User)
                 .Include(r => r.UserGroupRoles)
@@ -408,11 +258,14 @@ namespace BioMedDocManager.Controllers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.RoleId == id);
 
-            if (role == null)
+            if (entity == null)
+            {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁", "錯誤，entity為null");
                 return NotFound();
+            }
 
             // ==== 使用者明細 ====
-            var userList = role.UserRoles
+            var userList = entity.UserRoles
                 .Where(ur => ur.User != null)
                 .Select(ur => new RoleUsageUserViewModel
                 {
@@ -423,7 +276,7 @@ namespace BioMedDocManager.Controllers
                 .ToList();
 
             // ==== 群組明細 ====
-            var groupList = role.UserGroupRoles
+            var groupList = entity.UserGroupRoles
                 .Where(ugr => ugr.UserGroup != null)
                 .Select(ugr => new RoleUsageGroupViewModel
                 {
@@ -451,15 +304,16 @@ namespace BioMedDocManager.Controllers
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示刪除頁");
 
-            return View(role);
+            return View(entity);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed([FromRoute] int? id, Role posted)
         {
-            if (posted == null || id != posted.RoleId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.RoleId)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
@@ -467,6 +321,7 @@ namespace BioMedDocManager.Controllers
 
             if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除頁儲存", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -478,7 +333,10 @@ namespace BioMedDocManager.Controllers
 
                 if (usedByUser || usedByGroup)
                 {
-                    var msg = $"角色-{entity.RoleCode} 目前仍被使用者或群組使用，無法刪除。";
+                    var msg =
+                            _loc.T("Role.Delete.UsedByUserOrGroup.Prefix")
+                            + entity.RoleCode
+                            + _loc.T("Role.Delete.UsedByUserOrGroup.Suffix");
                     TempData["_JSShowAlert"] = msg;
                     await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除【失敗-角色已被使用】", msg, true);
 
@@ -501,7 +359,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"角色-{entity.RoleCode} 刪除【失敗】";
+                var msg = _loc.T("Role.Delete.Title") + "-" + entity.RoleCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -509,7 +367,8 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = $"角色-{entity.RoleCode} 已刪除";
+            TempData["_JSShowSuccess"] = _loc.T("Role.Delete.Title") + "-" + entity.RoleCode + _loc.T("Common.Success");
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
             return RedirectToAction(nameof(Index));

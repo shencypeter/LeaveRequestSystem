@@ -611,7 +611,9 @@ namespace BioMedDocManager.Models
     {
         public int RoleId { get; set; }
         public string RoleCode { get; set; } = "";
+        public string RoleCodeName { get; set; } = "";
         public string RoleGroup { get; set; } = "";
+        public string RoleGroupName { get; set; } = "";
         public bool IsNew { get; set; }
 
         public List<PreviewRoleSourceGroupViewModel> FromGroups { get; set; } = new();

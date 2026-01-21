@@ -1,4 +1,5 @@
 ﻿using BioMedDocManager.Models;
+using System.Globalization;
 
 namespace BioMedDocManager.Middleware
 {
@@ -18,11 +19,13 @@ namespace BioMedDocManager.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var path = context.Request.Path.HasValue ? context.Request.Path.Value! : string.Empty;
+            var rawPath = context.Request.Path.HasValue ? context.Request.Path.Value! : string.Empty;
 
-            // 1) 排除不需要檢查的路徑
-            //    - 靜態檔案、登入、登出、2FA、變更密碼頁面…
-            if (IsBypassPath(path))
+            // 去掉前綴 culture（例如 /zh-TW/login -> /login）
+            var pathNoCulture = RemoveCulturePrefix(rawPath);
+
+            // 1) 排除不需要檢查的路徑（用「去掉culture後」來判斷）
+            if (IsBypassPath(pathNoCulture))
             {
                 await _next(context);
                 return;
@@ -31,12 +34,12 @@ namespace BioMedDocManager.Middleware
             // 2) 必須是「已登入」的使用者才檢查強制改密碼
             if (context.User.Identity?.IsAuthenticated == true)
             {
-
                 var flag = context.Session.GetString(AppSettings.ForceChangePasswordRequiredKey);
 
                 if (string.Equals(flag, "Y", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Response.Redirect("/AccountSettings/ChangePassword");
+                    var culture = CultureInfo.CurrentUICulture.Name; // zh-TW / en-US ...
+                    context.Response.Redirect($"/{culture}/AccountSettings/ChangePassword");
                     return;
                 }
             }
@@ -46,7 +49,7 @@ namespace BioMedDocManager.Middleware
 
         private static bool IsBypassPath(string path)
         {
-            path = path.ToLowerInvariant();
+            path = (path ?? string.Empty).ToLowerInvariant();
 
             // 可依實際路由調整
             if (path.StartsWith("/login"))
@@ -73,6 +76,55 @@ namespace BioMedDocManager.Middleware
 
             return false;
         }
-    }
 
+        private static string RemoveCulturePrefix(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path) || path[0] != '/')
+            {
+                return path ?? string.Empty;
+            }
+
+            // /{seg}/xxxx 取第一段 seg
+            var parts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0)
+            {
+                return path;
+            }
+
+            var firstSeg = parts[0];
+
+            // 判斷第一段是不是 culture（zh-TW / en / en-US 之類）
+            if (IsCultureSegment(firstSeg))
+            {
+                // 砍掉第一段 culture，重新組回 /xxxx
+                if (parts.Length == 1)
+                {
+                    return "/";
+                }
+                return "/" + string.Join('/', parts.Skip(1));
+            }
+
+            return path;
+        }
+
+        private static bool IsCultureSegment(string segment)
+        {
+            if (string.IsNullOrWhiteSpace(segment))
+            {
+                return false;
+            }
+
+            // 用 .NET 的 CultureInfo 來判斷是否為有效文化碼
+            // (例如 zh-TW / en / en-US 等)
+            try
+            {
+                _ = CultureInfo.GetCultureInfo(segment);
+                return true;
+            }
+            catch (CultureNotFoundException)
+            {
+                return false;
+            }
+        }
+    }
 }

@@ -23,7 +23,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    
+
     public class AccountSettingsController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
@@ -132,16 +132,16 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateUserViewModel PostedUser)
+        public async Task<IActionResult> Create(CreateUserViewModel posted)
         {
-            if (PostedUser == null)
+            if (posted == null)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，PostedUser為null");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，posted為null");
                 return NotFound();
             }
 
             // 過濾文字
-            QueryableExtensions.TrimStringProperties(PostedUser);
+            QueryableExtensions.TrimStringProperties(posted);
 
             try
             {
@@ -155,7 +155,7 @@ namespace BioMedDocManager.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var newUser = ToUserEntity(PostedUser);
+                var newUser = ToUserEntity(posted);
 
                 await _context.Users.AddAsync(newUser);
                 await _context.SaveChangesAsync(); // 儲存後 newUser.Id 才有值
@@ -163,13 +163,13 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                string customErrorString = "帳號設定-" + PostedUser.UserFullName + "資料新增【失敗】";
+                string customErrorString = _loc.T("AccountSettings.Create.Title") + "-" + posted.UserFullName + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(customErrorString, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = customErrorString;
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", customErrorString, true);
             }
 
-            TempData["_JSShowSuccess"] = "帳號設定-" + PostedUser.UserFullName + "資料新增成功";
+            TempData["_JSShowSuccess"] = _loc.T("AccountSettings.Create.Title") + "-" + posted.UserFullName + _loc.T("Common.Success");
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "新增成功");
 
@@ -189,31 +189,31 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users
+            var entity = await _context.Users
                 .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(s => s.UserId == id);
 
-            if (user == null)
+            if (entity == null)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，user為null");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，entity為null");
                 return NotFound();
             }
 
             var AccountViewModel = new AccountViewModel
             {
-                UserId = user.UserId,
-                UserAccount = user.UserAccount,
-                UserFullName = user.UserFullName,
-                UserJobTitle = user.UserJobTitle,
-                DepartmentId = user.DepartmentId,
-                UserEmail = user.UserEmail,
-                UserPhone = user.UserPhone,
-                UserMobile = user.UserMobile,
-                CreatedAt = user.CreatedAt,
-                UserIsActive = user.UserIsActive,
-                UserIsLocked = user.UserIsLocked,
-                UserRemarks = user.UserRemarks,
+                UserId = entity.UserId,
+                UserAccount = entity.UserAccount,
+                UserFullName = entity.UserFullName,
+                UserJobTitle = entity.UserJobTitle,
+                DepartmentId = entity.DepartmentId,
+                UserEmail = entity.UserEmail,
+                UserPhone = entity.UserPhone,
+                UserMobile = entity.UserMobile,
+                CreatedAt = entity.CreatedAt,
+                UserIsActive = entity.UserIsActive,
+                UserIsLocked = entity.UserIsLocked,
+                UserRemarks = entity.UserRemarks,
             };
 
             ViewBag.DepartmentOptions = DepartmentNameOptions(onlyActive: true);
@@ -231,56 +231,54 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? id, AccountViewModel user)
+        public async Task<IActionResult> Edit([FromRoute] int? id, AccountViewModel posted)
         {
-            if (user == null || id.GetValueOrDefault() <= 0 || id != user.UserId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserId)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，user為null 或 id小於等於0 或 id與user不符");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
             // 過濾文字
-            QueryableExtensions.TrimStringProperties(user);
+            QueryableExtensions.TrimStringProperties(posted);
 
-            var DBuser = await _context.Users
+            var dbEntity = await _context.Users
                 .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role) // 確保 Role 有載入
-                .FirstOrDefaultAsync(s => s.UserId == user.UserId);
+                .FirstOrDefaultAsync(s => s.UserId == posted.UserId);
 
-            if (DBuser == null)
+            if (dbEntity == null)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，DBuser為null");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，dbEntity為null");
                 return NotFound();
             }
 
             try
             {
-                DBuser.UserFullName = user.UserFullName?.Trim();
-                DBuser.UserJobTitle = user.UserJobTitle?.Trim();
-                DBuser.UserEmail = user.UserEmail?.Trim();
-                DBuser.UserPhone = user.UserPhone?.Trim();
-                DBuser.UserMobile = user.UserMobile?.Trim();
+                dbEntity.UserFullName = posted.UserFullName?.Trim();
+                dbEntity.UserJobTitle = posted.UserJobTitle?.Trim();
+                dbEntity.UserEmail = posted.UserEmail?.Trim();
+                dbEntity.UserPhone = posted.UserPhone?.Trim();
+                dbEntity.UserMobile = posted.UserMobile?.Trim();
 
                 // 這兩個是 bool? 的寫法
-                DBuser.UserIsActive = user.UserIsActive ?? false;
-                DBuser.UserIsLocked = user.UserIsLocked ?? false;
+                dbEntity.UserIsActive = posted.UserIsActive ?? false;
+                dbEntity.UserIsLocked = posted.UserIsLocked ?? false;
 
-                DBuser.UserRemarks = string.IsNullOrWhiteSpace(user.UserRemarks) ? null : user.UserRemarks.Trim();
+                dbEntity.UserRemarks = string.IsNullOrWhiteSpace(posted.UserRemarks) ? null : posted.UserRemarks.Trim();
 
                 await _context.SaveChangesAsync();
 
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                string customErrorString = "帳號設定-" + DBuser.UserFullName + "資料更新【失敗】";
+                string customErrorString = _loc.T("AccountSettings.Edit.Title") + "-" + dbEntity.UserFullName + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(customErrorString, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = customErrorString;
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", customErrorString, true);
-
-                return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = "帳號設定-" + DBuser.UserFullName + "資料更新成功";
+            TempData["_JSShowSuccess"] = _loc.T("AccountSettings.Edit.Title") + "-" + dbEntity.UserFullName + _loc.T("Common.Success");
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "更新成功");
 
@@ -310,19 +308,23 @@ namespace BioMedDocManager.Controllers
                 if (string.Equals(isFirst, "Y", StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(isExpire, "Y", StringComparison.OrdinalIgnoreCase))
                 {
-                    msg = "密碼已過期且為首次登入，請先變更密碼後再使用系統。";
+                    // 密碼已過期且為首次登入
+                    msg = _loc.T("PasswordPolicy.ExpiredFirstLogin");
                 }
                 else if (string.Equals(isFirst, "Y", StringComparison.OrdinalIgnoreCase))
                 {
-                    msg = "首次登入必須先變更密碼，請先完成密碼變更。";
+                    // 首次登入
+                    msg = _loc.T("PasswordPolicy.FirstLogin");
                 }
                 else if (string.Equals(isExpire, "Y", StringComparison.OrdinalIgnoreCase))
                 {
-                    msg = "您的密碼已超過使用期限，請先變更密碼後再使用系統。";
+                    // 密碼過期
+                    msg = _loc.T("PasswordPolicy.Expired");
                 }
                 else
                 {
-                    msg = "目前安全策略要求您必須先變更密碼，才可繼續使用系統。";
+                    // 其他強制更換原因
+                    msg = _loc.T("PasswordPolicy.PolicyRequired");
                 }
 
                 // 這裡才塞 TempData，view 一樣用 _JSShowAlert 顯示
@@ -374,8 +376,11 @@ namespace BioMedDocManager.Controllers
             if (!okHistory)
             {
                 SetPasswordPolicyToViewBag();
-                ModelState.AddModelError("UserNewPassword", $"新密碼不可與前 {policy.HistoryCount} 次密碼相同。");
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "變更密碼頁儲存", "失敗，命中歷史密碼限制");
+                ModelState.AddModelError("UserNewPassword",
+                    _loc.T("AccountSettings.Password.HistoryLimit.Prefix") +
+                    policy.HistoryCount +
+                    _loc.T("AccountSettings.Password.HistoryLimit.Suffix"));
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "變更密碼頁儲存", "失敗，與歷史密碼相同");
                 return View(model);
             }
 
@@ -384,7 +389,7 @@ namespace BioMedDocManager.Controllers
             if (result != PasswordVerificationResult.Success)
             {
                 SetPasswordPolicyToViewBag();
-                ModelState.AddModelError("UserCurrentPassword", "原密碼錯誤");
+                ModelState.AddModelError("UserCurrentPassword", _loc.T("AccountSettings.Password.WrongCurrent"));
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "變更密碼頁儲存", "失敗，原密碼錯誤");
                 return View(model);
             }
@@ -408,7 +413,7 @@ namespace BioMedDocManager.Controllers
 
             await _accessLog.NewPasswordAsync(GetLoginUser(), PageName, "變更密碼頁儲存成功", GetLoginUser());
 
-            return DismissModal("密碼已成功變更");
+            return DismissModal(_loc.T("AccountSettings.ChangePassword.Title") + "-" + _loc.T("Common.Success"));
         }
 
         /// <summary>
@@ -424,19 +429,19 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(s => s.UserId == id);
+            var entity = await _context.Users.FirstOrDefaultAsync(s => s.UserId == id);
 
-            if (user == null)
+            if (entity == null)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示管理者重設使用者密碼頁面", "錯誤，user為null");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示管理者重設使用者密碼頁面", "錯誤，entity為null");
                 return NotFound();
             }
 
             // 產生變更密碼模型
             var model = new ChangePasswordViewModel
             {
-                UserAccount = user.UserAccount,
-                UserFullName = user.UserFullName,
+                UserAccount = entity.UserAccount,
+                UserFullName = entity.UserFullName,
             };
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示管理者重設使用者密碼頁面");
@@ -453,26 +458,26 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword([FromRoute] int? id, ChangePasswordViewModel PostedUser)
+        public async Task<IActionResult> ResetPassword([FromRoute] int? id, ChangePasswordViewModel posted)
         {
-            if (PostedUser == null || id.GetValueOrDefault() <= 0 || id != PostedUser.UserId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserId)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "管理者重設使用者密碼頁儲存", "錯誤，PostedUser為null 或 id小於等於0 或 PostedUser與id不符");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "管理者重設使用者密碼頁儲存", "錯誤，posted為null 或 id小於等於0 或 posted與id不符");
                 return NotFound();
             }
 
-            QueryableExtensions.TrimStringProperties(PostedUser);
+            QueryableExtensions.TrimStringProperties(posted);
 
-            var user = await _context.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(s => s.UserId == PostedUser.UserId);
-            if (user == null)
+            var entity = await _context.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(s => s.UserId == posted.UserId);
+            if (entity == null)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "管理者重設使用者密碼頁儲存", "錯誤，user為null");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "管理者重設使用者密碼頁儲存", "錯誤，entity為null");
                 return NotFound();
             }
 
             // 密碼政策（管理者重設：只套用強度）
             var policy = GetPasswordPolicy();
-            ValidateNewPasswordByPolicy("UserNewPassword", PostedUser.UserNewPasswordHash, policy);
+            ValidateNewPasswordByPolicy("UserNewPassword", posted.UserNewPasswordHash, policy);
 
             try
             {
@@ -482,43 +487,34 @@ namespace BioMedDocManager.Controllers
                 if (!ModelState.IsValid)
                 {
                     await _accessLog.NewActionAsync(GetLoginUser(), PageName, "管理者重設使用者密碼頁儲存", "錯誤，必填資料未填寫或未符合密碼政策");
-                    TempData["_JSShowAlert"] = "密碼重設【失敗】，必填資料未填寫或未符合密碼政策";
+                    TempData["_JSShowAlert"] = _loc.T("AccountSettings.ResetPassword.ValidationFailed");
                     return RedirectToAction(nameof(Index));
                 }
 
-                /*
-                // （可選）若也要對管理者重設套用「歷史密碼」：
-                var okHistory = await CheckPasswordHistoryAsync(user, PostedUser.UserNewPasswordHash, policy);
-                if (!okHistory)
-                {
-                    TempData["_JSShowAlert"] = $"密碼重設【失敗】，新密碼不可與前 {policy.HistoryCount} 次密碼相同。";
-                    return RedirectToAction(nameof(Index));
-                }
-                */
-
-                user.UserPasswordHash = HashPassword(user, PostedUser.UserNewPasswordHash);
-                user.UserPasswordChangedAt = DateTime.Now;
+                entity.UserPasswordHash = HashPassword(entity, posted.UserNewPasswordHash);
+                entity.UserPasswordChangedAt = DateTime.Now;
 
                 // 將新密碼寫入歷史資料庫
                 _context.UserPasswordHistories.Add(new UserPasswordHistory
                 {
-                    UserId = user.UserId,
-                    PasswordHash = user.UserPasswordHash,  // 這裡是剛剛「新密碼的 Hash」，下次變更密碼判斷用
+                    UserId = entity.UserId,
+                    PasswordHash = entity.UserPasswordHash,  // 這裡是剛剛「新密碼的 Hash」，下次變更密碼判斷用
                 });
 
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                string customErrorString = "帳號設定-" + user.UserFullName + "密碼重設【失敗】";
+                string customErrorString = _loc.T("AccountSettings.ResetPassword.Title") + "-" + entity.UserFullName + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(customErrorString, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = customErrorString;
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "管理者重設使用者密碼頁儲存", customErrorString, true);
+                return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = "帳號設定-" + user.UserFullName + "密碼重設成功";
+            TempData["_JSShowSuccess"] = _loc.T("AccountSettings.ResetPassword.Title") + "-" + entity.UserFullName + _loc.T("Common.Success");
 
-            await _accessLog.NewPasswordAsync(GetLoginUser(), PageName, "變更密碼頁儲存成功", user);
+            await _accessLog.NewPasswordAsync(GetLoginUser(), PageName, "變更密碼頁儲存成功", entity);
 
             return RedirectToAction(nameof(Index));
         }
@@ -537,11 +533,11 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == id);
+            var entity = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == id);
 
-            if (user == null)
+            if (entity == null)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯使用者群組頁面", "錯誤，user為null");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯使用者群組頁面", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -560,9 +556,9 @@ namespace BioMedDocManager.Controllers
 
             var vm = new UserGroupsEditViewModel
             {
-                UserId = user.UserId,
-                UserAccount = user.UserAccount,
-                UserFullName = user.UserFullName,
+                UserId = entity.UserId,
+                UserAccount = entity.UserAccount,
+                UserFullName = entity.UserFullName,
                 SelectedUserGroupIds = currentGroupIds,
                 AllUserGroups = allGroups.Select(g => new SelectListItem
                 {
@@ -588,24 +584,24 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditGroup([FromRoute] int? id, UserGroupsEditPostViewModel PostedUser, string command)
+        public async Task<IActionResult> EditGroup([FromRoute] int? id, UserGroupsEditPostViewModel posted, string command)
         {
-            if (PostedUser == null || id.GetValueOrDefault() <= 0 || id != PostedUser.UserId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserId)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "使用者群組頁儲存", "錯誤，PostedUser為null 或 id小於等於0 或 id與PostedUser不符");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "使用者群組頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted不符");
                 return NotFound();
             }
 
             // 確認使用者存在
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == PostedUser.UserId);
-            if (user == null)
+            var entity = await _context.Users.FirstOrDefaultAsync(u => u.UserId == posted.UserId);
+            if (entity == null)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "使用者群組頁儲存", "錯誤，user為null");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "使用者群組頁儲存", "錯誤，entity為null");
                 return NotFound();
             }
 
             // 目標群組（右側 selectedGroups 全部值；JS 在 submit 前已全部設成 selected）
-            var want = PostedUser.SelectedUserGroupIds?
+            var want = posted.SelectedUserGroupIds?
                            .Distinct()
                            .ToList()
                        ?? new List<int>();
@@ -621,7 +617,7 @@ namespace BioMedDocManager.Controllers
 
             if (toAdd.Count == 0 && toRemove.Count == 0)
             {
-                TempData["_JSShowAlert"] = "帳號設定-使用者權限群組未異動，不儲存。";
+                TempData["_JSShowAlert"] = _loc.T("AccountSettings.EditGroup.Title") + "-" + entity.UserFullName + _loc.T("Common.NoChange");
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "使用者群組頁儲存", "未異動，不儲存");
 
                 // 回到帳號管理清單頁
@@ -650,12 +646,12 @@ namespace BioMedDocManager.Controllers
 
                     await _context.SaveChangesAsync();
                     await tx.CommitAsync();
-                    TempData["_JSShowSuccess"] = "帳號設定-使用者群組頁儲存成功";
+                    TempData["_JSShowSuccess"] = _loc.T("AccountSettings.EditGroup.Title") + "-" + entity.UserFullName + _loc.T("Common.Success");
                 }
                 catch
                 {
                     await tx.RollbackAsync();
-                    TempData["_JSShowAlert"] = "帳號設定-使用者群組頁儲存【失敗】";
+                    TempData["_JSShowAlert"] = _loc.T("AccountSettings.EditGroup.Title") + "-" + entity.UserFullName + _loc.T("Common.Failed");
                     await _accessLog.NewActionAsync(GetLoginUser(), PageName, "使用者群組頁儲存", "儲存失敗");
                 }
             }
@@ -729,7 +725,9 @@ namespace BioMedDocManager.Controllers
                 {
                     RoleId = r.RoleId,
                     RoleCode = r.RoleCode,
+                    RoleCodeName = _loc.T($"Role.{r.RoleCode}"),
                     RoleGroup = r.RoleGroup,
+                    RoleGroupName = _loc.T($"Role.{r.RoleGroup}"),
                     IsNew = !currentRoleIds.Contains(r.RoleId),   // 這裡沿用原本「是不是新角色」
                     FromGroups = roleFromGroups
                         .Where(x => x.RoleId == r.RoleId)
@@ -761,9 +759,7 @@ namespace BioMedDocManager.Controllers
                         j.rp.ResourceId,
                         j.rp.AppActionId,
                         j.res.ResourceKey,
-                        j.res.ResourceDisplayName,
                         act.AppActionCode,
-                        act.AppActionDisplayName,
                         act.AppActionOrder,
                     })
                 .ToListAsync();
@@ -774,20 +770,18 @@ namespace BioMedDocManager.Controllers
                 {
                     p.ResourceId,
                     p.ResourceKey,
-                    p.ResourceDisplayName,
                     p.AppActionId,
                     p.AppActionCode,
-                    p.AppActionDisplayName,
                     p.AppActionOrder,
                 })
                 .Select(g => new PreviewPermissionViewModel
                 {
                     ResourceId = g.Key.ResourceId,
                     ResourceKey = g.Key.ResourceKey,
-                    ResourceDisplayName = g.Key.ResourceDisplayName,
+                    ResourceDisplayName = _loc.T($"{g.Key.ResourceKey}.Index.Title"),
                     AppActionId = g.Key.AppActionId,
                     AppActionCode = g.Key.AppActionCode,
-                    AppActionDisplayName = g.Key.AppActionDisplayName,
+                    AppActionDisplayName = _loc.T($"AppAction.{g.Key.AppActionCode}"),
                     AppActionOrder = g.Key.AppActionOrder,
                     IsNew = !currentPermSet.Contains((g.Key.ResourceId, g.Key.AppActionId)) // 原本沒有 → 預覽
                 })
@@ -818,7 +812,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users
+            var entity = await _context.Users
                 .Include(u => u.Department)
                 .Include(u => u.UserGroupMembers)
                     .ThenInclude(m => m.UserGroup)
@@ -826,14 +820,14 @@ namespace BioMedDocManager.Controllers
                     .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.UserId == id && u.DeletedAt == null);
 
-            if (user == null)
+            if (entity == null)
             {
-                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示帳號明細頁", "錯誤，user為null");
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示帳號明細頁", "錯誤，entity為null");
                 return NotFound();
             }
 
             // 目前使用者所屬的群組 Id
-            var selectedGroupIds = user.UserGroupMembers
+            var selectedGroupIds = entity.UserGroupMembers
                 .Select(m => m.UserGroupId)
                 .Distinct()
                 .ToList();
@@ -841,7 +835,7 @@ namespace BioMedDocManager.Controllers
             // 利用「既有的」 UserGroupsEditViewModel + ComputePreviewAsync 來算有效角色/權限
             var previewVm = new UserGroupsEditViewModel
             {
-                UserId = user.UserId,
+                UserId = entity.UserId,
                 SelectedUserGroupIds = selectedGroupIds
             };
 
@@ -850,8 +844,8 @@ namespace BioMedDocManager.Controllers
             // 組成明細頁的 ViewModel
             var vm = new UserDetailsViewModel
             {
-                User = user,
-                UserGroups = user.UserGroupList,                    // 用 User 裡 NotMapped 的 UserGroupList
+                User = entity,
+                UserGroups = entity.UserGroupList,                    // 用 User 裡 NotMapped 的 UserGroupList
                 EffectiveRoles = previewVm.EffectiveRoles,          // 沿用 ComputePreviewAsync 算出來的結果
                 EffectivePermissions = previewVm.EffectivePermissions
             };
@@ -879,14 +873,14 @@ namespace BioMedDocManager.Controllers
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
             {
-                TempData["_JSShowAlert"] = "登入資訊已失效，請重新登入。";
+                TempData["_JSShowAlert"] = _loc.T("Auth.LoginInfoExpired");
                 return RedirectToAction("Index", "Home");
             }
 
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
-                TempData["_JSShowAlert"] = "找不到使用者資料，請重新登入。";
+                TempData["_JSShowAlert"] = _loc.T("Auth.UserNotFoundReLogin");
                 return RedirectToAction("Index", "Home");
             }
 
@@ -900,8 +894,9 @@ namespace BioMedDocManager.Controllers
                 // 3) 沒有就重新產生一組 Secret + otpauth URI
 
                 // Issuer 建議用系統名稱，可視情況改成 Parameter 取值
-                var issuer = _param.GetString("SITE_NAME") ?? "BioMedDocManager";
-                var accountLabel = user.UserAccount; // 也可以用 email，看你喜歡
+                // TODO：正式網站可改成公司名稱或系統名稱
+                var issuer = _param.GetString("SITE_NAME") ?? "DEMO SITE";
+                var accountLabel = user.UserAccount;
 
                 // 產生 20 bytes 隨機 secret，轉成 Base32
                 var secretBytes = new byte[20];
@@ -952,21 +947,21 @@ namespace BioMedDocManager.Controllers
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
             {
-                TempData["_JSShowAlert"] = "登入資訊已失效，請重新登入。";
+                TempData["_JSShowAlert"] = _loc.T("Auth.LoginInfoExpired");
                 return RedirectToAction("Index", "Home");
             }
 
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
-                TempData["_JSShowAlert"] = "找不到使用者資料，請重新登入。";
+                TempData["_JSShowAlert"] = _loc.T("Auth.UserNotFoundReLogin");
                 return RedirectToAction("Index", "Home");
             }
 
             var state = HttpContext.Session.GetObject<TotpSetupState>(TotpSetupSessionKey);
             if (state == null || state.UserId != user.UserId)
             {
-                TempData["_JSShowAlert"] = "TOTP 註冊流程已失效，請重新開始。";
+                TempData["_JSShowAlert"] = _loc.T("Totp.SessionExpired");
                 return RedirectToAction(nameof(RegisterTotp));
             }
 
@@ -990,7 +985,7 @@ namespace BioMedDocManager.Controllers
             var ok = await VerifyTotpCodeAsync(tempUser, model.Code);
             if (!ok)
             {
-                ModelState.AddModelError(nameof(TotpSetupViewModel.Code), "驗證碼錯誤或已過期，請再次確認手機 App 顯示的數字。");
+                ModelState.AddModelError(nameof(TotpSetupViewModel.Code), _loc.T("Totp.VerifyFailed"));
 
                 model.UserAccount = user.UserAccount;
                 model.Issuer = state.Issuer;
@@ -1007,7 +1002,7 @@ namespace BioMedDocManager.Controllers
             // 清除暫存狀態
             HttpContext.Session.Remove(TotpSetupSessionKey);
 
-            TempData["_JSShowSuccess"] = "TOTP 兩步驟驗證已啟用，請妥善保管您的驗證器 App。";
+            TempData["_JSShowSuccess"] = _loc.T("Totp.SetupSuccess");
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "註冊 TOTP 成功");
 
@@ -1016,13 +1011,14 @@ namespace BioMedDocManager.Controllers
         }
 
         /// <summary>
-        /// 輸出 TOTP 註冊用 QR Code 圖片 (PNG)
+        /// 顯示 TOTP 註冊用 QR Code 圖片 (PNG)
         /// </summary>
-        public IActionResult TotpQrCode()
+        public async Task<IActionResult> TotpQrCode()
         {
             var state = HttpContext.Session.GetObject<TotpSetupState>(TotpSetupSessionKey);
             if (state == null || string.IsNullOrWhiteSpace(state.OtpauthUri))
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示TOTP註冊用QRCode圖片", "錯誤，state為null 或 state.OtpauthUri為空");
                 return NotFound();
             }
 
@@ -1037,6 +1033,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示TOTP註冊用QRCode圖片", "錯誤，無法顯示");
                 Utilities.WriteExceptionIntoLogFile("產生 TOTP QR Code 失敗", ex, this.HttpContext);
                 return NotFound();
             }
@@ -1100,15 +1097,13 @@ namespace BioMedDocManager.Controllers
                     j.rp.ResourceId,
                     j.rp.AppActionId,
                     j.res.ResourceKey,
-                    //j.res.ResourceDisplayName,
-                    AppActionCode = act.AppActionCode,
-                    //AppActionDisplayName = act.AppActionDisplayName
+                    act.AppActionCode,
                 })
                 .AsNoTracking()
                 .ToListAsync();
 
             var permGroups = rawPerms
-                .GroupBy(p => new { p.ResourceId, p.ResourceKey, /*p.ResourceDisplayName,*/ p.AppActionId, p.AppActionCode/*, p.AppActionDisplayName*/ })
+                .GroupBy(p => new { p.ResourceId, p.ResourceKey, p.AppActionId, p.AppActionCode })
                 .Select(g => new EffectivePermissionViewModel
                 {
                     ResourceId = g.Key.ResourceId,
@@ -1144,7 +1139,7 @@ namespace BioMedDocManager.Controllers
             // 2) 產生查詢物件（載入角色關聯）
             IQueryable<User> q = _context.Users
                 .Include(u => u.Department)
-                .Include(u => u.UserRoles)                
+                .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
                 .AsNoTracking();
 

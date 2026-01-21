@@ -7,10 +7,10 @@
     bool canUseEmail = ViewBag.CanUseEmail as bool? ?? false;
     bool canUseTotp = ViewBag.CanUseTotp as bool? ?? false;
 
-    // 預設優先 Email，沒有 Email 就用 TOTP
+    // 預設優先 Authenticator(TOTP)，沒有 TOTP 才用 Email
     string defaultProvider =
         ViewBag.DefaultProvider as string
-        ?? (canUseEmail ? "Email" : "Totp");
+        ?? (canUseTotp ? "Totp" : "Email");
 }
 
 <div class="Main flex-container" id="Main">
@@ -41,26 +41,16 @@
                 }
                 else
                 {
-                    <!-- 方式選擇：Email / Authenticator -->
+                    <!-- 方式選擇：Authenticator / Email -->
                     <div class="row my-3">
-                        <label class="col-md-2 col-sm-3 col-12 col-form-label fw-bold">
+                        <label class="col-12 col-md-2 col-form-label fw-bold">
                             @Loc.T("Login.TwoFactor.Provider.Label")
                         </label>
-                        <div class="col-md-9 col-sm-8 col-12">
+                        <div class="col-12 col-md-10">
 
                             @if (canUseEmail && canUseTotp)
                             {
                                 <div class="btn-group" role="group" aria-label="Two factor provider">
-                                    <input type="radio"
-                                           class="btn-check"
-                                           name="providerChoice"
-                                           id="providerEmail"
-                                           value="Email"
-                                           @(defaultProvider == "Email" ? "checked" : "") />
-                                    <label class="btn btn-outline-primary" for="providerEmail">
-                                        <i class="fas fa-envelope me-1"></i>@Loc.T("Login.TwoFactor.Provider.Email")
-                                    </label>
-
                                     <input type="radio"
                                            class="btn-check"
                                            name="providerChoice"
@@ -70,18 +60,28 @@
                                     <label class="btn btn-outline-primary" for="providerTotp">
                                         <i class="fas fa-mobile-alt me-1"></i>@Loc.T("Login.TwoFactor.Provider.Totp")
                                     </label>
+
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="providerChoice"
+                                           id="providerEmail"
+                                           value="Email"
+                                           @(defaultProvider == "Email" ? "checked" : "") />
+                                    <label class="btn btn-outline-primary" for="providerEmail">
+                                        <i class="fas fa-envelope me-1"></i>@Loc.T("Login.TwoFactor.Provider.Email")
+                                    </label>
                                 </div>
-                            }
-                            else if (canUseEmail)
-                            {
-                                <span class="fw-bold">
-                                    <i class="fas fa-envelope me-1"></i>@Loc.T("Login.TwoFactor.Provider.Email")
-                                </span>
                             }
                             else if (canUseTotp)
                             {
                                 <span class="fw-bold">
                                     <i class="fas fa-mobile-alt me-1"></i>@Loc.T("Login.TwoFactor.Provider.Totp")
+                                </span>
+                            }
+                            else if (canUseEmail)
+                            {
+                                <span class="fw-bold">
+                                    <i class="fas fa-envelope me-1"></i>@Loc.T("Login.TwoFactor.Provider.Email")
                                 </span>
                             }
 
@@ -100,10 +100,8 @@
                     <!-- 取得 / 重寄 Email 驗證碼按鈕（只有 Email 方式可用 & 有啟用 Email 2FA 時顯示） -->
                     @if (canUseEmail)
                     {
-                        <div class="row my-2" id="emailSendRow"
-                             class="@(defaultProvider == "Email" ? "" : "d-none")">
-                            <div class="col-md-2 col-sm-3 col-12"></div>
-                            <div class="col-md-9 col-sm-8 col-12">
+                        <div class="row my-2 @(defaultProvider == "Email" ? "" : "d-none")" id="emailSendRow">
+                            <div class="col-12">
                                 <form method="post" action="@Url.Action("SendTwoFactorEmailCode", "Login")" class="d-inline">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="btn btn-outline-secondary btn-sm">
@@ -125,10 +123,10 @@
                                value="@defaultProvider" />
 
                         <div class="row my-3">
-                            <label class="col-md-2 col-sm-3 col-12 col-form-label fw-bold">
+                            <label class="col-12 col-sm-4 col-md-2 col-form-label fw-bold">
                                 @Loc.T("Login.TwoFactor.Code.Label")
                             </label>
-                            <div class="col-md-9 col-sm-8 col-12">
+                            <div class="col-12 col-sm-8 col-md-10">
                                 <input type="text"
                                        class="form-control text-uppercase"
                                        name="code"

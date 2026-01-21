@@ -117,6 +117,11 @@ namespace BioMedDocManager.Controllers
             base.OnActionExecuting(context);
         }
 
+        /// <summary>
+        /// 建立使用者選單樹
+        /// </summary>
+        /// <param name="user">使用者</param>
+        /// <returns>選單清單</returns>
         [NonAction]
         protected List<MenuItemGroupViewModel> BuildMenuTreeForUser(ClaimsPrincipal user)
         {
@@ -142,11 +147,12 @@ namespace BioMedDocManager.Controllers
                 return new List<MenuItemGroupViewModel>();
             }
 
-            // 3) 子選單（一定有 ResourceId）
+            // 3) 子選單（一定有 MenuItemParentId與ResourceId）
             var menuItems = _context.MenuItems
                 .Include(m => m.Resource)
                 .Where(m =>
                     m.MenuItemIsActive &&
+                    m.MenuItemParentId != null &&
                     m.ResourceId != null &&
                     allowedResourceIds.Contains(m.ResourceId.Value))
                 .ToList();
@@ -183,7 +189,7 @@ namespace BioMedDocManager.Controllers
                 return new List<MenuItemGroupViewModel>();
             }
 
-            // 5) 父選單（不一定有 ResourceId）
+            // 5) 父選單（一定沒有 MenuItemParentId）
             var parents = _context.MenuItems
                 .Include(m => m.Resource)
                 .Where(m => m.MenuItemIsActive && parentIds.Contains(m.MenuItemId))
@@ -254,8 +260,21 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="hour">小時</param>
         /// <returns>問候語文字</returns>
-        protected static string GreetingByHour(int hour) =>
-            hour < 12 ? "早安" : (hour < 18 ? "午安" : "晚安");
+        protected string GreetingByHour(int hour)
+        {
+            if (hour < 12)
+            {
+                return _loc.T("Common.Greeting.Morning");
+            }
+            else if (hour < 18)
+            {
+                return _loc.T("Common.Greeting.Afternoon");
+            }
+            else
+            {
+                return _loc.T("Common.Greeting.Evening");
+            }
+        }
 
         /// <summary>
         /// 取得登入者實體

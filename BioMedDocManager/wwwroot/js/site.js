@@ -44,6 +44,23 @@ $(document).ready(function () {
         // Clear the selected value unless it's the fallback
         $supplierSelect.val('');
     });
+
+
+    // 多語系視窗位置移動(offcanvas show/hide 時切換位置)
+    var oc = document.getElementById('offcanvasNavbar');
+    if (oc) {
+        oc.addEventListener('show.bs.offcanvas', function () {
+            console.log("show.bs.offcanvas")
+            moveLanguageForm(true);
+        });
+        oc.addEventListener('hidden.bs.offcanvas', function () {
+            console.log("hidden.bs.offcanvas")
+            moveLanguageForm(false);
+        });
+    }
+
+
+    // end ready
 });
 
 function CDocumentClaimAndReserve_ValidateForm() {
@@ -1570,12 +1587,12 @@ function renderRoles(roles) {
             : '';
 
         const groupsText = (r.fromGroups && r.fromGroups.length)
-            ? r.fromGroups.map(g => escapeHtml(g.UserGroupCode)).join('、')
+            ? r.fromGroups.map(g => escapeHtml(g.userGroupCode)).join('、')
             : '（無）';
 
         html += `
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span>${escapeHtml(r.roleGroup)} - ${escapeHtml(r.RoleCode)} ${previewTag}</span>
+                  <span>${escapeHtml(r.roleGroup)} (${escapeHtml(r.roleGroupName)}) - ${escapeHtml(r.roleCode)} (${escapeHtml(r.roleCodeName)}) ${previewTag}</span>
                   <span class="badge bg-primary">
                     ${groupsText}
                   </span>
@@ -1637,6 +1654,25 @@ function renderPermissions(perms) {
     });
 
     permsContainer.innerHTML = html;
+}
+
+// 取得多語系設定(從網址判斷)
+function getCulturePrefixFromPath() {
+    // 例如 /zh-TW/AccountSettings/EditGroup/1
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    if (parts.length === 0) { return ''; }
+
+    const first = parts[0];
+    // 簡單判斷：xx 或 xx-XX（你目前就是 zh-TW）
+    const isCulture = /^[a-z]{2}(-[A-Z]{2})?$/.test(first);
+    return isCulture ? `/${first}` : '';
+}
+
+// 建立URL(多語系)
+function buildAppUrl(pathWithoutCulture) {
+    // pathWithoutCulture 必須以 / 開頭
+    const culturePrefix = getCulturePrefixFromPath();
+    return `${culturePrefix}${pathWithoutCulture}`;
 }
 
 // 編輯群組頁面事件監聽器
@@ -1701,7 +1737,7 @@ function editGroupEventListener() {
         const userId = document.getElementById('UserId');
 
         const groupIds = Array.from(selected.options).map(o => parseInt(o.value, 10));
-        const previewUrl = '/AccountSettings/PreviewPermissions';
+        const previewUrl = buildAppUrl('/AccountSettings/PreviewPermissions');
         const tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
         const csrfToken = tokenInput ? tokenInput.value : '';
 
@@ -1837,4 +1873,20 @@ function editGroupeditGroupMoveOptions(src, dest, onlySelected) {
             src.remove(opt.index);
         }
     });
+}
+
+// 移動多語系視窗位置
+function moveLanguageForm(toOffcanvas) {
+    var topMount = document.getElementById('languageMountTop');
+    var offMount = document.getElementById('languageMountOffcanvas');
+    if (!topMount || !offMount) return;
+
+    var form = document.getElementById('cultureForm');
+    if (!form) return;
+
+    if (toOffcanvas) {
+        offMount.appendChild(form);
+    } else {
+        topMount.appendChild(form);
+    }
 }

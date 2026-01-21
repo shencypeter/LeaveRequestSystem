@@ -47,31 +47,79 @@
                     data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <a class="navbar-brand fw-bolder align-middle" href="~/">
+            <a href="@Url.Action("Index", "Home")" class="navbar-brand fw-bolder align-middle">
                 &ensp;@Loc.T("Home.Welcome.SubTitle")
             </a>
         </div>
 
-        <div class="justify-content-end user-nav">
-            <i class="fa-solid fa-user"></i>
-            <span class="ps-1" id="memberNo">@userFullName</span>
-            <span>，@greeting！&ensp;&ensp;</span>
-            @if (isGuest)
-            {
-                <a class="btn btn-link px-1 me-3 py-1 logout" href="@Url.Action("Index", "Login")">@Loc.T("Common.Login")</a>
-            }
-            else
-            {
-                <a class="btn btn-link px-1 me-3 py-1 logout change_password_btn" href="@Url.Action("ChangePassword", "AccountSettings")" target="_blank">@Loc.T("Common.ChangePassword")</a>
-                @if (TwoFA_ENABLED)
-                {
-                    <a class="btn btn-link px-1 me-3 py-1 logout register_totp_btn" href="@Url.Action("RegisterTotp", "AccountSettings")" target="_blank">@Loc.T("AccountSettings.RegisterTotp")</a>
-                }
-                <a class="btn btn-link px-1 me-3 py-1 logout" href="@Url.Action("Logout", "Login")">@Loc.T("Common.Logout")</a>
-            }
-            
-            @await Html.PartialAsync("_Language")
+        <div class="justify-content-end user-nav d-flex align-items-center gap-2">
+
+            <!-- 使用者 Dropdown -->
+            <div class="dropdown user-nav">
+                <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center"
+                        type="button"
+                        id="userDropdown"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    <i class="fa-solid fa-user me-1"></i>
+                    <span class="ms-1">@userFullName , @greeting</span>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+
+                    @if (isGuest)
+                    {
+                        <li>
+                            <a class="dropdown-item"
+                               href="@Url.Action("Index", "Login")">
+                                <i class="fa-solid fa-right-to-bracket me-2"></i>
+                                @Loc.T("Common.Login")
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a class="dropdown-item change_password_btn"
+                               href="@Url.Action("ChangePassword", "AccountSettings")"
+                               target="_blank">
+                                <i class="fa-solid fa-key me-2"></i>
+                                @Loc.T("Common.ChangePassword")
+                            </a>
+                        </li>
+
+                        @if (TwoFA_ENABLED)
+                        {
+                            <li>
+                                <a class="dropdown-item register_totp_btn"
+                                   href="@Url.Action("RegisterTotp", "AccountSettings")"
+                                   target="_blank">
+                                    <i class="fa-solid fa-mobile-screen me-2"></i>
+                                    @Loc.T("AccountSettings.RegisterTotp")
+                                </a>
+                            </li>
+                        }
+
+                        <li><hr class="dropdown-divider" /></li>
+
+                        <li>
+                            <a class="dropdown-item text-danger"
+                               href="@Url.Action("Logout", "Login")">
+                                <i class="fa-solid fa-right-from-bracket me-2"></i>
+                                @Loc.T("Common.Logout")
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <!-- 多語系切換 -->
+            <span id="languageMountTop">
+                @await Html.PartialAsync("_Language")
+            </span>
+
         </div>
+
 
         <div class="offcanvas offcanvas-start navbar-dark text-light" tabindex="-1"
              id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
@@ -92,7 +140,7 @@
                         if (isGuest)
                         {
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration" href="@Url.Action("Login", "Login")">@Loc.T("Common.Login")</a>
+                                <a class="nav-link active text-decoration" href="@Url.Action("Index", "Login")">@Loc.T("Common.Login")</a>
                             </li>
                         }
                         else
@@ -109,7 +157,7 @@
                     }
                     else
                     {
-                        @* === 第一層：顯示所有父層主選單（跟 _BannerMenu root 模式一致） === *@
+                        @* === 第一層：顯示所有父層主選單 === *@
                         if (currentGroup == null)
                         {
                             foreach (var group in menuTree
@@ -153,7 +201,7 @@
                         {
                             @* === 第二層：顯示 currentGroup 底下的所有子選單 === *@
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration" href="~/">
+                                <a class="nav-link active text-decoration" href="@Url.Action("Index", "Home")">
                                     <i class="fa fa-arrow-left"></i>@Loc.T("Common.BackToUpper")
                                 </a>
                             </li>
@@ -199,7 +247,7 @@
                         @if (isGuest)
                         {
                             <li class="nav-item py-1 px-5">
-                                <a class="nav-link active text-decoration" href="@Url.Action("Login", "Login")">@Loc.T("Common.Login")</a>
+                                <a class="nav-link active text-decoration" href="@Url.Action("Index", "Login")">@Loc.T("Common.Login")</a>
                             </li>
                         }
                         else
@@ -218,7 +266,18 @@
                             </li>
                         }
                     }
+
+                    <!-- 分隔線 -->
+                    <li class="nav-item py-1 px-5 mt-3">
+                        <hr class="my-2 bg-white">
+                    </li>
+                    <li class="nav-item py-1 px-5 mt-3">
+                        <div id="languageMountOffcanvas"></div>
+                    </li>
+                    @*<li class="nav-item py-1 px-5">@await Html.PartialAsync("_Language")</li>*@
                 </ul>
+
+
             </div>
         </div>
     </div>

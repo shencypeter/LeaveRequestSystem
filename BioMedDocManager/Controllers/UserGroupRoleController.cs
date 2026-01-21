@@ -27,18 +27,20 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
             // 先抓群組 + 目前已綁定的角色
-            var group = await _context.UserGroups
+            var entity = await _context.UserGroups
                 .Include(g => g.UserGroupRoles)
                 .ThenInclude(ugr => ugr.Role)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(g => g.UserGroupId == id);
 
-            if (group == null)
+            if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -48,7 +50,7 @@ namespace BioMedDocManager.Controllers
                 .OrderBy(r => r.RoleCode)
                 .ToListAsync();
 
-            var selectedRoleIds = group.UserGroupRoles
+            var selectedRoleIds = entity.UserGroupRoles
                 .Select(ugr => ugr.RoleId)
                 .ToList();
 
@@ -107,8 +109,8 @@ namespace BioMedDocManager.Controllers
 
             var vm = new UserGroupRoleEditViewModel
             {
-                UserGroupId = group.UserGroupId,
-                UserGroupCode = group.UserGroupCode,
+                UserGroupId = entity.UserGroupId,
+                UserGroupCode = entity.UserGroupCode,
                 SelectedRoleIds = selectedRoleIds,
                 AllRoles = allRoles,
                 EffectivePermissions = effectivePerms
@@ -128,21 +130,23 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserGroupId)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
             // 重新抓 DB 中的群組 + 目前的角色關聯（追蹤中）
-            var group = await _context.UserGroups
+            var dbEntity = await _context.UserGroups
                 .Include(g => g.UserGroupRoles)
                 .FirstOrDefaultAsync(g => g.UserGroupId == posted.UserGroupId);
 
-            if (group == null)
+            if (dbEntity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，dbEntity為null");
                 return NotFound();
             }
 
             // 目前 DB 已有的角色 Id
-            var currentRoleIds = group.UserGroupRoles
+            var currentRoleIds = dbEntity.UserGroupRoles
                 .Select(ugr => ugr.RoleId)
                 .ToHashSet();
 
@@ -168,7 +172,7 @@ namespace BioMedDocManager.Controllers
                 {
                     var entity = new UserGroupRole
                     {
-                        UserGroupId = group.UserGroupId,
+                        UserGroupId = dbEntity.UserGroupId,
                         RoleId = roleId
                         // CreatedAt / CreatedBy 可交給 DB default，或你之後在這裡補上
                     };
@@ -178,7 +182,7 @@ namespace BioMedDocManager.Controllers
                 // 刪除 UserGroupRole
                 if (toRemove.Count > 0)
                 {
-                    var removeEntities = group.UserGroupRoles
+                    var removeEntities = dbEntity.UserGroupRoles
                         .Where(ugr => toRemove.Contains(ugr.RoleId))
                         .ToList();
 
@@ -192,7 +196,7 @@ namespace BioMedDocManager.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                var msg = $"使用者群組-{group.UserGroupCode} 角色設定更新【失敗】";
+                var msg = _loc.T("UserGroupRole.Edit.Title") + "-" + dbEntity.UserGroupCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, this.HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -201,7 +205,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(UserGroupController.Index), "UserGroup");
             }
 
-            TempData["_JSShowSuccess"] = $"使用者群組-{group.UserGroupCode} 角色設定更新成功";
+            TempData["_JSShowSuccess"] = _loc.T("UserGroupRole.Edit.Title") + "-" + dbEntity.UserGroupCode + _loc.T("Common.Success");
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "群組角色設定更新成功");
             return RedirectToAction(nameof(UserGroupController.Index), "UserGroup");
@@ -212,15 +216,16 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PreviewPermissions([FromBody] PreviewPermissionsViewModel req)
+        public async Task<IActionResult> PreviewPermissions([FromBody] PreviewPermissionsViewModel posted)
         {
-            if (req == null || req.UserGroupId <= 0)
+            if (posted == null || posted.UserGroupId <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示權限預覽資料(JSON)", "錯誤，posted為null 或 id小於等於0");
                 return BadRequest();
             }
 
-            var groupId = req.UserGroupId;
-            var selectedRoleIds = (req.SelectedRoleIds ?? new()).Distinct().ToList();
+            var groupId = posted.UserGroupId;
+            var selectedRoleIds = (posted.SelectedRoleIds ?? new()).Distinct().ToList();
 
             // === 1) 目前 DB 狀態：這個群組原本擁有的角色 ===
             var currentRoleIds = await _context.UserGroupRoles

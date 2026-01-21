@@ -11,7 +11,7 @@
 .sub-div{
     background-image: url("../images/sub-div.png");
     width: 60vw;
-    height: 65vh;
+    height: 85vh;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -36,7 +36,7 @@ marquee{
     background-color: rgb(255, 255, 255);
     border-radius: 15px;
     width: 50vw;
-    height: 60vh;
+    height: 80vh;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     position: absolute;
     top: 50%;
@@ -51,7 +51,7 @@ marquee{
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%); 
-    width: 100%;
+    width: 80%;
 }
 /*
 input{
@@ -84,7 +84,7 @@ input{
     }
 
     .login-div{
-        width: 100vw;
+        width: 80vw;
         height: 80vh;
     }
     .font-text{

@@ -274,6 +274,17 @@ namespace BioMedDocManager
             // 使用授權(授權在後)
             app.UseAuthorization();
 
+            app.Use(async (context, next) =>
+            {
+                var culture = context.Request.RouteValues["culture"]?.ToString();
+                if (!string.IsNullOrEmpty(culture))
+                {
+                    context.Items["culture"] = culture;
+                }
+                await next();
+            });
+
+
             // 使用控制器路由
             // 先處理多語系
             app.MapControllerRoute(
@@ -415,11 +426,37 @@ namespace BioMedDocManager
                 constraints: new { culture = "zh-TW|en-US" }
             );
 
+            /*
             // 一般預設路由（不含 culture）
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}"
             );
+            */
+            // 一般預設路由（不含 culture=>強制轉換）
+            app.Use(async (ctx, next) =>
+            {
+                var path = ctx.Request.Path.Value ?? "";
+
+                // 已經有 /zh-TW 或 /en-US 就放行
+                if (path.StartsWith("/zh-TW", StringComparison.OrdinalIgnoreCase) ||
+                    path.StartsWith("/en-US", StringComparison.OrdinalIgnoreCase))
+                {
+                    await next();
+                    return;
+                }
+
+                // 排除靜態檔案與一些特殊路徑（可自行加）
+                if (path.StartsWith("/css") || path.StartsWith("/js") || path.StartsWith("/lib") ||
+                    path.StartsWith("/favicon") || path.StartsWith("/_framework"))
+                {
+                    await next();
+                    return;
+                }
+
+                // 沒 culture：導到預設 culture（可改成從 cookie/Accept-Language 判斷）
+                ctx.Response.Redirect("/zh-TW" + path + ctx.Request.QueryString, permanent: false);
+            });
 
 
 

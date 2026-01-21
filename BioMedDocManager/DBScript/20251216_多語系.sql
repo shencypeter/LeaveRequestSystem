@@ -50,12 +50,24 @@ VALUES
 (N'Common.Shortcut', N'zh-TW', N'快捷鍵', N'Common', 1),
 (N'Common.Shortcut', N'en-US', N'Shortcut', N'Common', 1),
 
+(N'Common.Greeting.Morning',   N'zh-TW', N'早安',   N'Common', 1),
+(N'Common.Greeting.Morning',   N'en-US', N'Good morning',   N'Common', 1),
+
+(N'Common.Greeting.Afternoon',N'zh-TW', N'午安',   N'Common', 1),
+(N'Common.Greeting.Afternoon',N'en-US', N'Good afternoon', N'Common', 1),
+
+(N'Common.Greeting.Evening',  N'zh-TW', N'晚安',   N'Common', 1),
+(N'Common.Greeting.Evening',  N'en-US', N'Good evening',   N'Common', 1),
+
 -- 操作結果
 (N'Common.Success', N'zh-TW', N'操作成功', N'Common', 1),
 (N'Common.Success', N'en-US', N'Operation succeeded', N'Common', 1),
 
 (N'Common.Failed', N'zh-TW', N'操作失敗', N'Common', 1),
 (N'Common.Failed', N'en-US', N'Operation failed', N'Common', 1),
+
+(N'Common.NoChange', N'zh-TW', N'未變動', N'Common', 1),
+(N'Common.NoChange', N'en-US', N'No Change', N'Common', 1),
 
 (N'Common.NoData', N'zh-TW', N'查無資料', N'Common', 1),
 (N'Common.NoData', N'en-US', N'No data found', N'Common', 1),
@@ -106,6 +118,9 @@ VALUES
 
 (N'Common.Actions', N'zh-TW', N'功能', N'Common', 1),
 (N'Common.Actions', N'en-US', N'Actions', N'Common', 1),
+
+(N'Common.Preview', N'zh-TW', N'預覽', N'Common', 1),
+(N'Common.Preview', N'en-US', N'Preview', N'Common', 1),
 
 (N'Common.PleaseSelect', N'zh-TW', N'請選擇', N'Common', 1),
 (N'Common.PleaseSelect', N'en-US', N'Please select', N'Common', 1),
@@ -201,6 +216,26 @@ VALUES
 (N'Auth.AccessDenied', N'zh-TW', N'您的帳號尚未開通使用權限', N'Auth', 1),
 (N'Auth.AccessDenied', N'en-US', N'Your account has not been granted access yet.', N'Auth', 1),
 
+(N'Auth.LoginInfoExpired', N'zh-TW', N'登入資訊已失效，請重新登入。', N'Common', 1),
+(N'Auth.LoginInfoExpired', N'en-US', N'Login session expired. Please log in again.', N'Common', 1),
+
+(N'Auth.UserNotFoundReLogin', N'zh-TW', N'找不到使用者資料，請重新登入。', N'Common', 1),
+(N'Auth.UserNotFoundReLogin', N'en-US', N'User data not found. Please log in again.', N'Common', 1),
+
+(N'Auth.InvalidCredentialsForgotHint', N'zh-TW', N'帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)', N'Auth', 1),
+(N'Auth.InvalidCredentialsForgotHint', N'en-US', N'Invalid username or password. If you forgot your password, please contact the administrator.', N'Auth', 1),
+
+(N'Auth.LogoutThanks', N'zh-TW', N'您已登出系統，謝謝您的使用', N'Auth', 1),
+(N'Auth.LogoutThanks', N'en-US', N'You have been signed out. Thank you.', N'Auth', 1),
+
+(N'Auth.LockedRetry.Prefix', N'zh-TW', N'帳號或密碼錯誤次數達', N'Auth', 1),
+(N'Auth.LockedRetry.Prefix', N'en-US', N'Failed sign-in attempts reached ', N'Auth', 1),
+
+(N'Auth.LockedRetry.Middle', N'zh-TW', N'次以上，請於', N'Auth', 1),
+(N'Auth.LockedRetry.Middle', N'en-US', N'. Please try again after ', N'Auth', 1),
+
+(N'Auth.LockedRetry.Suffix', N'zh-TW', N'分鐘後重試(或洽管理者解除鎖定)', N'Auth', 1),
+(N'Auth.LockedRetry.Suffix', N'en-US', N' minutes (or contact the administrator to unlock).', N'Auth', 1),
 
 -- ===== Menu Fallback =====
 (N'Menu.Unnamed', N'zh-TW', N'(未命名選單)', N'Menu', 1),
@@ -241,6 +276,17 @@ VALUES
 (N'PasswordPolicy.RequireSpecial.Suffix', N'zh-TW', N'）。', N'PasswordPolicy', 1),
 (N'PasswordPolicy.RequireSpecial.Suffix', N'en-US', N').', N'PasswordPolicy', 1),
 
+(N'PasswordPolicy.ExpiredFirstLogin', N'zh-TW', N'密碼已過期且為首次登入，請先變更密碼後再使用系統。', N'PasswordPolicy', 1),
+(N'PasswordPolicy.ExpiredFirstLogin', N'en-US', N'Password expired and first login. Please change password to proceed.', N'PasswordPolicy', 1),
+
+(N'PasswordPolicy.FirstLogin', N'zh-TW', N'首次登入必須先變更密碼，請先完成密碼變更。', N'PasswordPolicy', 1),
+(N'PasswordPolicy.FirstLogin', N'en-US', N'First login requires password change. Please complete password change first.', N'PasswordPolicy', 1),
+
+(N'PasswordPolicy.Expired', N'zh-TW', N'您的密碼已超過使用期限，請先變更密碼後再使用系統。', N'PasswordPolicy', 1),
+(N'PasswordPolicy.Expired', N'en-US', N'Your password has expired. Please change it to proceed.', N'PasswordPolicy', 1),
+
+(N'PasswordPolicy.PolicyRequired', N'zh-TW', N'目前安全策略要求您必須先變更密碼，才可繼續使用系統。', N'PasswordPolicy', 1),
+(N'PasswordPolicy.PolicyRequired', N'en-US', N'Security policy requires you to change your password to proceed.', N'PasswordPolicy', 1),
 
 
 -- ===== 頁面分頁 =====
@@ -491,6 +537,10 @@ VALUES
 (N'AccountSettings.Index.Title', N'zh-TW', N'帳號管理', N'AccountSettings', 1),
 (N'AccountSettings.Index.Title', N'en-US', N'Account Management', N'AccountSettings', 1),
 
+-- ChangePassword
+
+
+
 -- Create
 (N'AccountSettings.Create.Title', N'zh-TW', N'帳號設定-新增', N'AccountSettings', 1),
 (N'AccountSettings.Create.Title', N'en-US', N'Account Settings - Create', N'AccountSettings', 1),
@@ -526,9 +576,21 @@ VALUES
 (N'AccountSettings.ResetPassword.Hint', N'zh-TW', N'*該功能不受密碼政策限制，但建議密碼長度8個字元以上', N'AccountSettings', 1),
 (N'AccountSettings.ResetPassword.Hint', N'en-US', N'*This function is not restricted by password policy, but an 8+ character password is recommended', N'AccountSettings', 1),
 
+(N'AccountSettings.ResetPassword.ValidationFailed', N'zh-TW', N'密碼重設【失敗】，必填資料未填寫或未符合密碼政策', N'AccountSettings', 1),
+(N'AccountSettings.ResetPassword.ValidationFailed', N'en-US', N'Password reset [Failed]. Missing fields or policy violation.', N'AccountSettings', 1),
+
 --ChangePassword
 (N'AccountSettings.ChangePassword.Title', N'zh-TW', N'變更密碼', N'AccountSettings', 1),
 (N'AccountSettings.ChangePassword.Title', N'en-US', N'Change Password', N'AccountSettings', 1),
+
+(N'AccountSettings.Password.WrongCurrent', N'zh-TW', N'原密碼錯誤', N'AccountSettings', 1),
+(N'AccountSettings.Password.WrongCurrent', N'en-US', N'Incorrect current password', N'AccountSettings', 1),
+
+(N'AccountSettings.Password.HistoryLimit.Prefix', N'zh-TW', N'新密碼不可與前 ', N'AccountSettings', 1),
+(N'AccountSettings.Password.HistoryLimit.Prefix', N'en-US', N'New password cannot be the same as the previous ', N'AccountSettings', 1),
+
+(N'AccountSettings.Password.HistoryLimit.Suffix', N'zh-TW', N' 次密碼相同。', N'AccountSettings', 1),
+(N'AccountSettings.Password.HistoryLimit.Suffix', N'en-US', N' passwords.', N'AccountSettings', 1),
 
 -- Details
 (N'AccountSettings.Details.Title', N'zh-TW', N'帳號設定 使用者明細', N'AccountSettings', 1),
@@ -551,7 +613,7 @@ VALUES
 
 -- 註冊TOTP
 (N'Totp.Setup.Title', N'zh-TW', N'註冊 TOTP 兩步驟驗證', N'Totp', 1),
-(N'Totp.Setup.Title', N'en-US', N'Register TOTP Two-Factor Authentication', N'Totp', 1),
+(N'Totp.Setup.Title', N'en-US', N'Register TOTP Two - Factor Authentication', N'Totp', 1),
 
 -- 註冊TOTP-已啟用警告
 (N'Totp.AlreadyEnabled.Warning', N'zh-TW', N'您的帳號已啟用 TOTP 驗證。重新註冊將會覆蓋原本的設定，請謹慎操作。', N'Totp', 1),
@@ -594,9 +656,32 @@ VALUES
 (N'Totp.Code.Placeholder', N'zh-TW', N'請輸入【驗證器】顯示的 6 位數驗證碼', N'Totp', 1),
 (N'Totp.Code.Placeholder', N'en-US', N'Enter the 6-digit code from your authenticator app', N'Totp', 1),
 
--- 註冊TOTP-Secret 警告文字
+-- 註冊TOTP-Secret、警告文字
 (N'Totp.Secret.Warning', N'zh-TW', N'建議只在必要時手動輸入，並避免洩漏此金鑰。', N'Totp', 1),
 (N'Totp.Secret.Warning', N'en-US', N'Only enter this manually when necessary and keep the secret secure.', N'Totp', 1),
+
+(N'Totp.SessionExpired', N'zh-TW', N'TOTP 註冊流程已失效，請重新開始。', N'AccountSettings', 1),
+(N'Totp.SessionExpired', N'en-US', N'TOTP setup session expired. Please restart.', N'AccountSettings', 1),
+
+(N'Totp.VerifyFailed', N'zh-TW', N'驗證碼錯誤或已過期，請再次確認手機 App 顯示的數字。', N'AccountSettings', 1),
+(N'Totp.VerifyFailed', N'en-US', N'Verification code incorrect or expired. Please check your authenticator app.', N'AccountSettings', 1),
+
+(N'Totp.SetupSuccess', N'zh-TW', N'TOTP 兩步驟驗證已啟用，請妥善保管您的驗證器 App。', N'AccountSettings', 1),
+(N'Totp.SetupSuccess', N'en-US', N'TOTP 2FA enabled. Please keep your authenticator app safe.', N'AccountSettings', 1),
+
+
+-- 編輯使用者群組
+(N'AccountSettings.EditGroup.Title', N'zh-TW', N'帳號設定-編輯使用者群組', N'AccountSettings', 1),
+(N'AccountSettings.EditGroup.Title', N'en-US', N'Account Settings - Edit User Groups', N'AccountSettings', 1),
+
+(N'AccountSettings.EditGroup.AllGroups', N'zh-TW', N'所有可選群組', N'AccountSettings', 1),
+(N'AccountSettings.EditGroup.AllGroups', N'en-US', N'Available groups', N'AccountSettings', 1),
+
+(N'AccountSettings.EditGroup.SelectedGroups', N'zh-TW', N'已指派群組', N'AccountSettings', 1),
+(N'AccountSettings.EditGroup.SelectedGroups', N'en-US', N'Assigned groups', N'AccountSettings', 1),
+
+(N'AccountSettings.EditGroup.Note', N'zh-TW', N'備註：預覽權限後，若確認無誤請務必點選「儲存」按鈕。', N'AccountSettings', 1),
+(N'AccountSettings.EditGroup.Note', N'en-US', N'Note: After previewing permissions, please click “Save” to apply changes.', N'AccountSettings', 1),
 
 
 -- 系統動作管理
@@ -621,6 +706,11 @@ VALUES
 -- Delete
 (N'AppAction.Delete.Title', N'zh-TW', N'系統動作管理 - 刪除', N'AppAction', 1),
 (N'AppAction.Delete.Title', N'en-US', N'System Action Management - Delete', N'AppAction', 1),
+
+(N'AppAction.Delete.InUse.Prefix', N'zh-TW', N'系統動作-', N'AppAction', 1),
+(N'AppAction.Delete.InUse.Prefix', N'en-US', N'App Action - ', N'AppAction', 1),
+(N'AppAction.Delete.InUse.Suffix', N'zh-TW', N' 目前仍被角色權限使用，無法刪除。', N'AppAction', 1),
+(N'AppAction.Delete.InUse.Suffix', N'en-US', N' is still used by role permissions and cannot be deleted.', N'AppAction', 1),
 
 (N'AppAction.Delete.Blocked.CannotDelete', N'zh-TW', N'無法刪除', N'AppAction', 1),
 (N'AppAction.Delete.Blocked.CannotDelete', N'en-US', N'cannot be deleted', N'AppAction', 1),
@@ -662,6 +752,11 @@ VALUES
 (N'Login.Captcha.RefreshTitle', N'zh-TW', N'點擊重新產生', N'Login', 1),
 (N'Login.Captcha.RefreshTitle', N'en-US', N'Click to regenerate', N'Login', 1),
 
+(N'Login.Captcha.Invalid', N'zh-TW', N'圖形驗證碼錯誤，請重新輸入。', N'Captcha', 1),
+(N'Login.Captcha.Invalid', N'en-US', N'Incorrect captcha. Please try again.', N'Captcha', 1),
+
+
+
 -- 登入頁-兩階段驗證
 (N'Login.TwoFactor.Title', N'zh-TW', N'兩步驟驗證', N'Login', 1),
 (N'Login.TwoFactor.Title', N'en-US', N'Two-step verification', N'Login', 1),
@@ -692,6 +787,39 @@ VALUES
 
 (N'Login.TwoFactor.Code.Placeholder', N'zh-TW', N'請輸入 6 位數驗證碼', N'Login', 1),
 (N'Login.TwoFactor.Code.Placeholder', N'en-US', N'Enter the 6-digit code', N'Login', 1),
+
+(N'Login.TwoFactor.SessionExpiredReLogin', N'zh-TW', N'二階段驗證已失效，請重新登入。', N'Login', 1),
+(N'Login.TwoFactor.SessionExpiredReLogin', N'en-US', N'Two-factor verification has expired. Please sign in again.', N'Login', 1),
+
+(N'Login.TwoFactor.SelectProvider', N'zh-TW', N'請選擇驗證方式。', N'Login', 1),
+(N'Login.TwoFactor.SelectProvider', N'en-US', N'Please select a verification method.', N'Login', 1),
+
+(N'Login.TwoFactor.EnterCode', N'zh-TW', N'請輸入驗證碼。', N'Login', 1),
+(N'Login.TwoFactor.EnterCode', N'en-US', N'Please enter the verification code.', N'Login', 1),
+
+(N'Login.TwoFactor.InvalidProvider', N'zh-TW', N'驗證方式不正確，請重新選擇。', N'Login', 1),
+(N'Login.TwoFactor.InvalidProvider', N'en-US', N'Invalid verification method. Please select again.', N'Login', 1),
+
+(N'Login.TwoFactor.EmailNotEnabled', N'zh-TW', N'目前未啟用 Email 二階段驗證。', N'Login', 1),
+(N'Login.TwoFactor.EmailNotEnabled', N'en-US', N'Email two-factor verification is not enabled.', N'Login', 1),
+
+(N'Login.TwoFactor.TotpNotEnabled', N'zh-TW', N'目前未啟用 TOTP 二階段驗證。', N'Login', 1),
+(N'Login.TwoFactor.TotpNotEnabled', N'en-US', N'TOTP two-factor verification is not enabled.', N'Login', 1),
+
+(N'Login.TwoFactor.CodeExpiredResend', N'zh-TW', N'驗證碼已過期，請重新取得。', N'Login', 1),
+(N'Login.TwoFactor.CodeExpiredResend', N'en-US', N'The code has expired. Please request a new one.', N'Login', 1),
+
+(N'Login.TwoFactor.TooManyAttemptsReLogin', N'zh-TW', N'驗證失敗次數過多，請重新登入。', N'Login', 1),
+(N'Login.TwoFactor.TooManyAttemptsReLogin', N'en-US', N'Too many failed attempts. Please sign in again.', N'Login', 1),
+
+(N'Login.TwoFactor.CodeInvalidRetry', N'zh-TW', N'驗證碼錯誤，請重新輸入。', N'Login', 1),
+(N'Login.TwoFactor.CodeInvalidRetry', N'en-US', N'Incorrect code. Please try again.', N'Login', 1),
+
+(N'Login.TwoFactor.CodeInvalidOrExpiredRetry', N'zh-TW', N'驗證碼錯誤或已過期，請重新輸入。', N'Login', 1),
+(N'Login.TwoFactor.CodeInvalidOrExpiredRetry', N'en-US', N'The code is incorrect or expired. Please try again.', N'Login', 1),
+
+(N'Login.TwoFactor.EmailSentCheckInbox', N'zh-TW', N'已寄出 Email 驗證碼，請至信箱收信。', N'Login', 1),
+(N'Login.TwoFactor.EmailSentCheckInbox', N'en-US', N'The email verification code has been sent. Please check your inbox.', N'Login', 1),
 
 
 -- 選單
@@ -750,6 +878,7 @@ VALUES
 (N'MenuItem.Delete.BlockedLine2',          N'zh-TW', N'若要刪除，請先將子選單移除或重新指定其上層選單', N'MenuItem', 1),
 (N'MenuItem.Delete.BlockedLine2',          N'en-US', N'Remove or reassign the child menu items before deleting', N'MenuItem', 1),
 
+
 -- Details
 (N'MenuItem.Details.Title', N'zh-TW', N'選單項目管理 詳細資料', N'MenuItem', 1),
 (N'MenuItem.Details.Title', N'en-US', N'Menu Item Management Details', N'MenuItem', 1),
@@ -775,6 +904,9 @@ VALUES
 
 (N'Parameter.ParameterValue.Placeholder', N'zh-TW', N'可輸入文字 / 數字 / HTML / JSON', N'Parameter', 1),
 (N'Parameter.ParameterValue.Placeholder', N'en-US', N'Enter text / number / HTML / JSON', N'Parameter', 1),
+
+(N'Parameter.ParameterCode.Duplicate', N'zh-TW', N'參數代碼已存在，請更換。', N'Parameter', 1),
+(N'Parameter.ParameterCode.Duplicate', N'en-US', N'Parameter code already exists. Please choose another one.', N'Parameter', 1),
 
 -- Edit
 (N'Parameter.Edit.Title', N'zh-TW', N'系統參數管理 編輯', N'Parameter', 1),
@@ -911,6 +1043,13 @@ VALUES
 (N'Role.Delete.GroupUsageCount.Suffix', N'zh-TW', N' 筆', N'Role', 1),
 (N'Role.Delete.GroupUsageCount.Suffix', N'en-US', N' items', N'Role', 1),
 
+-- Delete-警告訊息 (controller純文字)
+(N'Role.Delete.UsedByUserOrGroup.Prefix', N'zh-TW', N'', N'角色', 1),
+(N'Role.Delete.UsedByUserOrGroup.Suffix', N'zh-TW', N' 目前仍被使用者或群組使用，無法刪除。', N'Role', 1),
+
+(N'Role.Delete.UsedByUserOrGroup.Prefix', N'en-US', N'Role ', N'Role', 1),
+(N'Role.Delete.UsedByUserOrGroup.Suffix', N'en-US', N' is still used by users or groups and cannot be deleted.', N'Role', 1),
+
 -- Delete-警告訊息 (包含 HTML 格式)
 (N'Role.Delete.CannotDeleteMsg', N'zh-TW', N'此角色目前被上述使用者或群組使用，故<strong>無法刪除</strong>。<br />若要刪除，請先解除上述的使用者或群組角色設定。', N'Role', 1),
 (N'Role.Delete.CannotDeleteMsg', N'en-US', N'This role is currently used by the above users or groups, so it <strong>cannot be deleted</strong>.<br />Please remove the user or group role settings first.', N'Role', 1),
@@ -965,27 +1104,31 @@ VALUES
 
 
 -- Create
+(N'UserGroup.Create.Title', N'zh-TW', N'使用者群組管理-新增', N'UserGroup', 1),
+(N'UserGroup.Create.Title', N'en-US', N'User Group Management - Create', N'UserGroup', 1),
 
 -- Edit
+(N'UserGroup.Edit.Title',   N'zh-TW', N'使用者群組管理-編輯', N'UserGroup', 1),
+(N'UserGroup.Edit.Title',   N'en-US', N'User Group Management - Edit',   N'UserGroup', 1),
 
 -- Delete
+(N'UserGroup.Delete.Title', N'zh-TW', N'使用者群組管理-刪除', N'UserGroup', 1),
+(N'UserGroup.Delete.Title', N'en-US', N'User Group Management - Delete', N'UserGroup', 1),
 
 -- Details
+(N'UserGroup.Details.Title', N'zh-TW', N'使用者群組管理-詳細資料', N'Role', 1),
+(N'UserGroup.Details.Title', N'en-US', N'User Group Management - Details', N'Role', 1),
 
 
 -- 使用者群組角色
--- Index
+-- Index(資源顯示用，其實沒有index)
 (N'UserGroupRole.Index.Title',       N'zh-TW', N'使用者群組角色管理', N'UserGroup',       1),
 (N'UserGroupRole.Index.Title',       N'en-US', N'User Group Role Management', N'UserGroup',   1),
 
-
--- Create
-
 -- Edit
+(N'UserGroupRole.Edit.Title', N'zh-TW', N'使用者群組角色-編輯', N'UserGroupRole', 1),
+(N'UserGroupRole.Edit.Title', N'en-US', N'User Group Role Management - Edit', N'UserGroupRole', 1),
 
--- Delete
-
--- Details
 
 
 

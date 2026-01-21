@@ -55,7 +55,7 @@ namespace BioMedDocManager.Controllers
             // 將 returnUrl 存入ViewBag
             ViewBag.ReturnUrl = returnUrl;
 
-            TempData["Messages"] = "登入公告文字";
+            TempData["Messages"] = "登入公告文字";// TODO：這裡是範例，可以改成從資料庫讀取
 
             return View();
         }
@@ -82,7 +82,7 @@ namespace BioMedDocManager.Controllers
                 // 不存在或未啟用（訊息仍給通用字樣）
                 if (user is null || !user.UserIsActive)
                 {
-                    TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";
+                    TempData["_JSShowAlert"] = _loc.T("Auth.InvalidCredentialsForgotHint");
 
                     await _accessLog.NewLoginFailedAsync(
                         user is null ? AccountType.Unknow : AccountType.Admin,
@@ -208,7 +208,7 @@ namespace BioMedDocManager.Controllers
             var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
             if (state == null)
             {
-                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
+                TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.SessionExpiredReLogin");
                 return RedirectToAction(nameof(Index));
             }
 
@@ -235,19 +235,19 @@ namespace BioMedDocManager.Controllers
             var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
             if (state == null)
             {
-                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
+                TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.SessionExpiredReLogin");
                 return RedirectToAction(nameof(Index));
             }
 
             if (string.IsNullOrWhiteSpace(provider))
             {
-                TempData["_JSShowAlert"] = "請選擇驗證方式。";
+                TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.SelectProvider");
                 return RedirectToAction(nameof(TwoFactor));
             }
 
             if (string.IsNullOrWhiteSpace(code))
             {
-                TempData["_JSShowAlert"] = "請輸入驗證碼。";
+                TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.EnterCode");
                 return RedirectToAction(nameof(TwoFactor));
             }
 
@@ -259,7 +259,7 @@ namespace BioMedDocManager.Controllers
 
             if (!isEmail && !isTotp)
             {
-                TempData["_JSShowAlert"] = "驗證方式不正確，請重新選擇。";
+                TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.InvalidProvider");
                 return RedirectToAction(nameof(TwoFactor));
             }
 
@@ -268,19 +268,19 @@ namespace BioMedDocManager.Controllers
             {
                 if (!state.CanUseEmail)
                 {
-                    TempData["_JSShowAlert"] = "目前未啟用 Email 二階段驗證。";
+                    TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.EmailNotEnabled");
                     return RedirectToAction(nameof(TwoFactor));
                 }
 
                 if (!state.EmailOtpExpiresAt.HasValue || state.EmailOtpExpiresAt.Value < DateTime.UtcNow)
                 {
-                    TempData["_JSShowAlert"] = "驗證碼已過期，請重新取得。";
+                    TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.CodeExpiredResend");
                     return RedirectToAction(nameof(TwoFactor));
                 }
 
                 if (state.EmailOtpVerifyFailCount >= 5)
                 {
-                    TempData["_JSShowAlert"] = "驗證失敗次數過多，請重新登入。";
+                    TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.TooManyAttemptsReLogin");
                     HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
                     return RedirectToAction(nameof(Index));
                 }
@@ -291,7 +291,7 @@ namespace BioMedDocManager.Controllers
                     state.EmailOtpVerifyFailCount++;
                     HttpContext.Session.SetObject(AppSettings.TwoFactorSessionKey, state);
 
-                    TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
+                    TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.CodeInvalidRetry");
                     return RedirectToAction(nameof(TwoFactor));
                 }
 
@@ -303,13 +303,13 @@ namespace BioMedDocManager.Controllers
             {
                 if (!state.CanUseTotp)
                 {
-                    TempData["_JSShowAlert"] = "目前未啟用 TOTP 二階段驗證。";
+                    TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.TotpNotEnabled");
                     return RedirectToAction(nameof(TwoFactor));
                 }
                 var userForTotp = await _context.Users.FindAsync(state.UserId);
                 if (userForTotp == null)
                 {
-                    TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
+                    TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.UserInfoExpiredReLogin");
                     HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
                     return RedirectToAction(nameof(Index));
                 }
@@ -317,7 +317,7 @@ namespace BioMedDocManager.Controllers
                 var totpOk = await VerifyTotpCodeAsync(userForTotp, code);
                 if (!totpOk)
                 {
-                    TempData["_JSShowAlert"] = "驗證碼錯誤或已過期，請重新輸入。";
+                    TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.CodeInvalidOrExpiredRetry");
                     return RedirectToAction(nameof(TwoFactor));
                 }
 
@@ -328,7 +328,7 @@ namespace BioMedDocManager.Controllers
             var user = await _context.Users.FindAsync(state.UserId);
             if (user == null)
             {
-                TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
+                TempData["_JSShowAlert"] = _loc.T("Auth.LoginInfoExpired");
                 HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
                 return RedirectToAction(nameof(Index));
             }
@@ -363,13 +363,13 @@ namespace BioMedDocManager.Controllers
             var state = HttpContext.Session.GetObject<TwoFactorState>(AppSettings.TwoFactorSessionKey);
             if (state == null)
             {
-                TempData["_JSShowAlert"] = "二階段驗證已失效，請重新登入。";
+                TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.SessionExpiredReLogin");
                 return RedirectToAction(nameof(Index));
             }
 
             if (!state.CanUseEmail)
             {
-                TempData["_JSShowAlert"] = "目前未啟用 Email 二階段驗證。";
+                TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.EmailNotEnabled");
                 return RedirectToAction(nameof(TwoFactor));
             }
 
@@ -377,7 +377,7 @@ namespace BioMedDocManager.Controllers
             var user = await _context.Users.FindAsync(state.UserId);
             if (user == null)
             {
-                TempData["_JSShowAlert"] = "使用者資訊已失效，請重新登入。";
+                TempData["_JSShowAlert"] = _loc.T("Auth.LoginInfoExpired");
                 HttpContext.Session.Remove(AppSettings.TwoFactorSessionKey);
                 return RedirectToAction(nameof(Index));
             }
@@ -396,7 +396,7 @@ namespace BioMedDocManager.Controllers
             // 更新 Session
             HttpContext.Session.SetObject(AppSettings.TwoFactorSessionKey, state);
 
-            TempData["_JSShowAlert"] = "已寄出 Email 驗證碼，請至信箱收信。";
+            TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.EmailSentCheckInbox");
 
             // 回到二階段驗證畫面
             return RedirectToAction(nameof(TwoFactor));
@@ -409,19 +409,21 @@ namespace BioMedDocManager.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
-            HttpContext.Session.Remove("try_login");
+            // 1️ 清空所有 Session（包含所有 culture 的 MenuTree）
+            HttpContext.Session.Clear();
 
-            var culture = System.Globalization.CultureInfo.CurrentUICulture.Name; // "zh-TW" / "en-US"
-            var cultureSessionKey = $"MenuTree::{culture}";
-            HttpContext.Session.Remove(cultureSessionKey);
+            // 2 記錄登出行為
+            await _accessLog.NewLogoutAsync(GetLoginUser());
 
-            TempData["_JSShowAlert"] = "您已登出系統，謝謝您的使用";
+            // 3 登出 Cookie
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-            await _accessLog.NewLogoutAsync(GetLoginUser());
+            // 4️ 顯示提示訊息
+            TempData["_JSShowAlert"] = _loc.T("Auth.LogoutThanks");
 
             return RedirectToAction("Index", "Home");
         }
+
 
         /// <summary>
         /// 取得驗證碼
@@ -665,7 +667,7 @@ namespace BioMedDocManager.Controllers
     var storedCaptcha = httpAccessor.HttpContext.Session.GetString("CaptchaCode");
     if (string.IsNullOrEmpty(captcha) || !string.Equals(captcha, storedCaptcha, StringComparison.OrdinalIgnoreCase))
     {
-        TempData["_JSShowAlert"] = "驗證碼錯誤，請重新輸入。";
+        TempData["_JSShowAlert"] = _loc.T("Login.Captcha.Invalid");
 
         // 驗證碼錯誤 → 失敗紀錄
         await _accessLog.NewLoginFailedAsync(
@@ -707,7 +709,11 @@ namespace BioMedDocManager.Controllers
             {
                 // 尚在鎖定期
                 TempData["_JSShowAlert"] =
-                    $"帳號或密碼錯誤次數達{(sec.FailedLimit == int.MaxValue ? 0 : sec.FailedLimit)}次以上，請於{sec.LockMinutes}分鐘後重試(或洽管理者解除鎖定)";
+                 _loc.T("Auth.LockedRetry.Prefix")
+                 + (sec.FailedLimit == int.MaxValue ? 0 : sec.FailedLimit)
+                 + _loc.T("Auth.LockedRetry.Middle")
+                 + sec.LockMinutes
+                 + _loc.T("Auth.LockedRetry.Suffix");
 
                 await _accessLog.NewLoginFailedAsync(
                     AccountType.Admin,
@@ -766,7 +772,11 @@ namespace BioMedDocManager.Controllers
                 user.UserLockedUntil = now.AddMinutes(sec.LockMinutes);
 
                 TempData["_JSShowAlert"] =
-                    $"帳號或密碼錯誤次數達{sec.FailedLimit}次以上，請於{sec.LockMinutes}分鐘後重試(或洽管理者解除鎖定)";
+                    _loc.T("Auth.LockedRetry.Prefix")
+                    + sec.FailedLimit
+                    + _loc.T("Auth.LockedRetry.Middle")
+                    + sec.LockMinutes
+                    + _loc.T("Auth.LockedRetry.Suffix");
 
                 failMessage =
                     $"密碼錯誤達 {sec.FailedLimit} 次以上，帳號鎖定至 {user.UserLockedUntil:yyyy-MM-dd HH:mm:ss}";
@@ -778,7 +788,7 @@ namespace BioMedDocManager.Controllers
             else
             {
                 // 一律回通用訊息（避免洩漏是帳號還是密碼問題）
-                TempData["_JSShowAlert"] = "帳號或密碼錯誤!(若忘記密碼，請洽管理者重設密碼)";
+                TempData["_JSShowAlert"] = _loc.T("Auth.InvalidCredentialsForgotHint");
             }
 
             // 密碼錯誤 → 記錄

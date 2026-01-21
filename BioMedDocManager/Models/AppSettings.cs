@@ -7,6 +7,44 @@ public static class AppSettings
 {
     private static IConfiguration _cfg = default!;
 
+    // ===== 多語系設定 =====
+    /// <summary>
+    /// 預設語系
+    /// </summary>
+    public static readonly string DefaultCulture = "zh-TW";
+
+    /// <summary>
+    /// 可用語系
+    /// </summary>
+    public static readonly HashSet<string> SupportedCultures =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+                "zh-TW",
+                "en-US"
+        };
+
+    // ===== 路徑排除（前綴）=====
+    public static readonly IReadOnlyList<string> CultureExcludedPathPrefixes = new[]
+    {
+            "/assets",
+            "/css",
+            "/js",
+            "/lib",
+            "/images",
+            "/img",
+            "/fonts",
+            "/favicon",
+        };
+
+    // ===== 精準排除 =====
+    public static readonly HashSet<string> CultureExcludedExactPaths =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+                "/favicon.ico",
+                "/robots.txt",
+                "/sitemap.xml"
+        };
+
     /// <summary>
     /// 2FA Session 狀態物件
     /// </summary>

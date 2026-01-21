@@ -3,6 +3,7 @@ using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 
 namespace BioMedDocManager.Controllers
 {
@@ -24,15 +25,17 @@ namespace BioMedDocManager.Controllers
         {
             if (id.GetValueOrDefault() <= 0)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，id小於等於0");
                 return NotFound();
             }
 
-            var role = await _context.Roles
+            var entity = await _context.Roles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.RoleId == id);
 
-            if (role == null)
+            if (entity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，entity為null");
                 return NotFound();
             }
 
@@ -67,8 +70,8 @@ namespace BioMedDocManager.Controllers
 
             var vm = new RolePermissionEditViewModel
             {
-                RoleId = role.RoleId,
-                RoleCode = role.RoleCode,
+                RoleId = entity.RoleId,
+                RoleCode = entity.RoleCode,
                 Resources = resources,
                 AppActions = actions,
                 SelectedPermissionKeys = selectedKeys
@@ -85,14 +88,16 @@ namespace BioMedDocManager.Controllers
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.RoleId)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
-            var role = await _context.Roles
+            var dbEntity = await _context.Roles
                 .FirstOrDefaultAsync(r => r.RoleId == posted.RoleId);
 
-            if (role == null)
+            if (dbEntity == null)
             {
+                await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，dbEntity為null");
                 return NotFound();
             }
 
@@ -124,7 +129,7 @@ namespace BioMedDocManager.Controllers
             {
                 // 2) 讀取目前 DB 中此角色的 RolePermission
                 var existingPerms = await _context.RolePermissions
-                    .Where(rp => rp.RoleId == role.RoleId)
+                    .Where(rp => rp.RoleId == dbEntity.RoleId)
                     .ToListAsync();
 
                 var existingKeySet = existingPerms
@@ -150,7 +155,7 @@ namespace BioMedDocManager.Controllers
                 {
                     var rp = new RolePermission
                     {
-                        RoleId = role.RoleId,
+                        RoleId = dbEntity.RoleId,
                         ResourceId = resId,
                         AppActionId = actId
                     };
@@ -161,21 +166,27 @@ namespace BioMedDocManager.Controllers
             }
             catch (Exception ex)
             {
-                var msg = $"角色-{role.RoleCode} 權限設定更新【失敗】";
+                var msg = _loc.T("RolePermission.Index.Title") + "-" + dbEntity.RoleCode + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "權限設定更新【失敗】", msg, true);
 
-                return RedirectToAction(nameof(Index), "Role");
+                // 失敗就回到 Details 或 Index 都可以，這邊回 Details
+                return RedirectToAction(nameof(Details), new { roleId = dbEntity.RoleId });
             }
 
-            var successMsg = $"角色-{role.RoleCode} 權限設定已更新";
+            var successMsg = _loc.T("RolePermission.Index.Title") + "-" + dbEntity.RoleCode + _loc.T("Common.Success");
             TempData["_JSShowSuccess"] = successMsg;
 
-            await _accessLog.NewActionAsync(GetLoginUser(), PageName, "權限設定更新成功");
+            await _accessLog.NewActionAsync(
+                GetLoginUser(),
+                "角色管理",
+                "權限設定更新成功",
+                successMsg
+            );
 
-            return RedirectToAction(nameof(Index), "Role");
+            return RedirectToAction(nameof(RoleController.Index), "Role");
         }
 
 
