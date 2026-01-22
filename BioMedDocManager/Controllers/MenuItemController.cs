@@ -114,7 +114,7 @@ namespace BioMedDocManager.Controllers
                 if (!ModelState.IsValid)
                 {
                     await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，必填資料未填寫");
-                    return View(posted);
+                    return RedirectToAction(nameof(Index));
                 }
 
                 await _context.MenuItems.AddAsync(posted);
@@ -187,7 +187,7 @@ namespace BioMedDocManager.Controllers
             if (!ModelState.IsValid)
             {
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，必填資料未填寫");
-                return View(posted);
+                return RedirectToAction(nameof(Index));
             }
 
             try

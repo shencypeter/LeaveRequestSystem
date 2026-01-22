@@ -94,12 +94,12 @@ VALUES
 
 -- ==== 資源、權限相關範例資料 =====
 -- insert 資源
-INSERT INTO Resource (ResourceType, ResourceKey, ResourceDisplayName, ResourceIsActive, CreatedAt)
+INSERT INTO Resource (ResourceType, ResourceKey, ResourceIsActive, CreatedAt)
 VALUES
-('PAGE', 'CFileQuery', '文件查詢', 1, GETDATE()),
-('PAGE', 'CIssueTables', '表單發行', 1, GETDATE()),
-('PAGE', 'Tree', '表單查詢樹', 1, GETDATE()),
-('PAGE', 'File', '檔案', 1, GETDATE());
+('PAGE', 'CFileQuery', 1, GETDATE()),
+('PAGE', 'CIssueTables', 1, GETDATE()),
+('PAGE', 'Tree', 1, GETDATE()),
+('PAGE', 'File', 1, GETDATE());
 
 
 -- insert 動作
@@ -260,37 +260,60 @@ VALUES
 
 DECLARE @Menu_DocRoot INT;
 
--- 父選單
-IF NOT EXISTS (SELECT 1 FROM MenuItem WHERE MenuItemTitle = N'文件管理' AND MenuItemParentId IS NULL)
+-- 父選單：文件管理ParentId = NULL
+IF NOT EXISTS (
+    SELECT 1
+    FROM MenuItem
+    WHERE MenuItemParentId IS NULL
+      AND ResourceId = @Res_CFileQuery -- 用文件查詢當父選單名稱
+)
 BEGIN
     INSERT INTO MenuItem
-    (MenuItemParentId, MenuItemTitle, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedAt, CreatedBy)
+    (MenuItemParentId, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedAt, CreatedBy)
     VALUES
-    (NULL, N'文件管理', 'fa-solid fa-folder', 3, 1, NULL, GETDATE(), NULL);
+    (NULL, 'fa-solid fa-folder', 3, 1, NULL, GETDATE(), NULL);
 
     SET @Menu_DocRoot = SCOPE_IDENTITY();
 END
 ELSE
 BEGIN
-    SELECT @Menu_DocRoot = MenuItemId
+    SELECT TOP 1 @Menu_DocRoot = MenuItemId
     FROM MenuItem
-    WHERE MenuItemTitle = N'文件管理' AND MenuItemParentId IS NULL;
+    WHERE MenuItemParentId IS NULL
+      AND ResourceId IS NULL
+    ORDER BY MenuItemId;
 END
 
--- 文件查詢
-IF NOT EXISTS (SELECT 1 FROM MenuItem WHERE MenuItemTitle = N'文件查詢' AND MenuItemParentId = @Menu_DocRoot)
+-- 文件查詢（ResourceId = @Res_CFileQuery）
+IF @Res_CFileQuery IS NOT NULL
 BEGIN
-    INSERT INTO MenuItem
-    (MenuItemParentId, MenuItemTitle, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedAt, CreatedBy)
-    VALUES
-    (@Menu_DocRoot, N'文件查詢', 'fa-solid fa-file', 1, 1, @Res_CFileQuery, GETDATE(), NULL);
+    IF NOT EXISTS (
+        SELECT 1
+        FROM MenuItem
+        WHERE MenuItemParentId = @Menu_DocRoot
+          AND ResourceId = @Res_CFileQuery
+    )
+    BEGIN
+        INSERT INTO MenuItem
+        (MenuItemParentId, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedAt, CreatedBy)
+        VALUES
+        (@Menu_DocRoot, 'fa-solid fa-file', 1, 1, @Res_CFileQuery, GETDATE(), NULL);
+    END
 END
 
--- 表單發行
-IF NOT EXISTS (SELECT 1 FROM MenuItem WHERE MenuItemTitle = N'表單發行' AND MenuItemParentId = @Menu_DocRoot)
+-- 表單發行（ResourceId = @Res_CIssueTables）
+IF @Res_CIssueTables IS NOT NULL
 BEGIN
-    INSERT INTO MenuItem
-    (MenuItemParentId, MenuItemTitle, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedAt, CreatedBy)
-    VALUES
-    (@Menu_DocRoot, N'表單發行', 'fa-solid fa-book', 2, 1, @Res_CIssueTables, GETDATE(), NULL);
+    IF NOT EXISTS (
+        SELECT 1
+        FROM MenuItem
+        WHERE MenuItemParentId = @Menu_DocRoot
+          AND ResourceId = @Res_CIssueTables
+    )
+    BEGIN
+        INSERT INTO MenuItem
+        (MenuItemParentId, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedAt, CreatedBy)
+        VALUES
+        (@Menu_DocRoot, 'fa-solid fa-book', 2, 1, @Res_CIssueTables, GETDATE(), NULL);
+    END
 END

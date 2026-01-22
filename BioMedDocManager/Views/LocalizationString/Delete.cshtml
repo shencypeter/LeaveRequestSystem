@@ -1,0 +1,72 @@
+﻿@model BioMedDocManager.Models.LocalizationString
+@{
+    ViewData["Title"] = Loc.T("LocalizationString.Delete.Title");
+    Layout = "_NoNavLayout";
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <form asp-action="Delete"
+          asp-route-id="@Model.LocalizationStringId"
+          method="post"
+          id="myForm"
+          target="_top">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="LocalizationStringId" />
+
+        <div class="pop">
+
+            <div class="row align-items-center my-2">
+                <label asp-for="LocalizationStringKey" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <p class="form-control-plaintext">@Model.LocalizationStringKey</p>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-2">
+                <label asp-for="LocalizationStringCulture" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <p class="form-control-plaintext">@Model.LocalizationStringCulture</p>
+                </div>
+            </div>
+
+            <div class="row align-items-start my-2">
+                <label asp-for="LocalizationStringValue" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <p class="form-control-plaintext">@Model.LocalizationStringValue</p>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-2">
+                <label asp-for="LocalizationStringCategory" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <p class="form-control-plaintext">@Model.LocalizationStringCategory</p>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-2">
+                <label asp-for="LocalizationStringIsActive" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <p class="form-control-plaintext">@(Model.LocalizationStringIsActive? Loc.T("Common.Enabled") : Loc.T("Common.Disabled"))</p>
+                </div>
+            </div>
+
+            <div class="alert alert-warning mb-0">
+                @Loc.T("Common.ConfirmDelete")
+                <strong>@Model.LocalizationStringKey (@Model.LocalizationStringCulture)</strong>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap justify-content-center">
+                    <button type="submit" class="btn2 btn-danger mt-2 col-6 col-md-3 mx-1">
+                        <i class="bi bi-trash"></i> @Loc.T("Common.Delete")
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>

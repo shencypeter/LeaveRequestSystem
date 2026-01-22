@@ -1,12 +1,11 @@
 /*
 CREATE TABLE [dbo].[LocalizationString] (
-    [Id] BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_LocalizationString PRIMARY KEY,    
-    [Key] NVARCHAR(200) NOT NULL,-- 例如：Security.Password.MinLength.Label    
-    [Culture] NVARCHAR(20) NOT NULL,-- 例如：zh-TW / en-US（建議用 Culture Name）   
-    [Value] NVARCHAR(MAX) NOT NULL, -- 顯示文字    
-    [Category] NVARCHAR(100) NULL,-- 分組/模組（可選）：例如 Security / Common / Menu    
-    [Description] NVARCHAR(500) NULL,-- 備註（可選）：給管理者看的說明
-    [IsActive] BIT NOT NULL CONSTRAINT DF_LocalizationString_IsActive DEFAULT (1),
+    [LocalizationStringId] BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_LocalizationString PRIMARY KEY,    
+    [LocalizationStringKey] NVARCHAR(200) NOT NULL,-- 例如：Security.Password.MinLength.Label    
+    [LocalizationStringCulture] NVARCHAR(20) NOT NULL,-- 例如：zh-TW / en-US（建議用 Culture Name）   
+    [LocalizationStringValue] NVARCHAR(MAX) NOT NULL, -- 顯示文字    
+    [LocalizationStringCategory] NVARCHAR(100) NULL,-- 分組/模組（可選）：例如 Security / Common / Menu
+    [LocalizationStringIsActive] BIT NOT NULL CONSTRAINT DF_LocalizationString_IsActive DEFAULT (1),
     [CreatedAt] DATETIME2(0) NOT NULL DEFAULT (SYSDATETIME()),
     [CreatedBy] INT NULL,
     [UpdatedAt] DATETIME2(0) NULL,
@@ -18,8 +17,8 @@ CREATE TABLE [dbo].[LocalizationString] (
 
 -- 常用索引（查 Key/Culture 會很頻繁）
 CREATE INDEX IX_LocalizationString_Culture_Key
-ON [dbo].[LocalizationString] ([Culture], [Key])
-INCLUDE ([IsActive]);
+ON [dbo].[LocalizationString] ([LocalizationStringCulture], [LocalizationStringKey])
+INCLUDE ([LocalizationStringIsActive]);
 
 */
 --清空資料
@@ -32,7 +31,7 @@ DBCC CHECKIDENT ('[dbo].[LocalizationString]', RESEED, 0);
 
 
 -- 新增資料
-INSERT INTO [dbo].[LocalizationString] ([Key],[Culture],[Value],[Category],[IsActive])
+INSERT INTO [dbo].[LocalizationString] ([LocalizationStringKey],[LocalizationStringCulture],[LocalizationStringValue],[LocalizationStringCategory],[LocalizationStringIsActive])
 VALUES
 -- ===== 系統基礎 =====
 (N'Common.SystemName', N'zh-TW', N'文管與電子採購系統', N'Common', 1),
@@ -530,6 +529,21 @@ VALUES
 (N'UserGroupRole.RoleId',      N'zh-TW', N'角色編號', N'UserGroupRole', 1),
 (N'UserGroupRole.RoleId',      N'en-US', N'Role ID',  N'UserGroupRole', 1),
 
+-- 多語系
+(N'LocalizationString.LocalizationStringKey',       N'zh-TW', N'代號',     N'LocalizationString', 1),
+(N'LocalizationString.LocalizationStringKey',       N'en-US', N'Localization Key', N'LocalizationString', 1),
+
+(N'LocalizationString.LocalizationStringCulture',   N'zh-TW', N'語系',         N'LocalizationString', 1),
+(N'LocalizationString.LocalizationStringCulture',   N'en-US', N'Culture',          N'LocalizationString', 1),
+
+(N'LocalizationString.LocalizationStringValue',     N'zh-TW', N'顯示文字',     N'LocalizationString', 1),
+(N'LocalizationString.LocalizationStringValue',     N'en-US', N'Display Text',     N'LocalizationString', 1),
+
+(N'LocalizationString.LocalizationStringCategory',  N'zh-TW', N'分類',         N'LocalizationString', 1),
+(N'LocalizationString.LocalizationStringCategory',  N'en-US', N'Category',         N'LocalizationString', 1),
+
+(N'LocalizationString.LocalizationStringIsActive',  N'zh-TW', N'是否啟用',     N'LocalizationString', 1),
+(N'LocalizationString.LocalizationStringIsActive',  N'en-US', N'Is Active',        N'LocalizationString', 1),
 
 -- ===== 各頁面文字 =====
 -- 帳號管理
@@ -770,8 +784,8 @@ VALUES
 (N'Login.TwoFactor.Provider.Email', N'zh-TW', N'Email 驗證碼', N'Login', 1),
 (N'Login.TwoFactor.Provider.Email', N'en-US', N'Email code', N'Login', 1),
 
-(N'Login.TwoFactor.Provider.Totp', N'zh-TW', N'Authenticator 驗證碼', N'Login', 1),
-(N'Login.TwoFactor.Provider.Totp', N'en-US', N'Authenticator code', N'Login', 1),
+(N'Login.TwoFactor.Provider.Totp', N'zh-TW', N'TOTP 驗證碼', N'Login', 1),
+(N'Login.TwoFactor.Provider.Totp', N'en-US', N'TOTP code', N'Login', 1),
 
 (N'Login.TwoFactor.Email.Hint', N'zh-TW', N'系統會寄送 6 碼驗證碼至您的註冊 Email，請在有效時間內輸入。', N'Login', 1),
 (N'Login.TwoFactor.Email.Hint', N'en-US', N'A 6-digit code will be sent to your registered email. Please enter it within the valid time.', N'Login', 1),
@@ -1130,6 +1144,47 @@ VALUES
 (N'UserGroupRole.Edit.Title', N'en-US', N'User Group Role Management - Edit', N'UserGroupRole', 1),
 
 
+-- 多語系
+-- Index
+(N'LocalizationString.Index.Title', N'zh-TW', N'多語系設定', N'LocalizationString', 1),
+(N'LocalizationString.Index.Title', N'en-US', N'Localization Settings', N'LocalizationString', 1),
+
+(N'LocalizationString.LocalizationStringKey.Placeholder', N'zh-TW', N'請輸入代號', N'LocalizationString', 1),
+(N'LocalizationString.LocalizationStringKey.Placeholder', N'en-US', N'Enter localization key', N'LocalizationString', 1),
+
+(N'LocalizationString.LocalizationStringCulture.Placeholder', N'zh-TW', N'例如：zh-TW / en-US', N'LocalizationString', 1),
+(N'LocalizationString.LocalizationStringCulture.Placeholder', N'en-US', N'e.g. zh-TW / en-US', N'LocalizationString', 1),
+
+(N'LocalizationString.LocalizationStringValue.Placeholder', N'zh-TW', N'請輸入顯示文字', N'LocalizationString', 1),
+(N'LocalizationString.LocalizationStringValue.Placeholder', N'en-US', N'Enter display text', N'LocalizationString', 1),
+
+(N'LocalizationString.LocalizationStringCategory.Placeholder', N'zh-TW', N'例如：Security / Menu', N'LocalizationString', 1),
+(N'LocalizationString.LocalizationStringCategory.Placeholder', N'en-US', N'e.g. Security / Menu', N'LocalizationString', 1),
+
+-- Create
+(N'LocalizationString.Create.Title', N'zh-TW', N'新增多語系文字', N'LocalizationString', 1),
+(N'LocalizationString.Create.Title', N'en-US', N'Create Localization String', N'LocalizationString', 1),
+
+-- Edit
+(N'LocalizationString.Edit.Title', N'zh-TW', N'編輯多語系文字', N'LocalizationString', 1),
+(N'LocalizationString.Edit.Title', N'en-US', N'Edit Localization String', N'LocalizationString', 1),
+
+-- Delete
+(N'LocalizationString.Delete.Title', N'zh-TW', N'刪除多語系文字', N'LocalizationString', 1),
+(N'LocalizationString.Delete.Title', N'en-US', N'Delete Localization String', N'LocalizationString', 1),
+
+-- Details
+(N'LocalizationString.Details.Title', N'zh-TW', N'多語系文字明細', N'LocalizationString', 1),
+(N'LocalizationString.Details.Title', N'en-US', N'Localization String Details', N'LocalizationString', 1),
+
+-- ===== 驗證 / 系統訊息 =====
+(N'LocalizationString.KeyCulture.Duplicate', N'zh-TW', N'相同語系下，字串鍵值不可重複', N'LocalizationString', 1),
+(N'LocalizationString.KeyCulture.Duplicate', N'en-US', N'Duplicate key under the same culture is not allowed', N'LocalizationString', 1),
+
+
+
+
+
 
 
 
@@ -1139,10 +1194,6 @@ VALUES
 
 (N'Error.RedirectCountdown.Suffix', N'zh-TW', N' 秒後自動返回首頁...', N'Error', 1),
 (N'Error.RedirectCountdown.Suffix', N'en-US', N' seconds. You will be redirected to the home page...', N'Error', 1),
-
-
-
-
 
 
 -- 額外資料：各表的Value內容
@@ -1243,11 +1294,77 @@ VALUES
 
 -- TotpQrCode
 (N'AppAction.TotpQrCode', N'zh-TW', N'TOTP QR Code', N'AppAction', 1),
-(N'AppAction.TotpQrCode', N'en-US', N'TOTP QR Code', N'AppAction', 1),
+(N'AppAction.TotpQrCode', N'en-US', N'TOTP QR Code', N'AppAction', 1);
 
 
 
+-- insert 資源
+INSERT INTO Resource (ResourceType, ResourceKey, ResourceIsActive, CreatedAt)
+VALUES
+('PAGE', 'LocalizationString', 1, GETDATE());
+
+-- ==== ResourceId ====
+DECLARE @Res_LocalizationString INT;
+
+SELECT @Res_LocalizationString = ResourceId
+FROM Resource
+WHERE ResourceKey = 'LocalizationString';
+
+-- ==== AppActionId ====
+DECLARE
+    @Act_Index      INT,
+    @Act_Details    INT,
+    @Act_Create     INT,
+    @Act_Edit       INT,
+    @Act_Delete     INT;
+
+SELECT @Act_Index   = AppActionId FROM AppAction WHERE AppActionCode = 'Index';
+SELECT @Act_Details = AppActionId FROM AppAction WHERE AppActionCode = 'Details';
+SELECT @Act_Create  = AppActionId FROM AppAction WHERE AppActionCode = 'Create';
+SELECT @Act_Edit    = AppActionId FROM AppAction WHERE AppActionCode = 'Edit';
+SELECT @Act_Delete  = AppActionId FROM AppAction WHERE AppActionCode = 'Delete';
+
+/* =========================
+   RolePermission
+   多語系設定：Index/Details/Create/Edit/Delete
+   固定 RoleId = 1 (管理者)
+========================= */
+INSERT INTO RolePermission (RoleId, ResourceId, AppActionId)
+SELECT 1, @Res_LocalizationString, v.ActId
+FROM (VALUES
+    (@Act_Index),
+    (@Act_Details),
+    (@Act_Create),
+    (@Act_Edit),
+    (@Act_Delete)
+) v(ActId)
+WHERE v.ActId IS NOT NULL
+  AND @Res_LocalizationString IS NOT NULL
+  AND NOT EXISTS (
+      SELECT 1
+      FROM RolePermission rp
+      WHERE rp.RoleId = 1
+        AND rp.ResourceId = @Res_LocalizationString
+        AND rp.AppActionId = v.ActId
+  );
 
 
+/* =========================
+   MenuItem
+   多語系設定：LocalizationString
+   固定 MenuItemParentId = 1 (系統管理)
+========================= */
 
-;
+DECLARE @Menu_SystemRoot INT = 1;
+IF NOT EXISTS (
+    SELECT 1
+    FROM MenuItem
+    WHERE MenuItemParentId = @Menu_SystemRoot
+      AND ResourceId = @Res_LocalizationString
+)
+BEGIN
+    INSERT INTO MenuItem
+    (MenuItemParentId, MenuItemIcon, MenuItemDisplayOrder, MenuItemIsActive, ResourceId, CreatedAt, CreatedBy)
+    VALUES
+    (@Menu_SystemRoot, 'fa-solid fa-language', 5, 1, @Res_LocalizationString, GETDATE(), NULL);
+END

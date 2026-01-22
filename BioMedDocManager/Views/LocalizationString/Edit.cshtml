@@ -1,0 +1,95 @@
+﻿@model BioMedDocManager.Models.LocalizationString
+@{
+    ViewData["Title"] = Loc.T("LocalizationString.Edit.Title");
+    Layout = "_NoNavLayout";
+
+    // 語系下拉式選單
+    var cultureOptions = ViewBag.CultureOptions as List<string> ?? new();
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <form asp-action="Edit"
+          asp-route-id="@Model.LocalizationStringId"
+          method="post"
+          id="myForm"
+          target="_top">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="LocalizationStringId" />
+
+        <div class="pop">
+
+            <div class="row align-items-center my-3">
+                <label asp-for="LocalizationStringKey" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <input asp-for="LocalizationStringKey" class="form-control" />
+                    <span asp-validation-for="LocalizationStringKey" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <label asp-for="LocalizationStringCulture"
+                       class="col-md-2 col-form-label text-md-end"></label>
+
+                <div class="col-md-10">
+                    <select asp-for="LocalizationStringCulture" class="form-select">
+                        <option value="">@Loc.T("Common.PleaseSelect")</option>
+
+                        @foreach (var culture in cultureOptions)
+                        {
+                            <option value="@culture"
+                                    selected="@(Model.LocalizationStringCulture == culture ? "selected" : null)">
+                                @culture
+                            </option>
+                        }
+                    </select>
+
+                    <span asp-validation-for="LocalizationStringCulture" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row align-items-start my-3">
+                <label asp-for="LocalizationStringValue" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <textarea asp-for="LocalizationStringValue" class="form-control" rows="4" placeholder="@Loc.T("LocalizationString.LocalizationStringValue.Placeholder")"></textarea>
+                    <span asp-validation-for="LocalizationStringValue" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <label asp-for="LocalizationStringCategory" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <input asp-for="LocalizationStringCategory" class="form-control" placeholder="@Loc.T("LocalizationString.LocalizationStringCategory.Placeholder")" />
+                    <span asp-validation-for="LocalizationStringCategory" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <label asp-for="LocalizationStringIsActive" class="col-md-2 col-form-label text-md-end"></label>
+                <div class="col-md-10">
+                    <div class="form-check">
+                        <input asp-for="LocalizationStringIsActive" class="form-check-input" />
+                    </div>
+                    <span asp-validation-for="LocalizationStringIsActive" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row align-items-center my-3">
+                <div class="col-12 d-flex flex-wrap justify-content-center">
+                    <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
+                        <i class="fas fa-check-circle"></i> @Loc.T("Common.Save")
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+    </script>
+}

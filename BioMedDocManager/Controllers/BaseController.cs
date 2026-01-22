@@ -105,8 +105,8 @@ namespace BioMedDocManager.Controllers
 
             // 目前頁面
             var (controllerLabel, fullTitle) = ResolvePageTitleFromMenuItem(context);
-            ViewData["ControllerLabel"] = controllerLabel;   // 目前這頁的標題（ResourceDisplayName）
-            ViewData["FullTitle"] = fullTitle;               // 頂端 <title>
+            ViewData["ControllerLabel"] = controllerLabel;   // 目前這頁的標題
+            ViewData["FullTitle"] = fullTitle; // 頂端 <title>
 
             // 問候語
             ViewData["Greeting"] = GreetingByHour(DateTime.Now.Hour);
@@ -242,6 +242,8 @@ namespace BioMedDocManager.Controllers
                 .FirstOrDefault(m => m.Resource != null
                                      && m.Resource.ResourceKey == controllerKey);
 
+
+
             var baseTitle = _loc.T("Home.Welcome.Title");
 
             if (menuItem == null)
@@ -249,7 +251,9 @@ namespace BioMedDocManager.Controllers
                 return (string.Empty, baseTitle);
             }
 
-            var label = menuItem.MenuItemTitle;     // ← 改抓 MenuItem 標題
+            menuItem.Loc = _loc;
+            menuItem.Resource.Loc = _loc;
+            var label = menuItem.MenuItemTitle;
             var fullTitle = $"{baseTitle}-{label}";
 
             return (label, fullTitle);

@@ -49,8 +49,8 @@ namespace BioMedDocManager.Helpers
 
                 var val = _db.LocalizationStrings
                     .AsNoTracking()
-                    .Where(x => x.IsActive && x.DeletedAt == null && x.Culture == c && x.Key == key)
-                    .Select(x => x.Value)
+                    .Where(x => x.LocalizationStringIsActive && x.DeletedAt == null && x.LocalizationStringCulture == c && x.LocalizationStringKey == key)
+                    .Select(x => x.LocalizationStringValue)
                     .FirstOrDefault();
 
                 // 用空字串也快取，避免一直打 DB（但回傳時要再 fallback）

@@ -1,22 +1,22 @@
 -- 參數
 CREATE TABLE [dbo].[Parameter] (
-    [Parameter_Id] INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Parameter PRIMARY KEY, -- 主鍵
-    [Parameter_Code] NVARCHAR(100) NOT NULL,      -- 參數代碼（程式使用）
-    [Parameter_Name] NVARCHAR(200) NOT NULL,      -- 參數名稱（顯示用）
-    [Parameter_Value] NVARCHAR(MAX) NULL,         -- 參數值（文字 / HTML / JSON）
-    [Parameter_Format] NVARCHAR(20) NOT NULL,     -- 參數格式（text / int / html / json）
-    [Parameter_IsActive] BIT NOT NULL CONSTRAINT DF_Parameter_IsActive DEFAULT (1), -- 是否啟用
+    [ParameterId] INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Parameter PRIMARY KEY, -- 主鍵
+    [ParameterCode] NVARCHAR(100) NOT NULL,      -- 參數代碼（程式使用）
+    [ParameterName] NVARCHAR(200) NOT NULL,      -- 參數名稱（顯示用）
+    [ParameterValue] NVARCHAR(MAX) NULL,         -- 參數值（文字 / HTML / JSON）
+    [ParameterFormat] NVARCHAR(20) NOT NULL,     -- 參數格式（text / int / html / json）
+    [ParameterIsActive] BIT NOT NULL CONSTRAINT DF_ParameterIsActive DEFAULT (1), -- 是否啟用
     [CreatedAt] DATETIME2(0) NOT NULL DEFAULT (SYSDATETIME()),
     [CreatedBy] INT NULL,
     [UpdatedAt] DATETIME2(0) NULL,
     [UpdatedBy] INT NULL,
     [DeletedAt] DATETIME2(0) NULL,
     [DeletedBy] INT NULL,
-    CONSTRAINT UQ_Parameter_Code UNIQUE ([Parameter_Code])
+    CONSTRAINT UQ_ParameterCode UNIQUE ([ParameterCode])
 );
 
 INSERT INTO [dbo].[Parameter]
-([Parameter_Code],[Parameter_Name],[Parameter_Value],[Parameter_Format],[Parameter_IsActive])
+([ParameterCode],[ParameterName],[ParameterValue],[ParameterFormat],[ParameterIsActive])
 VALUES
 -- ===== 密碼政策 =====
 (N'SEC_PASSWORD_POLICY_ENABLED', N'啟用密碼政策', N'1', N'int', 1),

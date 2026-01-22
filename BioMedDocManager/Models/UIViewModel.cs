@@ -911,7 +911,45 @@ namespace BioMedDocManager.Models
         // 不需要任何屬性，空殼就可以
     }
 
+    /// <summary>
+    /// 多語系文字查詢 ViewModel
+    /// </summary>
+    public class LocalizationStringQueryViewModel : Pagination
+    {
+        /// <summary>
+        /// Key（例如：Parameter.SEC_PASSWORD_MIN_LENGTH.Label）
+        /// </summary>
+        [Display(Name = "字串鍵值")]
+        [StringLength(200, ErrorMessage = "{0}最多{1}字元")]
+        public string? LocalizationStringKey { get; set; }
 
+        /// <summary>
+        /// Culture（例如：zh-TW / en-US）
+        /// </summary>
+        [Display(Name = "語系")]
+        [StringLength(20, ErrorMessage = "{0}最多{1}字元")]
+        public string? LocalizationStringCulture { get; set; }
+
+        /// <summary>
+        /// 顯示文字
+        /// </summary>
+        [Display(Name = "顯示文字")]
+        [StringLength(500, ErrorMessage = "{0}最多{1}字元")]
+        public string? LocalizationStringValue { get; set; }
+
+        /// <summary>
+        /// 分類（例如：Security / Common / Menu）
+        /// </summary>
+        [Display(Name = "分類")]
+        [StringLength(100, ErrorMessage = "{0}最多{1}字元")]
+        public string? LocalizationStringCategory { get; set; }
+
+        /// <summary>
+        /// 是否啟用
+        /// </summary>
+        [Display(Name = "是否啟用")]
+        public bool? LocalizationStringIsActive { get; set; }
+    }
 
 
 

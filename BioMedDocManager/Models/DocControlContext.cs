@@ -271,9 +271,9 @@ public partial class DocControlContext : DbContext
         modelBuilder.Entity<LocalizationString>(e =>
         {
             e.ToTable("LocalizationString");
-            e.HasKey(x => x.Id);
-            e.HasIndex(x => new { x.Key, x.Culture }).IsUnique();
-            e.Property(x => x.IsActive).HasDefaultValue(true);
+            e.HasKey(x => x.LocalizationStringId);
+            e.HasIndex(x => new { x.LocalizationStringKey, x.LocalizationStringCulture }).IsUnique();
+            e.Property(x => x.LocalizationStringIsActive).HasDefaultValue(true);
         });
 
         modelBuilder.Entity<Parameter>(e =>
@@ -281,31 +281,31 @@ public partial class DocControlContext : DbContext
             e.ToTable("Parameter");
             e.HasKey(x => x.ParameterId);
 
-            e.Property(x => x.ParameterId).HasColumnName("Parameter_Id");
+            e.Property(x => x.ParameterId).HasColumnName("ParameterId");
 
             e.Property(x => x.ParameterCode)
-                .HasColumnName("Parameter_Code")
+                .HasColumnName("ParameterCode")
                 .HasMaxLength(100)
                 .IsRequired();
 
             e.Property(x => x.ParameterName)
-                .HasColumnName("Parameter_Name")
+                .HasColumnName("ParameterName")
                 .HasMaxLength(200)
                 .IsRequired();
 
             e.Property(x => x.ParameterValue)
-                .HasColumnName("Parameter_Value");
+                .HasColumnName("ParameterValue");
 
             e.Property(x => x.ParameterFormat)
-                .HasColumnName("Parameter_Format")
+                .HasColumnName("ParameterFormat")
                 .HasMaxLength(20)
                 .IsRequired();
 
             e.Property(x => x.ParameterIsActive)
-                .HasColumnName("Parameter_IsActive")
+                .HasColumnName("ParameterIsActive")
                 .HasDefaultValue(true);
 
-            e.HasIndex(x => x.ParameterCode).IsUnique(); // 對應 UQ_Parameter_Code
+            e.HasIndex(x => x.ParameterCode).IsUnique(); // 對應 UQ_ParameterCode
         });
 
         modelBuilder.Entity<UserPasswordHistory>(entity =>

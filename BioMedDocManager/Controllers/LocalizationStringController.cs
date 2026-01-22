@@ -9,38 +9,38 @@ using Microsoft.EntityFrameworkCore;
 namespace BioMedDocManager.Controllers
 {
     /// <summary>
-    /// 系統參數管理
+    /// 多語系文字管理
     /// </summary>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
-    /// <param name="accessLog">紀錄連線Log</param>   
-    public class ParameterController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
+    /// <param name="accessLog">紀錄連線Log</param>
+    public class LocalizationStringController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
         /// 頁面名稱
         /// </summary>
-        public const string PageName = "系統參數管理";
+        public const string PageName = "多語系文字管理";
 
         /// <summary>
         /// 預設排序依據
         /// </summary>
-        public const string InitSort = "ParameterCode";
+        public const string InitSort = "LocalizationStringKey";
 
         /// <summary>
         /// 清單表頭設定
         /// </summary>
-        public Dictionary<string, string> TableHeaders = TableHeaderFactory.Build<Parameter>(
+        public Dictionary<string, string> TableHeaders = TableHeaderFactory.Build<LocalizationString>(
             includeRowNum: true,
             onlyProps: new[]
             {
-                "ParameterCode", "ParameterName", "ParameterFormat", "ParameterValue", "ParameterIsActiveText"
+                "LocalizationStringKey", "LocalizationStringCulture", "LocalizationStringValue", "LocalizationStringCategory", "LocalizationStringIsActiveText"
             }
         );
 
         // ======================= Index（清單頁） =======================
         public async Task<IActionResult> Index([FromQuery] int? PageSize, [FromQuery] int? PageNumber, CancellationToken ct)
         {
-            var queryModel = GetSessionQueryModel<ParameterQueryViewModel>();
+            var queryModel = GetSessionQueryModel<LocalizationStringQueryViewModel>();
 
             if (PageSize.HasValue)
             {
@@ -54,14 +54,25 @@ namespace BioMedDocManager.Controllers
             QueryableExtensions.TrimStringProperties(queryModel);
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
 
+            // 語系下拉選單(從DB distinct來)
+
+            ViewBag.CultureOptions = await BuildCultureOptionsAsync(ct);
+            /*
+            ViewBag.CultureOptions = await _context.LocalizationStrings
+                .AsNoTracking()
+                .Select(x => x.LocalizationStringCulture)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToListAsync(ct);
+            */
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示清單頁");
 
-            return await BuildQueryParameter(queryModel, ct);
+            return await BuildQueryLocalizationString(queryModel, ct);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index(ParameterQueryViewModel queryModel)
+        public async Task<IActionResult> Index(LocalizationStringQueryViewModel queryModel)
         {
             QueryableExtensions.TrimStringProperties(queryModel);
             QueryableExtensions.SetSessionQueryModel(HttpContext, queryModel);
@@ -74,11 +85,13 @@ namespace BioMedDocManager.Controllers
         // ======================= Create =======================
         public async Task<IActionResult> Create()
         {
-            var model = new Parameter
+            var model = new LocalizationString
             {
-                ParameterIsActive = true,
+                LocalizationStringIsActive = true,
                 CreatedAt = DateTime.Now
             };
+
+            ViewBag.CultureOptions = await BuildCultureOptionsAsync();
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示新增頁");
 
@@ -87,7 +100,7 @@ namespace BioMedDocManager.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Parameter posted)
+        public async Task<IActionResult> Create(LocalizationString posted)
         {
             if (posted == null)
             {
@@ -105,26 +118,27 @@ namespace BioMedDocManager.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                // 基本防呆：Code 不可重複
-                var exists = await _context.Parameters.AnyAsync(p => p.ParameterCode == posted.ParameterCode);
+                // 基本防呆：Key + Culture 不可重複（同一語系同一Key只能一筆）
+                var exists = await _context.LocalizationStrings
+                    .AnyAsync(x => x.LocalizationStringKey == posted.LocalizationStringKey && x.LocalizationStringCulture == posted.LocalizationStringCulture);
+
                 if (exists)
                 {
                     ModelState.AddModelError(
-                        nameof(Parameter.ParameterCode),
-                        _loc.T("Parameter.ParameterCode.Duplicate")
+                        nameof(LocalizationString.LocalizationStringKey),
+                        _loc.T("LocalizationString.LocalizationStringKeyCulture.Duplicate")
                     );
 
-                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，Parameter Code重複，不可儲存");
-
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，Key+Culture重複，不可儲存");
                     return RedirectToAction(nameof(Index));
                 }
 
-                await _context.Parameters.AddAsync(posted);
+                await _context.LocalizationStrings.AddAsync(posted);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                var msg = _loc.T("Parameter.Create.Title") + "-" + posted.ParameterCode + _loc.T("Common.Failed");
+                var msg = _loc.T("LocalizationString.Create.Title") + "-" + posted.LocalizationStringKey + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -132,7 +146,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = _loc.T("Parameter.Create.Title") + "-" + posted.ParameterCode + _loc.T("Common.Success");
+            TempData["_JSShowSuccess"] = _loc.T("LocalizationString.Create.Title") + "-" + posted.LocalizationStringKey + _loc.T("Common.Success");
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增成功");
 
@@ -140,7 +154,7 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Edit =======================
-        public async Task<IActionResult> Edit([FromRoute] int? id)
+        public async Task<IActionResult> Edit([FromRoute] long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -148,12 +162,14 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var entity = await _context.Parameters.FirstOrDefaultAsync(p => p.ParameterId == id);
+            var entity = await _context.LocalizationStrings.FirstOrDefaultAsync(x => x.LocalizationStringId == id);
             if (entity == null)
             {
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁", "錯誤，entity為null");
                 return NotFound();
             }
+
+            ViewBag.CultureOptions = await BuildCultureOptionsAsync();
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示編輯頁");
             return View(entity);
@@ -161,9 +177,9 @@ namespace BioMedDocManager.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? id, Parameter posted)
+        public async Task<IActionResult> Edit([FromRoute] long? id, LocalizationString posted)
         {
-            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.ParameterId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.LocalizationStringId)
             {
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
@@ -171,7 +187,7 @@ namespace BioMedDocManager.Controllers
 
             QueryableExtensions.TrimStringProperties(posted);
 
-            var dbEntity = await _context.Parameters.FirstOrDefaultAsync(p => p.ParameterId == id);
+            var dbEntity = await _context.LocalizationStrings.FirstOrDefaultAsync(x => x.LocalizationStringId == id);
             if (dbEntity == null)
             {
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，dbEntity為null");
@@ -186,31 +202,35 @@ namespace BioMedDocManager.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                // Code 變更時，仍需避免重複
-                var exists = await _context.Parameters.AnyAsync(p => p.ParameterId != dbEntity.ParameterId && p.ParameterCode == posted.ParameterCode);
+                // Key + Culture 變更時，仍需避免重複
+                var exists = await _context.LocalizationStrings.AnyAsync(x =>
+                    x.LocalizationStringId != dbEntity.LocalizationStringId &&
+                    x.LocalizationStringKey == posted.LocalizationStringKey &&
+                    x.LocalizationStringCulture == posted.LocalizationStringCulture
+                );
+
                 if (exists)
                 {
                     ModelState.AddModelError(
-                        nameof(Parameter.ParameterCode),
-                        _loc.T("Parameter.ParameterCode.Duplicate")
+                        nameof(LocalizationString.LocalizationStringKey),
+                        _loc.T("LocalizationString.LocalizationStringKeyCulture.Duplicate")
                     );
 
-                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，Parameter Code重複，不可儲存");
-
+                    await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，Key+Culture重複，不可儲存");
                     return RedirectToAction(nameof(Index));
                 }
 
-                dbEntity.ParameterCode = posted.ParameterCode?.Trim() ?? "";
-                dbEntity.ParameterFormat = posted.ParameterFormat;
-                dbEntity.ParameterName = posted.ParameterName;
-                dbEntity.ParameterValue = posted.ParameterValue; // 允許空白/JSON/HTML                
-                dbEntity.ParameterIsActive = posted.ParameterIsActive;
+                dbEntity.LocalizationStringKey = posted.LocalizationStringKey?.Trim() ?? "";
+                dbEntity.LocalizationStringCulture = posted.LocalizationStringCulture?.Trim() ?? "";
+                dbEntity.LocalizationStringValue = posted.LocalizationStringValue?.Trim() ?? "";
+                dbEntity.LocalizationStringCategory = posted.LocalizationStringCategory?.Trim();
+                dbEntity.LocalizationStringIsActive = posted.LocalizationStringIsActive;
 
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                var msg = _loc.T("Parameter.Edit.Title") + "-" + dbEntity.ParameterCode + _loc.T("Common.Failed");
+                var msg = _loc.T("LocalizationString.Edit.Title") + "-" + dbEntity.LocalizationStringKey + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -218,7 +238,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = _loc.T("Parameter.Edit.Title") + "-" + dbEntity.ParameterCode + _loc.T("Common.Success");
+            TempData["_JSShowSuccess"] = _loc.T("LocalizationString.Edit.Title") + "-" + dbEntity.LocalizationStringKey + _loc.T("Common.Success");
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯成功");
 
@@ -226,7 +246,7 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Details =======================
-        public async Task<IActionResult> Details([FromRoute] int? id)
+        public async Task<IActionResult> Details([FromRoute] long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -234,9 +254,9 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var entity = await _context.Parameters
+            var entity = await _context.LocalizationStrings
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.ParameterId == id);
+                .FirstOrDefaultAsync(x => x.LocalizationStringId == id);
 
             if (entity == null)
             {
@@ -250,7 +270,7 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Delete（不檢查關聯，直接刪） =======================
-        public async Task<IActionResult> Delete([FromRoute] int? id)
+        public async Task<IActionResult> Delete([FromRoute] long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -258,9 +278,9 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            var entity = await _context.Parameters
+            var entity = await _context.LocalizationStrings
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.ParameterId == id);
+                .FirstOrDefaultAsync(x => x.LocalizationStringId == id);
 
             if (entity == null)
             {
@@ -275,15 +295,15 @@ namespace BioMedDocManager.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete([FromRoute] int? id, Parameter posted)
+        public async Task<IActionResult> Delete([FromRoute] long? id, LocalizationString posted)
         {
-            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.ParameterId)
+            if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.LocalizationStringId)
             {
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除頁儲存", "錯誤，posted為null 或 id小於等於0 或 id與posted.id不符");
                 return NotFound();
             }
 
-            var entity = await _context.Parameters.FirstOrDefaultAsync(p => p.ParameterId == posted.ParameterId);
+            var entity = await _context.LocalizationStrings.FirstOrDefaultAsync(x => x.LocalizationStringId == posted.LocalizationStringId);
             if (entity == null)
             {
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除頁儲存", "錯誤，entity為null");
@@ -292,12 +312,12 @@ namespace BioMedDocManager.Controllers
 
             try
             {
-                _context.Parameters.Remove(entity);
+                _context.LocalizationStrings.Remove(entity);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                var msg = _loc.T("Parameter.Delete.Title") + "-" + entity.ParameterCode + _loc.T("Common.Failed");
+                var msg = _loc.T("LocalizationString.Delete.Title") + "-" + entity.LocalizationStringKey + _loc.T("Common.Failed");
                 Utilities.WriteExceptionIntoLogFile(msg, ex, HttpContext);
                 TempData["_JSShowAlert"] = msg;
 
@@ -305,7 +325,7 @@ namespace BioMedDocManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["_JSShowSuccess"] = _loc.T("Parameter.Delete.Title") + "-" + entity.ParameterCode + _loc.T("Common.Success");
+            TempData["_JSShowSuccess"] = _loc.T("LocalizationString.Delete.Title") + "-" + entity.LocalizationStringKey + _loc.T("Common.Success");
 
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "刪除成功");
 
@@ -314,46 +334,53 @@ namespace BioMedDocManager.Controllers
 
         // ======================= 查詢邏輯 =======================
         [NonAction]
-        public async Task<IActionResult> BuildQueryParameter(ParameterQueryViewModel queryModel, CancellationToken ct)
+        public async Task<IActionResult> BuildQueryLocalizationString(LocalizationStringQueryViewModel queryModel, CancellationToken ct)
         {
             ViewData["pageNumber"] = queryModel.PageNumber.ToString();
 
             FilterOrderBy(queryModel, TableHeaders, InitSort);
 
-            IQueryable<Parameter> q = _context.Parameters.AsNoTracking();
+            IQueryable<LocalizationString> q = _context.LocalizationStrings.AsNoTracking();
 
-            // ParameterCode
-            if (!string.IsNullOrWhiteSpace(queryModel.ParameterCode))
+            // Key
+            if (!string.IsNullOrWhiteSpace(queryModel.LocalizationStringKey))
             {
-                var s = $"%{queryModel.ParameterCode.Trim()}%";
-                q = q.Where(p => EF.Functions.Like(p.ParameterCode, s));
+                var s = $"%{queryModel.LocalizationStringKey.Trim()}%";
+                q = q.Where(x => EF.Functions.Like(x.LocalizationStringKey, s));
             }
 
-            // ParameterName
-            if (!string.IsNullOrWhiteSpace(queryModel.ParameterName))
+            // Culture
+            if (!string.IsNullOrWhiteSpace(queryModel.LocalizationStringCulture))
             {
-                var s = $"%{queryModel.ParameterName.Trim()}%";
-                q = q.Where(p => EF.Functions.Like(p.ParameterName, s));
+                var s = $"%{queryModel.LocalizationStringCulture.Trim()}%";
+                q = q.Where(x => EF.Functions.Like(x.LocalizationStringCulture, s));
             }
 
-            // ParameterFormat
-            if (!string.IsNullOrWhiteSpace(queryModel.ParameterFormat))
+            // Value
+            if (!string.IsNullOrWhiteSpace(queryModel.LocalizationStringValue))
             {
-                var s = $"%{queryModel.ParameterFormat.Trim()}%";
-                q = q.Where(p => EF.Functions.Like(p.ParameterFormat, s));
+                var s = $"%{queryModel.LocalizationStringValue.Trim()}%";
+                q = q.Where(x => EF.Functions.Like(x.LocalizationStringValue, s));
             }
 
-            // ParameterIsActive
-            if (queryModel.ParameterIsActive.HasValue)
+            // Category
+            if (!string.IsNullOrWhiteSpace(queryModel.LocalizationStringCategory))
             {
-                q = q.Where(p => p.ParameterIsActive == queryModel.ParameterIsActive.Value);
+                var s = $"%{queryModel.LocalizationStringCategory.Trim()}%";
+                q = q.Where(x => EF.Functions.Like(x.LocalizationStringCategory!, s));
+            }
+
+            // IsActive
+            if (queryModel.LocalizationStringIsActive.HasValue)
+            {
+                q = q.Where(x => x.LocalizationStringIsActive == queryModel.LocalizationStringIsActive.Value);
             }
 
             q = q.OrderByWhitelist(
                 queryModel.OrderBy,
                 queryModel.SortDir,
                 TableHeaders,
-                tiebreakerProperty: "ParameterId"
+                tiebreakerProperty: "LocalizationStringId"
             );
 
             var (entities, totalCount) =
@@ -369,7 +396,7 @@ namespace BioMedDocManager.Controllers
                 pageSize: queryModel.PageSize,
                 keyMode: KeyMode.PropertyName,
                 includeRowNum: true,
-                payloadProps: new[] { "ParameterId" }
+                payloadProps: new[] { "LocalizationStringId" }
             );
 
             ViewData["totalCount"] = totalCount;
@@ -378,7 +405,21 @@ namespace BioMedDocManager.Controllers
             return View(result);
         }
 
-
+        /// <summary>
+        /// 語系下拉式選單
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        [NonAction]
+        private async Task<List<string>> BuildCultureOptionsAsync(CancellationToken ct = default)
+        {
+            return await _context.LocalizationStrings
+                .AsNoTracking()
+                .Select(x => x.LocalizationStringCulture)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToListAsync(ct);
+        }
 
 
     }

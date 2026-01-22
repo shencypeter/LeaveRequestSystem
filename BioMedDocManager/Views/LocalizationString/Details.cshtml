@@ -1,0 +1,68 @@
+﻿@model BioMedDocManager.Models.LocalizationString
+@{
+    ViewData["Title"] = Loc.T("LocalizationString.Details.Title");
+    Layout = "_NoNavLayout";
+}
+
+<div class="m-4">
+    <h4 class="m-3 px-2">
+        <i class="bi bi-search me-2"></i>@ViewData["Title"]
+    </h4>
+
+    <div class="pop">
+
+        <div class="row align-items-center my-2">
+            <label asp-for="LocalizationStringKey" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.LocalizationStringKey</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="LocalizationStringCulture" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.LocalizationStringCulture</p>
+            </div>
+        </div>
+
+        <div class="row align-items-start my-2">
+            <label asp-for="LocalizationStringValue" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.LocalizationStringValue</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="LocalizationStringCategory" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@Model.LocalizationStringCategory</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="LocalizationStringIsActive" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">@(Model.LocalizationStringIsActive? Loc.T("Common.Enabled") : Loc.T("Common.Disabled"))</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="CreatedAt" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">
+                    @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? Loc.T("Common.None"))
+                </p>
+            </div>
+        </div>
+
+        <div class="row align-items-center my-2">
+            <label asp-for="UpdatedAt" class="col-md-2 col-form-label text-md-end"></label>
+            <div class="col-md-10">
+                <p class="form-control-plaintext">
+                    @(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? Loc.T("Common.None"))
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>

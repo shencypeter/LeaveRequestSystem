@@ -1,0 +1,249 @@
+﻿@model IEnumerable<Dictionary<string, object>>
+@{
+    ViewData["Title"] = Loc.T("LocalizationString.Index.Title");
+    Layout = "_AssetLayout";
+
+    var queryModel = QueryableExtensions.GetSessionQueryModel<LocalizationStringQueryViewModel>(Context);
+    queryModel.OrderBy ??= "LocalizationStringKey";
+    queryModel.SortDir ??= "asc";
+
+    var headers = ViewData["tableHeaders"] as Dictionary<string, string> ?? new Dictionary<string, string>();
+
+    // 語系下拉式選單
+    var cultureOptions = ViewBag.CultureOptions as List<string> ?? new();
+}
+
+<form method="post" id="myForm">
+    @Html.AntiForgeryToken()
+
+    <div class="accordion" id="queryAccordion">
+        <div class="accordion-item border border-secondary-subtle bg-light">
+            <h2 class="accordion-header" id="lsHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#lsCollapse" aria-expanded="false" aria-controls="lsCollapse">
+                    <i class="fa fa-sliders me-2"></i> @ViewData["Title"]
+                </button>
+            </h2>
+
+            <div id="lsCollapse" class="accordion-collapse collapse show" aria-labelledby="lsHeading"
+                 data-bs-parent="#queryAccordion">
+                <div class="accordion-body mx-3">
+
+                    <!-- Row 1: LocalizationStringKey / LocalizationStringCulture -->
+                    <div class="row mb-3 g-3 row-cols-1 row-cols-md-2 align-items-center">
+
+                        <div class="col">
+                            <div class="row g-2 align-items-center">
+                                <label for="LocalizationStringKey" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    @Loc.T("LocalizationString.LocalizationStringKey")：
+                                </label>
+                                <div class="col-12 col-sm-8">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="LocalizationStringKey"
+                                           name="@nameof(LocalizationStringQueryViewModel.LocalizationStringKey)"
+                                           value="@queryModel.LocalizationStringKey"
+                                           placeholder="@Loc.T("LocalizationString.LocalizationStringKey.Placeholder")" />
+                                </div>
+                            </div>
+                        </div>
+                        @*
+                        <div class="col">
+                            <div class="row g-2 align-items-center">
+                                <label for="LocalizationStringCulture" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    @Loc.T("LocalizationString.LocalizationStringCulture")：
+                                </label>
+                                <div class="col-12 col-sm-8">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="LocalizationStringCulture"
+                                           name="@nameof(LocalizationStringQueryViewModel.LocalizationStringCulture)"
+                                           value="@queryModel.LocalizationStringCulture"
+                                           placeholder="@Loc.T("LocalizationString.LocalizationStringCulture.Placeholder")" />
+                                </div>
+                            </div>
+                        </div>
+                        *@
+                        <div class="col">
+                            <div class="row g-2 align-items-center">
+                                <label for="LocalizationStringCulture"
+                                       class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    @Loc.T("LocalizationString.LocalizationStringCulture")：
+                                </label>
+                                <div class="col-12 col-sm-8">
+                                    <select id="LocalizationStringCulture"
+                                            name="@nameof(LocalizationStringQueryViewModel.LocalizationStringCulture)"
+                                            class="form-select">
+                                        <option value="">@Loc.T("Common.All")</option>
+
+                                        @foreach (var culture in cultureOptions)
+                                        {
+                                            <option value="@culture"
+                                                    selected="@(queryModel.LocalizationStringCulture == culture ? "selected" : null)">
+                                                @culture
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Row 2: LocalizationStringValue / LocalizationStringCategory -->
+                    <div class="row mb-3 g-3 row-cols-1 row-cols-md-2 align-items-center">
+
+                        <div class="col">
+                            <div class="row g-2 align-items-center">
+                                <label for="LocalizationStringValue" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    @Loc.T("LocalizationString.LocalizationStringValue")：
+                                </label>
+                                <div class="col-12 col-sm-8">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="LocalizationStringValue"
+                                           name="@nameof(LocalizationStringQueryViewModel.LocalizationStringValue)"
+                                           value="@queryModel.LocalizationStringValue"
+                                           placeholder="@Loc.T("LocalizationString.LocalizationStringValue.Placeholder")" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="row g-2 align-items-center">
+                                <label for="LocalizationStringCategory" class="col-12 col-sm-4 col-form-label text-sm-end text-start">
+                                    @Loc.T("LocalizationString.LocalizationStringCategory")：
+                                </label>
+                                <div class="col-12 col-sm-8">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="LocalizationStringCategory"
+                                           name="@nameof(LocalizationStringQueryViewModel.LocalizationStringCategory)"
+                                           value="@queryModel.LocalizationStringCategory"
+                                           placeholder="@Loc.T("LocalizationString.LocalizationStringCategory.Placeholder")" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: LocalizationStringIsActive（單欄佔滿：2/10） -->
+                    <div class="row mb-3 g-3 align-items-center">
+                        <label for="LocalizationStringIsActive" class="col-md-2 col-form-label text-md-end text-start">
+                            @Loc.T("LocalizationString.LocalizationStringIsActive")：
+                        </label>
+                        <div class="col-md-10">
+                            <select id="LocalizationStringIsActive"
+                                    name="@nameof(LocalizationStringQueryViewModel.LocalizationStringIsActive)"
+                                    class="form-select">
+                                <option value="" selected="@(queryModel.LocalizationStringIsActive == null ? "selected" : null)">@Loc.T("Common.All")</option>
+                                <option value="true" selected="@(queryModel.LocalizationStringIsActive == true ? "selected" : null)">@Loc.T("Common.Enabled")</option>
+                                <option value="false" selected="@(queryModel.LocalizationStringIsActive == false ? "selected" : null)">@Loc.T("Common.Disabled")</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 按鈕排 -->
+                    <div class="row mb-3">
+                        <div class="col-12 d-flex justify-content-center flex-wrap gap-2">
+
+                            <button type="submit" class="btn2 btn-primary mt-2 search_btn">
+                                <i class="fas fa-search"></i> @Loc.T("Common.Search")
+                            </button>
+
+                            <a id="create_btn" href="@Url.Action("Create", "LocalizationString")"
+                               class="btn2 btn-success mt-2">
+                                <i class="fas fa-plus-circle"></i> @Loc.T("Common.Create")
+                            </a>
+
+                            <button type="button" class="btn2 btn-secondary mt-2 clear_btn" data-form="myForm">
+                                <i class="fas fa-eraser"></i> @Loc.T("Common.Reset")
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hidden fields -->
+                    <input type="hidden" id="@nameof(queryModel.OrderBy)" name="@nameof(queryModel.OrderBy)" value="@queryModel.OrderBy" />
+                    <input type="hidden" id="@nameof(queryModel.SortDir)" name="@nameof(queryModel.SortDir)" value="@queryModel.SortDir" />
+                    <input type="hidden" id="@nameof(queryModel.PageSize)" name="@nameof(queryModel.PageSize)" value="@queryModel.PageSize" />
+                    <input type="hidden" id="@nameof(queryModel.PageNumber)" name="@nameof(queryModel.PageNumber)" value="@queryModel.PageNumber" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="table">
+    <table class="table table-striped table-hover table-bordered text-break" id="myTable">
+        <thead>
+            <tr>
+                @foreach (var item in headers)
+                {
+                    <th data-id="@item.Key">
+                        @if (item.Key != "RowNum")
+                        {
+                            <a href="#" title="@($"{Loc.T("Common.SortByColumn.Tooltip.Prefix")}{Loc.T(item.Value)}{Loc.T("Common.SortByColumn.Tooltip.Suffix")}")">
+                                @Loc.T(item.Value)
+                            </a>
+                        }
+                        else
+                        {
+                            @Loc.T(item.Value)
+                        }
+
+                    <span class="order-index">
+                        @(queryModel.OrderBy?.EndsWith(item.Key) == true
+                                                ? (queryModel.SortDir == "asc" ? "▲" : "▼")
+                                                : "")
+                    </span>
+                </th>
+                                }
+                <th class="col-actions">@Loc.T("Common.Actions")</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="@(headers.Count + 1)">@Loc.T("Common.NoData")</td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var row in Model)
+                {
+                    <tr>
+                        @foreach (var key in headers.Keys)
+                        {
+                            if (!row.TryGetValue(key, out var cell)) { cell = ""; }
+                            string value = TableHelper.FormatValue(cell, Loc);
+
+                            <td class="@(value == "(" + Loc.T("Common.None") + ")" ? "none-data" : "") @((key.Equals("RowNum", StringComparison.OrdinalIgnoreCase)) ? "text-nowrap" : "")">
+                                @Html.Raw(value)
+                            </td>
+                        }
+
+                        <td class="col-actions">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @Loc.T("Common.Actions")
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Details", "LocalizationString", new { id = row["LocalizationStringId"] })">@Loc.T("Common.View")</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Edit", "LocalizationString", new { id = row["LocalizationStringId"] })">@Loc.T("Common.Edit")</a></li>
+                                    <li><a class="dropdown-item detail" href="@Url.Action("Delete", "LocalizationString", new { id = row["LocalizationStringId"] })">@Loc.T("Common.Delete")</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@await Html.PartialAsync("_PagerSection", queryModel)
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+    </script>
+}

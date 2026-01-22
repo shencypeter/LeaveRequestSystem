@@ -132,6 +132,26 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxVbmRlckNvbnN0cnVjdGlvbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/系統資料/project/文管空白/BioMedDocManager/BioMedDocManager/Views/LocalizationString/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemF0aW9uU3RyaW5nXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/系統資料/project/文管空白/BioMedDocManager/BioMedDocManager/Views/LocalizationString/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemF0aW9uU3RyaW5nXERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/系統資料/project/文管空白/BioMedDocManager/BioMedDocManager/Views/LocalizationString/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemF0aW9uU3RyaW5nXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/系統資料/project/文管空白/BioMedDocManager/BioMedDocManager/Views/LocalizationString/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemF0aW9uU3RyaW5nXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/系統資料/project/文管空白/BioMedDocManager/BioMedDocManager/Views/LocalizationString/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemF0aW9uU3RyaW5nXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/系統資料/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Login/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
