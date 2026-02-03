@@ -1030,10 +1030,10 @@ D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\stati
 D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\staticwebassets.development.json
 D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDo.49AF6AF0.Up2Date
 D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDocManager.dll
 D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\refint\BioMedDocManager.dll
 D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDocManager.pdb
 D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\BioMedDocManager.genruntimeconfig.cache
 D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\ref\BioMedDocManager.dll
+D:\project\文管空白\BioMedDocManager\BioMedDocManager\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

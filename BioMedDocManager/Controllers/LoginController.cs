@@ -216,6 +216,25 @@ namespace BioMedDocManager.Controllers
             ViewBag.CanUseEmail = state.CanUseEmail;
             ViewBag.CanUseTotp = state.CanUseTotp;
 
+            var prefer = TempData["TwoFactor.SelectedProvider"] as string;
+
+            string selected = null;
+            if (string.Equals(prefer, "Email", StringComparison.OrdinalIgnoreCase) && state.CanUseEmail)
+            {
+                selected = "Email";
+            }
+            else if (string.Equals(prefer, "Totp", StringComparison.OrdinalIgnoreCase) && state.CanUseTotp)
+            {
+                selected = "Totp";
+            }
+
+            if (string.IsNullOrEmpty(selected))
+            {
+                selected = state.CanUseTotp ? "Totp" : "Email";
+            }
+
+            ViewBag.DefaultProvider = selected;
+
             await _accessLog.NewActionAsync(GetLoginUser(), PageName, "顯示二階段驗證頁");
 
             return View();
@@ -397,6 +416,9 @@ namespace BioMedDocManager.Controllers
             HttpContext.Session.SetObject(AppSettings.TwoFactorSessionKey, state);
 
             TempData["_JSShowAlert"] = _loc.T("Login.TwoFactor.EmailSentCheckInbox");
+
+            // 設定目前選擇的 provider 為 Email
+            TempData["TwoFactor.SelectedProvider"] = "Email";
 
             // 回到二階段驗證畫面
             return RedirectToAction(nameof(TwoFactor));

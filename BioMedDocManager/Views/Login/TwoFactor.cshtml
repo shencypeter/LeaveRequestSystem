@@ -7,7 +7,7 @@
     bool canUseEmail = ViewBag.CanUseEmail as bool? ?? false;
     bool canUseTotp = ViewBag.CanUseTotp as bool? ?? false;
 
-    // 預設優先 Authenticator(TOTP)，沒有 TOTP 才用 Email
+    // 預設優先 Authenticator(TOTP)，沒有 TOTP 才用 Email（Controller 若有塞 ViewBag.DefaultProvider 會優先）
     string defaultProvider =
         ViewBag.DefaultProvider as string
         ?? (canUseTotp ? "Totp" : "Email");
@@ -46,6 +46,7 @@
                         <label class="col-12 col-md-2 col-form-label fw-bold">
                             @Loc.T("Login.TwoFactor.Provider.Label")
                         </label>
+
                         <div class="col-12 col-md-10">
 
                             @if (canUseEmail && canUseTotp)
@@ -161,9 +162,15 @@
             var totpRadio = document.getElementById('providerTotp');
 
             function updateProvider(provider) {
-                if (!providerInput) return;
+                if (!providerInput) { return; }
 
                 providerInput.value = provider;
+
+                // 同步 radio 外觀（避免 hidden 與 UI 不一致）
+                if (emailRadio && totpRadio) {
+                    emailRadio.checked = (provider === 'Email');
+                    totpRadio.checked = (provider === 'Totp');
+                }
 
                 if (emailHint) {
                     emailHint.classList.toggle('d-none', provider !== 'Email');
@@ -183,12 +190,18 @@
                     }
                 });
             }
+
             if (totpRadio) {
                 totpRadio.addEventListener('change', function () {
                     if (this.checked) {
                         updateProvider('Totp');
                     }
                 });
+            }
+
+            // 初始化：永遠以 server 算好的 hidden value 為準
+            if (providerInput) {
+                updateProvider(providerInput.value || 'Totp');
             }
         })();
     </script>

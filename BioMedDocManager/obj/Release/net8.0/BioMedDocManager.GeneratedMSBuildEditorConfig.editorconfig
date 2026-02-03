@@ -17,425 +17,353 @@ build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = BioMedDocManager
 build_property.RootNamespace = BioMedDocManager
-build_property.ProjectDir = D:\系統資料\project\itriDoc\BioMedDocManager\BioMedDocManager\
+build_property.ProjectDir = D:\project\文管空白\BioMedDocManager\BioMedDocManager\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = D:\系統資料\project\itriDoc\BioMedDocManager\BioMedDocManager
+build_property.MSBuildProjectDirectory = D:\project\文管空白\BioMedDocManager\BioMedDocManager
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/AccountSettings/Create.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AccountSettings/ChangePassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFNldHRpbmdzXENoYW5nZVBhc3N3b3JkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AccountSettings/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFNldHRpbmdzXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/AccountSettings/Edit.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AccountSettings/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFNldHRpbmdzXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AccountSettings/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFNldHRpbmdzXEVkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/AccountSettings/Index.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AccountSettings/EditGroup.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFNldHRpbmdzXEVkaXRHcm91cC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AccountSettings/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFNldHRpbmdzXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/AccountSettings/ResetPassword.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AccountSettings/RegisterTotp.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFNldHRpbmdzXFJlZ2lzdGVyVG90cC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AccountSettings/ResetPassword.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFNldHRpbmdzXFJlc2V0UGFzc3dvcmQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CBatchStorage/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0JhdGNoU3RvcmFnZVxJbmRleC5jc2h0bWw=
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AppAction/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXBwQWN0aW9uXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CDocumentCancel/Cancel.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0RvY3VtZW50Q2FuY2VsXENhbmNlbC5jc2h0bWw=
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AppAction/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXBwQWN0aW9uXERlbGV0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CDocumentCancel/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0RvY3VtZW50Q2FuY2VsXEluZGV4LmNzaHRtbA==
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AppAction/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXBwQWN0aW9uXERldGFpbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CDocumentClaimReserve/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0RvY3VtZW50Q2xhaW1SZXNlcnZlXEluZGV4LmNzaHRtbA==
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AppAction/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXBwQWN0aW9uXEVkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CDocumentClaim/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0RvY3VtZW50Q2xhaW1cSW5kZXguY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/AppAction/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXBwQWN0aW9uXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CDocumentManage/Cancel.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0RvY3VtZW50TWFuYWdlXENhbmNlbC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CDocumentManage/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0RvY3VtZW50TWFuYWdlXEVkaXQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CDocumentManage/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0RvY3VtZW50TWFuYWdlXEluZGV4LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CDocumentManage/StockIn.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0RvY3VtZW50TWFuYWdlXFN0b2NrSW4uY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CFileQuery/Details.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/CFileQuery/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0ZpbGVRdWVyeVxEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CFileQuery/Index.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/CFileQuery/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0ZpbGVRdWVyeVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CFormQuery/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0Zvcm1RdWVyeVxEZXRhaWxzLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CFormQuery/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0Zvcm1RdWVyeVxJbmRleC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CIssueTables/Delete.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/CIssueTables/Delete.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0lzc3VlVGFibGVzXERlbGV0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CIssueTables/Details.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/CIssueTables/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0lzc3VlVGFibGVzXERldGFpbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CIssueTables/Edit.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/CIssueTables/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0lzc3VlVGFibGVzXEVkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CIssueTables/History.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/CIssueTables/History.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0lzc3VlVGFibGVzXEhpc3RvcnkuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CIssueTables/Index.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/CIssueTables/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0lzc3VlVGFibGVzXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CIssueTables/NewVersion.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/CIssueTables/NewVersion.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ0lzc3VlVGFibGVzXE5ld1ZlcnNpb24uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/CManagementSettings/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ01hbmFnZW1lbnRTZXR0aW5nc1xJbmRleC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/COldDocCtrlMaintables/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ09sZERvY0N0cmxNYWludGFibGVzXERldGFpbHMuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/COldDocCtrlMaintables/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ09sZERvY0N0cmxNYWludGFibGVzXEluZGV4LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Home/IFrameLoader.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Home/IFrameLoader.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJRnJhbWVMb2FkZXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Home/Index.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Home/PeoplePurchaseDemo.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Home/PeoplePurchaseDemo.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQZW9wbGVQdXJjaGFzZURlbW8uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Home/SystemIndex.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Home/SystemIndex.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxTeXN0ZW1JbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Home/UnderConstruction.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Home/UnderConstruction.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxVbmRlckNvbnN0cnVjdGlvbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Login/ChangePassword.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5cQ2hhbmdlUGFzc3dvcmQuY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/LocalizationString/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemF0aW9uU3RyaW5nXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Login/Index.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/LocalizationString/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemF0aW9uU3RyaW5nXERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/LocalizationString/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemF0aW9uU3RyaW5nXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/LocalizationString/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemF0aW9uU3RyaW5nXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/LocalizationString/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9jYWxpemF0aW9uU3RyaW5nXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Login/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PAcceptance/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUEFjY2VwdGFuY2VcRGV0YWlscy5jc2h0bWw=
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Login/TwoFactor.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5cVHdvRmFjdG9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PAcceptance/DocSearchAllModal.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUEFjY2VwdGFuY2VcRG9jU2VhcmNoQWxsTW9kYWwuY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/MenuItem/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVudUl0ZW1cQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PAcceptance/DocSearchModal.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUEFjY2VwdGFuY2VcRG9jU2VhcmNoTW9kYWwuY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/MenuItem/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVudUl0ZW1cRGVsZXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PAcceptance/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUEFjY2VwdGFuY2VcSW5kZXguY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/MenuItem/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVudUl0ZW1cRGV0YWlscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PAcceptance/Verify.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUEFjY2VwdGFuY2VcVmVyaWZ5LmNzaHRtbA==
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/MenuItem/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVudUl0ZW1cRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PAssessmentResult/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUEFzc2Vzc21lbnRSZXN1bHRcRGV0YWlscy5jc2h0bWw=
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/MenuItem/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVudUl0ZW1cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PAssessmentResult/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUEFzc2Vzc21lbnRSZXN1bHRcSW5kZXguY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Parameter/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFyYW1ldGVyXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PAssessment/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUEFzc2Vzc21lbnRcRGV0YWlscy5jc2h0bWw=
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Parameter/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFyYW1ldGVyXERlbGV0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PAssessment/DocSearchModal.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUEFzc2Vzc21lbnRcRG9jU2VhcmNoTW9kYWwuY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Parameter/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFyYW1ldGVyXERldGFpbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PAssessment/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUEFzc2Vzc21lbnRcRWRpdC5jc2h0bWw=
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Parameter/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFyYW1ldGVyXEVkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PAssessment/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUEFzc2Vzc21lbnRcSW5kZXguY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Parameter/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFyYW1ldGVyXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PProductClass/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFByb2R1Y3RDbGFzc1xDcmVhdGUuY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Resource/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzb3VyY2VcQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PProductClass/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFByb2R1Y3RDbGFzc1xFZGl0LmNzaHRtbA==
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Resource/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzb3VyY2VcRGVsZXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PProductClass/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFByb2R1Y3RDbGFzc1xJbmRleC5jc2h0bWw=
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Resource/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzb3VyY2VcRGV0YWlscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PPurchaseRecords/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFB1cmNoYXNlUmVjb3Jkc1xJbmRleC5jc2h0bWw=
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Resource/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzb3VyY2VcRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PPurchaseTables/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFB1cmNoYXNlVGFibGVzXENyZWF0ZS5jc2h0bWw=
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Resource/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzb3VyY2VcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PPurchaseTables/Delete.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFB1cmNoYXNlVGFibGVzXERlbGV0ZS5jc2h0bWw=
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/RolePermission/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sZVBlcm1pc3Npb25cRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PPurchaseTables/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFB1cmNoYXNlVGFibGVzXERldGFpbHMuY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Role/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sZVxDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PPurchaseTables/DocSearchAllModal.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFB1cmNoYXNlVGFibGVzXERvY1NlYXJjaEFsbE1vZGFsLmNzaHRtbA==
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Role/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sZVxEZWxldGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PPurchaseTables/DocSearchModal.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFB1cmNoYXNlVGFibGVzXERvY1NlYXJjaE1vZGFsLmNzaHRtbA==
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Role/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sZVxEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PPurchaseTables/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFB1cmNoYXNlVGFibGVzXEVkaXQuY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Role/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sZVxFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PPurchaseTables/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFB1cmNoYXNlVGFibGVzXEluZGV4LmNzaHRtbA==
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Role/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PQualifiedSuppliers/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFF1YWxpZmllZFN1cHBsaWVyc1xDcmVhdGUuY3NodG1s
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/DisplayTemplates/DateTime.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXERpc3BsYXlUZW1wbGF0ZXNcRGF0ZVRpbWUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PQualifiedSuppliers/Delete.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFF1YWxpZmllZFN1cHBsaWVyc1xEZWxldGUuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PQualifiedSuppliers/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFF1YWxpZmllZFN1cHBsaWVyc1xEZXRhaWxzLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PQualifiedSuppliers/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFF1YWxpZmllZFN1cHBsaWVyc1xFZGl0LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PQualifiedSuppliers/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFF1YWxpZmllZFN1cHBsaWVyc1xJbmRleC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PSupplier1stAssess/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFN1cHBsaWVyMXN0QXNzZXNzXENyZWF0ZS5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PSupplier1stAssess/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFN1cHBsaWVyMXN0QXNzZXNzXERldGFpbHMuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PSupplier1stAssess/DocSearchModal.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFN1cHBsaWVyMXN0QXNzZXNzXERvY1NlYXJjaE1vZGFsLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PSupplier1stAssess/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFN1cHBsaWVyMXN0QXNzZXNzXEVkaXQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PSupplier1stAssess/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFN1cHBsaWVyMXN0QXNzZXNzXEluZGV4LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PSupplierReassessments/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFN1cHBsaWVyUmVhc3Nlc3NtZW50c1xDcmVhdGUuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PSupplierReassessments/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFN1cHBsaWVyUmVhc3Nlc3NtZW50c1xEZXRhaWxzLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/PSupplierReassessments/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUFN1cHBsaWVyUmVhc3Nlc3NtZW50c1xJbmRleC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_AssetLayout.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_AssetLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Bc3NldExheW91dC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_AssetLayout原始.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Bc3NldExheW91dOWOn+Wniy5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_BannerMenu.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_BannerMenu.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9CYW5uZXJNZW51LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_Breadcrumbs.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_Breadcrumbs.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9CcmVhZGNydW1icy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_DetailModals.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_DetailModals.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9EZXRhaWxNb2RhbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_Error.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9FcnJvci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_MessageModals.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_LoginLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Mb2dpbkxheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_MessageModals.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9NZXNzYWdlTW9kYWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_NavBar.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_NavBar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9OYXZCYXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PagerSection.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_PagerSection.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QYWdlclNlY3Rpb24uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_RootLayout.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_RootLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Sb290TGF5b3V0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_TempDataToJs.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_TempDataToJs.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9UZW1wRGF0YVRvSnMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Tree/Index.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Tree/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVHJlZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Tree/SearchAll.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Tree/SearchAll.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVHJlZVxTZWFyY2hBbGwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/_ViewImports.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/UserGroupRole/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlckdyb3VwUm9sZVxFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/UserGroup/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlckdyb3VwXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/UserGroup/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlckdyb3VwXERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/UserGroup/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlckdyb3VwXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/UserGroup/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlckdyb3VwXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/UserGroup/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlckdyb3VwXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/_ViewStart.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_DocumentClaimConfidentialSelect.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_BoolNullableSelect.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Cb29sTnVsbGFibGVTZWxlY3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-csrp0a60h8
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_DepartmentSelect.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9EZXBhcnRtZW50U2VsZWN0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = b-ydq6sfzm98
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_DocumentClaimConfidentialSelect.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Eb2N1bWVudENsYWltQ29uZmlkZW50aWFsU2VsZWN0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = b-vmyo9bnf1i
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_DocumentClaimSensitiveSelect.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_DocumentClaimSensitiveSelect.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Eb2N1bWVudENsYWltU2Vuc2l0aXZlU2VsZWN0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = b-72dahyxb97
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_DocUserSelect.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_DocUserSelect.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Eb2NVc2VyU2VsZWN0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = b-chbj0f0s7t
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_Footer.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_Footer.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Gb290ZXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-1tnl8c8rew
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_NoNavLayout.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_Language.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYW5ndWFnZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = b-9pwkqy41xm
+
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_NoNavLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Ob05hdkxheW91dC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = b-iwlkz4l49i
 
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_NoNavWithDetailModalLayout.cshtml]
+[D:/project/文管空白/BioMedDocManager/BioMedDocManager/Views/Shared/_NoNavWithDetailModalLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Ob05hdldpdGhEZXRhaWxNb2RhbExheW91dC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = b-xnt3o6mbze
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseAssessmentDetail.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZUFzc2Vzc21lbnREZXRhaWwuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = b-ozgk6k1b1j
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseAssessPersonSelect.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZUFzc2Vzc1BlcnNvblNlbGVjdC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = b-ekm40en2op
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseDetail.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZURldGFpbC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = b-rf40wod5rf
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseProductClassSelect.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZVByb2R1Y3RDbGFzc1NlbGVjdC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = b-kibnbb1z23
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchasePurchaserSelect.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZVB1cmNoYXNlclNlbGVjdC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = b-4eky4tx7sg
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseQualifiedSuppliersDetail.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZVF1YWxpZmllZFN1cHBsaWVyc0RldGFpbC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = b-vynx8rg6kt
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseReceivePersonSelect.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZVJlY2VpdmVQZXJzb25TZWxlY3QuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = b-qdq2zocyxm
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseRequesterSelect.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZVJlcXVlc3RlclNlbGVjdC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = b-x6pw3jephg
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseSupplier1stAssessDetail.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZVN1cHBsaWVyMXN0QXNzZXNzRGV0YWlsLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = b-74t9e0uqg7
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseSupplierAssessDetail.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZVN1cHBsaWVyQXNzZXNzRGV0YWlsLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = b-iurrtch6m1
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseSupplierClassSelect.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZVN1cHBsaWVyQ2xhc3NTZWxlY3QuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = b-uongg3a623
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseSupplierNameDataListSelect.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZVN1cHBsaWVyTmFtZURhdGFMaXN0U2VsZWN0LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = b-xf0q2ywrxj
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseSupplierNameSelect.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZVN1cHBsaWVyTmFtZVNlbGVjdC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = b-dx8epu4dn8
-
-[D:/系統資料/project/itriDoc/BioMedDocManager/BioMedDocManager/Views/Shared/_PurchaseVerifyPersonSelect.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9QdXJjaGFzZVZlcmlmeVBlcnNvblNlbGVjdC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = b-hs2l6nhbqo

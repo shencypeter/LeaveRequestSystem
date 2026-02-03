@@ -44,6 +44,23 @@ $(document).ready(function () {
         // Clear the selected value unless it's the fallback
         $supplierSelect.val('');
     });
+
+
+    // 多語系視窗位置移動(offcanvas show/hide 時切換位置)
+    var oc = document.getElementById('offcanvasNavbar');
+    if (oc) {
+        oc.addEventListener('show.bs.offcanvas', function () {
+            console.log("show.bs.offcanvas")
+            moveLanguageForm(true);
+        });
+        oc.addEventListener('hidden.bs.offcanvas', function () {
+            console.log("hidden.bs.offcanvas")
+            moveLanguageForm(false);
+        });
+    }
+
+
+    // end ready
 });
 
 function CDocumentClaimAndReserve_ValidateForm() {
@@ -285,19 +302,6 @@ function goToLogin() {
     window.location.href = "/login";
 }
 
-// 關鍵字查詢 改成麵包屑名稱
-function updateAccordionLabelFromTitle(title, itleSelector, accordionSelector) {
-
-    const label = title + '查詢';
-
-    $(accordionSelector).each(function () {
-        const $btn = $(this);
-        const $icon = $btn.find('i');
-        $btn.contents().filter((i, el) => el.nodeType === 3).remove();
-        $icon.after('&ensp;' + label);
-    });
-}
-
 // 顯示訊息
 function showModalMessage({ message, title = 'Notice', showCancel = false }) {
     return new Promise((resolve) => {
@@ -376,39 +380,297 @@ function setTableStyle() {
     $thead.find("a").addClass("thead-link");
 }
 
-// 驗證確認密碼
-function validateConfirmPassword(type) {
-    var newPassword = $('#' + type + 'Password').val();
-    var confirmPassword = $('#ConfirmPassword').val();
+// 單一欄位驗證：用自己的 data-target 去比對，訊息寫到自己的 data-validation
+function validatePasswordPair(inputEl) {
+    var $input = $(inputEl);
+    if ($input.length === 0) { return true; }
 
-    if (newPassword !== confirmPassword) {
-        $('#ConfirmPasswordValidation')
-            .text('「密碼」與「確認密碼」不一致');
-        return false;
-    } else {
-        $('#ConfirmPasswordValidation').text('');
+    var targetId = ($input.data('target') || '').toString();
+    var validationId = ($input.data('validation') || '').toString();
+
+    var $target = targetId ? $('#' + targetId) : $();
+    var $msg = validationId ? $('#' + validationId) : $();
+
+    if ($target.length === 0 || $msg.length === 0) { return true; }
+
+    var v1 = ($input.val() || '').toString();
+    var v2 = ($target.val() || '').toString();
+
+    // 兩邊都空：不顯示
+    if (v1 === '' && v2 === '') {
+        $msg.text('');
         return true;
     }
+
+    if (v1 !== v2) {
+        $msg.text('「密碼」與「確認密碼」不一致');
+        return false;
+    }
+
+    $msg.text('');
+    return true;
 }
 
-function CheckConfirmPassword(type = "") {
+/**
+ * 核心：驗證 PasswordForm 內所有密碼欄位
+ * - 雙向比對
+ * - 控制 submit button disabled
+ *
+ * @param {string|HTMLElement} formSelector
+ * @returns {boolean} 是否全部通過
+ */
+function validatePasswordForm(formSelector = '.PasswordForm') {
+    var $form = $(formSelector);
+    if ($form.length === 0) { return true; }
 
-    // 失去焦點時驗證
-    $('#ConfirmPassword').on('blur', function () {
-        validateConfirmPassword(type);
-    });
+    var $inputs = $form.find('input[data-target][data-validation]');
+    if ($inputs.length === 0) { return true; }
 
-    // 失去焦點時驗證
-    $('#' + type + 'Password').on('blur', function () {
-        validateConfirmPassword(type);
-    });
+    var allOk = true;
 
-    // 表單送出前驗證
-    $('.PasswordForm').on('submit', function (e) {
-        if (!validateConfirmPassword(type)) {
-            e.preventDefault(); // 阻止提交
+    $inputs.each(function () {
+        var $el = $(this);
+
+        // 驗證自己
+        var ok1 = validatePasswordPair($el);
+
+        // 驗證 target（雙向）
+        var targetId = ($el.data('target') || '').toString();
+        var $target = targetId ? $('#' + targetId) : $();
+        var ok2 = true;
+
+        if ($target.length > 0) {
+            ok2 = validatePasswordPair($target);
+        }
+
+        if (!(ok1 && ok2)) {
+            allOk = false;
         }
     });
+
+    // 控制 submit button
+    $form.find('button[type=submit]').prop('disabled', !allOk);
+
+    return allOk;
+}
+
+// 綁定雙向：Password / Confirm 任一欄位 blur/input 都會驗證自己，並順便驗證對方（雙向同步清訊息）
+function CheckConfirmPassword(formSelector = '.PasswordForm') {
+    var $form = $(formSelector);
+    if ($form.length === 0) { return; }
+
+    var $inputs = $form.find('input[data-target][data-validation]');
+    if ($inputs.length === 0) { return; }
+
+    // blur + input 即時驗證
+    $inputs.on('blur input', function () {
+        validatePasswordForm($form);
+    });
+
+    // submit 前再驗一次
+    $form.on('submit', function (e) {
+        if (!validatePasswordForm($form)) {
+            e.preventDefault();
+        }
+    });
+}
+
+
+/**
+ * 立即檢查 PasswordForm 底下所有密碼欄位是否正確
+ * - 自動抓 input[data-target][data-validation]
+ * - 雙向驗證
+ * - 控制 submit button disabled
+ * 
+ * @param {string} formSelector 預設 '.PasswordForm'
+ * @returns {boolean} 是否全部通過
+ */
+function ValidatePasswordFormNow(formSelector = '.PasswordForm') {
+    var $form = $(formSelector);
+    if ($form.length === 0) { return true; }
+
+    var $inputs = $form.find('input[data-target][data-validation]');
+    if ($inputs.length === 0) { return true; }
+
+    var allOk = true;
+
+    $inputs.each(function () {
+        var $el = $(this);
+
+        // 驗證自己
+        var ok1 = validatePasswordPair($el);
+
+        // 驗證 target
+        var targetId = ($el.data('target') || '').toString();
+        var $target = targetId ? $('#' + targetId) : $();
+        var ok2 = true;
+        if ($target.length > 0) {
+            ok2 = validatePasswordPair($target);
+        }
+
+        if (!(ok1 && ok2)) {
+            allOk = false;
+        }
+    });
+
+    // 控制送出按鈕
+    $form.find('button[type=submit]').prop('disabled', !allOk);
+
+    return allOk;
+}
+
+
+// 密碼規則動態檢查（text-muted -> text-success）
+function bindPasswordPolicyWatcher(options) {
+    var configSelector = options.configSelector || '#passwordPolicyConfig';
+    var rulesListSelector = options.rulesListSelector || '#passwordRulesList';
+    var inputSelector = options.inputSelector || '#UserNewPassword';
+    var formSelector = options.formSelector || null;
+    var errorSelector = options.errorSelector || null;
+
+    var $config = $(configSelector);
+    if ($config.length === 0) {
+        return;
+    }
+
+    var enabled = $config.data('enabled') === true || $config.data('enabled') === 'true';
+    if (!enabled) {
+        // 未啟用密碼政策就不用做動態顯示
+        return;
+    }
+
+    var policy = {
+        minLength: parseInt($config.data('min-length') || 0, 10),
+        requireUpper: $config.data('require-upper') === true || $config.data('require-upper') === 'true',
+        requireLower: $config.data('require-lower') === true || $config.data('require-lower') === 'true',
+        requireDigit: $config.data('require-digit') === true || $config.data('require-digit') === 'true',
+        requireSpecial: $config.data('require-special') === true || $config.data('require-special') === 'true',
+        specialChars: ($config.data('special-chars') || '').toString()
+    };
+
+    var $input = $(inputSelector);
+    var $rules = $(rulesListSelector).find('.password-rule');
+
+    if ($input.length === 0 || $rules.length === 0) {
+        return;
+    }
+
+    function hasUpper(str) {
+        return /[A-Z]/.test(str);
+    }
+
+    function hasLower(str) {
+        return /[a-z]/.test(str);
+    }
+
+    function hasDigit(str) {
+        return /[0-9]/.test(str);
+    }
+
+    function hasSpecial(str, specialChars) {
+        if (!specialChars) return false;
+        var set = specialChars.split('');
+        for (var i = 0; i < str.length; i++) {
+            if (set.indexOf(str[i]) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // 把 status 計算抽出來，給 updateRules / isPasswordValid 共用
+    function evaluateStatus(val) {
+        return {
+            minLength: policy.minLength > 0 ? val.length >= policy.minLength : true,
+            upper: !policy.requireUpper || hasUpper(val),
+            lower: !policy.requireLower || hasLower(val),
+            digit: !policy.requireDigit || hasDigit(val),
+            special: !policy.requireSpecial || hasSpecial(val, policy.specialChars)
+        };
+    }
+
+    function updateRules() {
+        var val = $input.val() || '';
+
+        var status = {
+            minLength: policy.minLength > 0 ? val.length >= policy.minLength : true,
+            upper: !policy.requireUpper || hasUpper(val),
+            lower: !policy.requireLower || hasLower(val),
+            digit: !policy.requireDigit || hasDigit(val),
+            special: !policy.requireSpecial || hasSpecial(val, policy.specialChars)
+        };
+
+        $rules.each(function () {
+            var $li = $(this);
+            var rule = $li.data('rule'); // minLength / upper / lower / digit / special
+
+            var ok = status[rule];
+            if (ok) {
+                $li.removeClass('text-muted').addClass('text-success');
+            } else {
+                $li.removeClass('text-success').addClass('text-muted');
+            }
+        });
+    }
+
+    // 檢查密碼是否合法
+    function isPasswordValid() {
+        var val = $input.val() || '';
+        var status = evaluateStatus(val);
+
+        if (!status.minLength) {
+            return false;
+        }
+        if (policy.requireUpper && !status.upper) {
+            return false;
+        }
+        if (policy.requireLower && !status.lower) {
+            return false;
+        }
+        if (policy.requireDigit && !status.digit) {
+            return false;
+        }
+        if (policy.requireSpecial && !status.special) {
+            return false;
+        }
+        return true;
+    }
+
+    // 一開始先跑一次（如果有 Autofill 或已經有值）
+    updateRules();
+
+    // 監聽輸入事件
+    $input.on('input', function () {
+        updateRules();
+    });
+
+    // ===== 綁定 form submit，檢查是否符合規則 =====
+    if (formSelector) {
+        var $form = $(formSelector);
+        console.log($form)
+        if ($form.length > 0) {
+            $form.on('submit', function (e) {
+                // 先清掉舊錯誤
+                if (errorSelector) {
+                    $(errorSelector).text('');
+                }
+                $input.removeClass('is-invalid');
+
+                if (!isPasswordValid()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (errorSelector) {
+                        $(errorSelector).text('新密碼不符合密碼規則，請依上方提示調整。');
+                    } else {
+                        alert('新密碼不符合密碼規則，請依上方提示調整。');
+                    }
+
+                    $input.addClass('is-invalid');
+                }
+            });
+        }
+    }
 }
 
 function tableSortListener(form_name) {
@@ -561,6 +823,9 @@ function dismiss(alertMsg = "") {
             }
             return;
         }
+        else {
+            location.assign('/');//跳回首頁
+        }
     } catch (e) {
         // console.log("dismiss Error：");
         // console.log(e);
@@ -669,6 +934,11 @@ function changePasswordModalListener() {
     modalListener(".change_password_btn");
 }
 
+// [一般頁面]註冊TOTP
+function registerTotpModalListener() {
+    modalListener(".register_totp_btn");
+}
+
 // 重設iframe高度
 function resizeIframe(height) {
     $('#iframeLoader').height(height);
@@ -678,13 +948,14 @@ function formClearInputListener() {
     $(document).on("click", ".clear_btn", function () {
         const formId = $(this).data("form");
         FormClearInput(formId);
+        $("#" + formId).trigger("submit");
     });
 }
 
 // 表格清除輸入資料
 function FormClearInput(form) {
     $('#' + form)
-        .find('input[type="radio"]:not([readonly]):not([disabled]), input[type="text"]:not([readonly]):not([disabled]), input[type="number"]:not([readonly]):not([disabled]), input[type="date"]:not([readonly]):not([disabled]),input[type="file"]:not([readonly]):not([disabled]), textarea:not([readonly]):not([disabled]), select:not([readonly]):not([disabled])')
+        .find('input[type="radio"]:not([readonly]):not([disabled]), input[type="text"]:not([readonly]):not([disabled]), input[type="number"]:not([readonly]):not([disabled]), input[type="date"]:not([readonly]):not([disabled]),input[type="file"]:not([readonly]):not([disabled]),input[type="checkbox"]:not([readonly]):not([disabled]), textarea:not([readonly]):not([disabled]), select:not([readonly]):not([disabled])')
         .val('')
         .prop('checked', false);
 
@@ -835,18 +1106,21 @@ function startRedirectCountdown(seconds, redirectUrl) {
 
 
 // 密碼重設頁-快捷鍵事件監聽
-function copyUserNameButtonListener() {
-    $(document).on("click", ".copyUserNameButton", function (event) {
-        copyUserName();
+function copyUserAccountButtonListener() {
+    $(document).on("click", ".copyUserAccountButton", function (event) {
+        copyUserAccount();
     });
 }
 
 
 // 密碼重設頁-快捷鍵，重設密碼為Abcd+工號
-function copyUserName() {
-    var UserName = $("#UserName").val();
-    $("#NewPassword").val("Abcd" + UserName);
-    $("#ConfirmPassword").val("Abcd" + UserName);
+function copyUserAccount() {
+    var UserAccount = $("#UserAccount").val();
+    $("#UserNewPasswordHash").val("Abcd" + UserAccount);
+    $("#UserConfirmPasswordHash").val("Abcd" + UserAccount);
+
+    // 確認密碼(一定會相同，呼叫他可以讓錯誤訊息消失)
+    ValidatePasswordFormNow();
 }
 
 // 密碼重設頁-密碼顯示按鈕事件監聽
@@ -1222,43 +1496,6 @@ async function getDocumentClaimNumber(urlType = "") {
     }
 }
 
-// ajax載入供應商資訊
-function loadQualifiedSuppliers(supplierName) {
-    if (!supplierName) {
-        showAlert("請先輸入或選擇供應商名稱", "warning", 4000);
-        return;
-    }
-
-    const token = getCSRFToken();
-
-    $.ajax({
-        url: "/PSupplier1stAssess/LoadQualifiedSuppliers",
-        type: "POST",
-        data: { supplierName: supplierName },
-        headers: {
-            "RequestVerificationToken": token
-        },
-        dataType: "json",
-        success: function (data) {
-
-            $("#qualifiedSupplier_SupplierNo").val(data.supplierNo ?? "");
-            $("#SupplierClass").val(data.supplierClass ?? "");
-            $("#qualifiedSupplier_Tele").val(data.tele ?? "");
-            //$("#ProductClass").val(data.productClass ?? "");
-            $("#qualifiedSupplier_Tele2").val(data.tele2 ?? "");
-            $("#qualifiedSupplier_Remarks").val(data.remarks ?? "");
-            $("#qualifiedSupplier_Fax").val(data.fax ?? "");
-            $("#qualifiedSupplier_Address").val(data.address ?? "");
-            $("#qualifiedSupplier_SupplierInfo").val(data.supplierInfo ?? "");
-
-            hideAlert();
-
-        },
-        error: function (xhr, status, err) {
-            showAlert("警告：" + xhr.responseJSON.message + "。可於上方欄位輸入資料，以新增全新的供應商。", "warning");
-        }
-    });
-}
 
 // 可設定自動隱藏毫秒數 timeoutMs，0 = 不自動隱藏
 function showAlert(message, type = "info", timeoutMs = 0) {
@@ -1332,4 +1569,324 @@ function toggleDisabledText(inputSelector, btnSelector, disabledText, classEnabl
 function refreshCaptcha(img) {
     const base = img.getAttribute('data-url');
     img.src = base + '?t=' + Date.now(); // 防快取
+}
+
+function renderRoles(roles) {
+
+    const rolesContainer = document.getElementById('effectiveRolesContainer');
+
+    if (!roles.length) {
+        rolesContainer.innerHTML = '<div class="text-muted">(無)</div>';
+        return;
+    }
+
+    let html = '<ul class="list-group">';
+    for (const r of roles) {
+        const previewTag = r.isNew
+            ? '<span class="badge bg-warning text-dark ms-2">(預覽)</span>'
+            : '';
+
+        const groupsText = (r.fromGroups && r.fromGroups.length)
+            ? r.fromGroups.map(g => escapeHtml(g.userGroupCode)).join('、')
+            : '（無）';
+
+        html += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>${escapeHtml(r.roleGroup)} (${escapeHtml(r.roleGroupName)}) - ${escapeHtml(r.roleCode)} (${escapeHtml(r.roleCodeName)}) ${previewTag}</span>
+                  <span class="badge bg-primary">
+                    ${groupsText}
+                  </span>
+                </li>`;
+    }
+    html += '</ul>';
+    rolesContainer.innerHTML = html;
+}
+
+
+function renderPermissions(perms) {
+
+    const permsContainer = document.getElementById('effectivePermissionsContainer');
+
+    if (!perms.length) {
+        permsContainer.innerHTML = '<div class="text-muted">(無)</div>';
+        return;
+    }
+
+    // group by Resource
+    const groups = {};
+    for (const p of perms) {
+        const key = p.resourceId + '|' + p.resourceKey;
+        if (!groups[key]) {
+            groups[key] = {
+                resourceId: p.resourceId,
+                resourceKey: p.resourceKey,
+                resourceDisplayName: p.resourceDisplayName,
+                items: []
+            };
+        }
+        groups[key].items.push(p);
+    }
+
+    let html = '';
+    Object.values(groups).forEach(g => {
+        html += `
+                <div class="mb-3">
+                  <h6 class="mb-1">
+                    ${escapeHtml(g.resourceDisplayName)}
+                  </h6>
+                  <div>
+                `;
+        g.items.forEach(p => {
+            const previewTag = p.isNew ? ' (預覽)' : '';
+            const badgeClass = p.isNew
+                ? 'badge bg-warning text-dark me-1 mb-1'
+                : 'badge bg-success me-1 mb-1';
+
+            html += `
+                    <span class="badge ${badgeClass} me-1 mb-1" title="動作：${escapeHtml(p.AppActionCode)}">
+                      ${escapeHtml(p.appActionDisplayName)}${previewTag}
+                    </span>`;
+        });
+
+        html += `
+              </div>
+            </div>`;
+    });
+
+    permsContainer.innerHTML = html;
+}
+
+// 取得多語系設定(從網址判斷)
+function getCulturePrefixFromPath() {
+    // 例如 /zh-TW/AccountSettings/EditGroup/1
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    if (parts.length === 0) { return ''; }
+
+    const first = parts[0];
+    // 簡單判斷：xx 或 xx-XX（你目前就是 zh-TW）
+    const isCulture = /^[a-z]{2}(-[A-Z]{2})?$/.test(first);
+    return isCulture ? `/${first}` : '';
+}
+
+// 建立URL(多語系)
+function buildAppUrl(pathWithoutCulture) {
+    // pathWithoutCulture 必須以 / 開頭
+    const culturePrefix = getCulturePrefixFromPath();
+    return `${culturePrefix}${pathWithoutCulture}`;
+}
+
+// 編輯群組頁面事件監聽器
+function editGroupEventListener() {
+    const all = document.getElementById('allGroups');
+    const selected = document.getElementById('selectedGroups');
+    const btnAddSelected = document.getElementById('btnAddSelected');
+    const btnAddAll = document.getElementById('btnAddAll');
+    const btnRemoveSelected = document.getElementById('btnRemoveSelected');
+    const btnRemoveAll = document.getElementById('btnRemoveAll');
+    const form = document.getElementById('myFormDetail');
+
+    const btnPreview = form.querySelector('button[name="command"][value="preview"]');
+
+    const rolesContainer = document.getElementById('effectiveRolesContainer');
+    const permsContainer = document.getElementById('effectivePermissionsContainer');
+
+    function editGroupMoveOptions(src, dest, onlySelected) {
+        const options = Array.from(src.options);
+        options.forEach(opt => {
+            if (!onlySelected || opt.selected) {
+                const newOpt = new Option(opt.text, opt.value);
+                dest.add(newOpt);
+                src.remove(opt.index);
+            }
+        });
+    }
+
+    btnAddSelected.addEventListener('click', function () {
+        editGroupMoveOptions(all, selected, true);
+    });
+
+    btnAddAll.addEventListener('click', function () {
+        editGroupMoveOptions(all, selected, false);
+    });
+
+    btnRemoveSelected.addEventListener('click', function () {
+        editGroupMoveOptions(selected, all, true);
+    });
+
+    btnRemoveAll.addEventListener('click', function () {
+        editGroupMoveOptions(selected, all, false);
+    });
+
+    // 儲存時：確保右側全部選取（這部分你原本就有）
+    form.addEventListener('submit', function (e) {
+        // 如果是儲存就讓 form 走原本的 POST
+        const activeElement = document.activeElement;
+        if (activeElement && activeElement.name === 'command' && activeElement.value === 'save') {
+            Array.from(selected.options).forEach(o => o.selected = true);
+            return; // 不阻止
+        }
+
+        // 其他 submit（例如按 Enter）一律阻止，以避免誤觸
+        e.preventDefault();
+    });
+
+    // 試算預覽：用 fetch 呼叫後端，更新兩個區塊
+    btnPreview.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const userId = document.getElementById('UserId');
+
+        const groupIds = Array.from(selected.options).map(o => parseInt(o.value, 10));
+        const previewUrl = buildAppUrl('/AccountSettings/PreviewPermissions');
+        const tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
+        const csrfToken = tokenInput ? tokenInput.value : '';
+
+        const payload = {
+            userId: userId.value,
+            selectedUserGroupIds: groupIds
+        };
+
+        rolesContainer.innerHTML = '<div class="text-muted">計算中...</div>';
+        permsContainer.innerHTML = '<div class="text-muted">計算中...</div>';
+
+        fetch(previewUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(r => {
+                if (!r.ok) throw new Error('預覽失敗');
+                return r.json();
+            })
+            .then(data => {
+                renderRoles(data.roles || []);
+                renderPermissions(data.permissions || []);
+            })
+            .catch(err => {
+                console.error(err);
+                rolesContainer.innerHTML = '<div class="text-danger">預覽失敗</div>';
+                permsContainer.innerHTML = '<div class="text-danger">預覽失敗</div>';
+            });
+    });
+
+}
+
+
+
+// 編輯群組角色頁面事件監聽器
+function editGroupRoleEventListener() {
+
+    const form = document.getElementById('myForm');
+    if (!form) {
+        return;
+    }
+
+    const userGroupIdInput = form.querySelector('input[name="UserGroupId"]');
+    if (!userGroupIdInput) {
+        return;
+    }
+
+    const userGroupId = userGroupIdInput ? userGroupIdInput.value : '';
+
+    const permsContainer = document.getElementById('effectivePermissionsContainer');
+    if (!permsContainer) {
+        return;
+    }
+
+    const checkboxes = form.querySelectorAll('input[type="checkbox"][name="SelectedRoleIds"]');
+    const tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
+    const csrfToken = tokenInput ? tokenInput.value : '';
+
+    // 後端預覽 API
+    const previewUrl = '/UserGroupRole/PreviewPermissions';
+
+    // 打 API 預覽目前 checkbox 勾選後的有效權限
+    function previewPermissions() {
+        const selected = [];
+        checkboxes.forEach(function (cb) {
+            if (cb.checked) {
+                selected.push(parseInt(cb.value, 10));
+            }
+        });
+
+        const payload = {
+            userGroupId: userGroupId,
+            selectedRoleIds: selected
+        };
+
+        permsContainer.innerHTML = '<div class="text-muted">計算中...</div>';
+
+        fetch(previewUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(function (r) {
+                if (!r.ok) {
+                    throw new Error('預覽失敗');
+                }
+                return r.json();
+            })
+            .then(function (data) {
+                renderPermissions(data.permissions || []);
+            })
+            .catch(function (err) {
+                console.error(err);
+                permsContainer.innerHTML = '<div class="text-danger">預覽失敗</div>';
+            });
+    }
+
+    // checkbox 變動就重新預覽
+    checkboxes.forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            previewPermissions();
+        });
+    });
+
+}
+
+
+
+function escapeHtml(str) {
+    if (str == null) return '';
+    return str.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+
+function editGroupeditGroupMoveOptions(src, dest, onlySelected) {
+    const options = Array.from(src.options);
+    options.forEach(opt => {
+        if (!onlySelected || opt.selected) {
+            const newOpt = new Option(opt.text, opt.value);
+            dest.add(newOpt);
+            src.remove(opt.index);
+        }
+    });
+}
+
+// 移動多語系視窗位置
+function moveLanguageForm(toOffcanvas) {
+    var topMount = document.getElementById('languageMountTop');
+    var offMount = document.getElementById('languageMountOffcanvas');
+    if (!topMount || !offMount) return;
+
+    var form = document.getElementById('cultureForm');
+    if (!form) return;
+
+    if (toOffcanvas) {
+        offMount.appendChild(form);
+    } else {
+        topMount.appendChild(form);
+    }
 }
