@@ -99,7 +99,7 @@ namespace BioMedDocManager.Models
         /// </summary>
         [Key]
         [Display(Name = "User.UserId")]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         /// <summary>
         /// 帳號(工號)
@@ -128,7 +128,7 @@ namespace BioMedDocManager.Models
         /// 部門
         /// </summary>
         [Display(Name = "User.DepartmentId")]
-        public int? DepartmentId { get; set; }
+        public long? DepartmentId { get; set; }
 
         /// <summary>
         /// 電子郵件
@@ -211,7 +211,7 @@ namespace BioMedDocManager.Models
         /// 使用者Id
         /// </summary>
         [Display(Name = "User.UserId")]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         /// <summary>
         /// 使用者帳號(工號)
@@ -260,7 +260,7 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 使用者Id
         /// </summary>
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         /// <summary>
         /// 使用者帳號
@@ -278,7 +278,7 @@ namespace BioMedDocManager.Models
         /// 使用者群組
         /// </summary>
         [Display(Name = "User.UserGroupRoleList")]
-        public List<int> SelectedUserGroupIds { get; set; } = new();
+        public List<long> SelectedUserGroupIds { get; set; } = new();
 
         /// <summary>
         /// 所有使用者群組List
@@ -305,12 +305,12 @@ namespace BioMedDocManager.Models
         /// 使用者Id
         /// </summary>
         [Required]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         /// <summary>
         /// 被選擇到的使用者群組
         /// </summary>
-        public List<int>? SelectedUserGroupIds { get; set; }
+        public List<long>? SelectedUserGroupIds { get; set; }
 
     }
 
@@ -347,10 +347,10 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class EffectiveRoleViewModel
     {
-        public int RoleId { get; set; }
+        public long RoleId { get; set; }
         public string RoleCode { get; set; } = "";
         public string RoleGroup { get; set; } = "";
-        public List<int> FromUserGroupIds { get; set; } = new();
+        public List<long> FromUserGroupIds { get; set; } = new();
     }
 
     /// <summary>
@@ -358,13 +358,13 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class EffectivePermissionViewModel
     {
-        public int ResourceId { get; set; }
+        public long ResourceId { get; set; }
         public string ResourceKey { get; set; } = "";
         public string ResourceDisplayName { get; set; } = "";
-        public int AppActionId { get; set; }
+        public long AppActionId { get; set; }
         public string AppActionCode { get; set; } = "";
         public string AppActionDisplayName { get; set; } = "";
-        public List<int> FromRoleIds { get; set; } = new();
+        public List<long> FromRoleIds { get; set; } = new();
     }
 
     /// <summary>
@@ -375,7 +375,7 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 群組 Id
         /// </summary>
-        public int UserGroupId { get; set; }
+        public long UserGroupId { get; set; }
 
         /// <summary>
         /// 群組名稱（顯示用）
@@ -385,7 +385,7 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 使用者選取的角色 Id 清單
         /// </summary>
-        public List<int> SelectedRoleIds { get; set; } = new();
+        public List<long> SelectedRoleIds { get; set; } = new();
 
         /// <summary>
         /// 所有可選角色清單（之後 View 可做 checkbox / multi-select）
@@ -404,11 +404,11 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class AppActionRoleUsageViewModel
     {
-        public int ResourceId { get; set; }
+        public long ResourceId { get; set; }
         public string? ResourceKey { get; set; }
         public string? ResourceDisplayName { get; set; }
 
-        public int RoleId { get; set; }
+        public long RoleId { get; set; }
         public string? RoleGroup { get; set; }
         public string? RoleCode { get; set; }
     }
@@ -498,7 +498,7 @@ namespace BioMedDocManager.Models
         /// 使用者Id
         /// </summary>
         [Display(Name = "User.UserId")]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         /// <summary>
         /// 工號
@@ -524,7 +524,7 @@ namespace BioMedDocManager.Models
         /// 部門
         /// </summary>
         [Display(Name = "User.DepartmentId")]
-        public int? DepartmentId { get; set; }
+        public long? DepartmentId { get; set; }
 
         /// <summary>
         /// Email
@@ -552,7 +552,7 @@ namespace BioMedDocManager.Models
         /// 角色群組(List)
         /// </summary>
         [Display(Name = "User.RoleCodeList")]
-        public List<int>? RoleId { get; set; }
+        public List<long>? RoleId { get; set; }
 
         /// <summary>
         /// 建立時間
@@ -592,8 +592,8 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class PreviewPermissionsRequestViewModel
     {
-        public int UserId { get; set; }
-        public List<int>? SelectedUserGroupIds { get; set; }
+        public long UserId { get; set; }
+        public List<long>? SelectedUserGroupIds { get; set; }
     }
 
     /// <summary>
@@ -601,7 +601,7 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class PreviewRoleSourceGroupViewModel
     {
-        public int UserGroupId { get; set; }
+        public long UserGroupId { get; set; }
         public string UserGroupCode { get; set; } = "";
     }
     /// <summary>
@@ -609,7 +609,7 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class PreviewRoleViewModel
     {
-        public int RoleId { get; set; }
+        public long RoleId { get; set; }
         public string RoleCode { get; set; } = "";
         public string RoleCodeName { get; set; } = "";
         public string RoleGroup { get; set; } = "";
@@ -624,9 +624,9 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class PreviewPermissionsViewModel
     {
-        public int UserGroupId { get; set; }
+        public long UserGroupId { get; set; }
 
-        public List<int>? SelectedRoleIds { get; set; }
+        public List<long>? SelectedRoleIds { get; set; }
     }
 
     /// <summary>
@@ -634,10 +634,10 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class PreviewPermissionViewModel
     {
-        public int ResourceId { get; set; }
+        public long ResourceId { get; set; }
         public string ResourceKey { get; set; } = "";
         public string ResourceDisplayName { get; set; } = "";
-        public int AppActionId { get; set; }        
+        public long AppActionId { get; set; }        
         public string AppActionCode { get; set; } = "";
         public string AppActionDisplayName { get; set; } = "";
         public bool IsNew { get; set; }
@@ -646,14 +646,14 @@ namespace BioMedDocManager.Models
 
     public class RoleUsageUserViewModel
     {
-        public int UserId { get; set; }
+        public long UserId { get; set; }
         public string UserAccount { get; set; } = "";
         public string UserFullName { get; set; } = "";
     }
 
     public class RoleUsageGroupViewModel
     {
-        public int UserGroupId { get; set; }
+        public long UserGroupId { get; set; }
         public string UserGroupCode { get; set; } = "";
         public string? UserGroupDescription { get; set; }
     }
@@ -667,7 +667,7 @@ namespace BioMedDocManager.Models
         /// 角色編號
         /// </summary>
         [Display(Name = "Role.RoleId")] 
-        public int RoleId { get; set; }
+        public long RoleId { get; set; }
 
         /// <summary>
         /// 角色名稱（純顯示用）
@@ -698,11 +698,11 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class ResourceGroupUsageViewModel
     {
-        public int UserGroupId { get; set; }
+        public long UserGroupId { get; set; }
         public string UserGroupCode { get; set; } = string.Empty;
         public string? UserGroupDescription { get; set; }
 
-        public int RoleId { get; set; }
+        public long RoleId { get; set; }
         public string RoleCode { get; set; } = string.Empty;
         public string RoleGroup { get; set; } = string.Empty;
 
@@ -725,7 +725,7 @@ namespace BioMedDocManager.Models
         /// <summary>
         /// 父層選單編號
         /// </summary>
-        public int? MenuItemParentId { get; set; }
+        public long? MenuItemParentId { get; set; }
 
         /// <summary>
         /// 父層選單本身
@@ -806,7 +806,7 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class TwoFactorState
     {
-        public int UserId { get; set; }
+        public long UserId { get; set; }
         public string UserAccount { get; set; } = string.Empty;
 
         public bool CanUseEmail { get; set; }
@@ -836,7 +836,7 @@ namespace BioMedDocManager.Models
     /// </summary>
     public class TotpSetupState
     {
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         /// <summary>
         /// Base32 編碼的 TOTP Secret（給 Google Authenticator 用）

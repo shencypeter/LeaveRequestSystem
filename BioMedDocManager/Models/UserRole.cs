@@ -12,13 +12,13 @@ public class UserRole
     /// 使用者編號
     /// </summary>
     [Display(Name = "使用者編號")]
-    public int UserId { get; set; }
+    public long UserId { get; set; }
 
     /// <summary>
     /// 角色編號
     /// </summary>
     [Display(Name = "角色編號")]
-    public int RoleId { get; set; }
+    public long RoleId { get; set; }
     
     public User User { get; set; } = null!;
 

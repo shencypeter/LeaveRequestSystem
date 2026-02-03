@@ -7,11 +7,11 @@ CREATE TABLE [dbo].[LocalizationString] (
     [LocalizationStringCategory] NVARCHAR(100) NULL,-- 分組/模組（可選）：例如 Security / Common / Menu
     [LocalizationStringIsActive] BIT NOT NULL CONSTRAINT DF_LocalizationString_IsActive DEFAULT (1),
     [CreatedAt] DATETIME2(0) NOT NULL DEFAULT (SYSDATETIME()),
-    [CreatedBy] INT NULL,
+    [CreatedBy] BIGINT NULL,
     [UpdatedAt] DATETIME2(0) NULL,
-    [UpdatedBy] INT NULL,
+    [UpdatedBy] BIGINT NULL,
     [DeletedAt] DATETIME2(0) NULL,
-    [DeletedBy] INT NULL,
+    [DeletedBy] BIGINT NULL,
     CONSTRAINT UQ_LocalizationString_Key_Culture UNIQUE ([Key], [Culture])
 );
 

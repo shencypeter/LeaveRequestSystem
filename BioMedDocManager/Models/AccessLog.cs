@@ -19,7 +19,7 @@ namespace BioMedDocManager.Models
         public int AccessLogType { get; set; }
         public Nullable<int> AccountType { get; set; }
         public string AccountNum { get; set; }
-        public int AccountId { get; set; }
+        public long AccountId { get; set; }
         public string ClientIp { get; set; }
         public string RequestMethod { get; set; }
         public string RequestUrl { get; set; }

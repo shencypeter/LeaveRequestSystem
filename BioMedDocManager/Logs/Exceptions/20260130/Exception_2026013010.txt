@@ -1,0 +1,114 @@
+﻿### 紀錄開始 ###
+[2026/01/30 10:08:07]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/zh-TW/Login/Login
+ClientIp: 127.0.0.1
+Message: Unable to cast object of type 'System.Int64' to type 'System.Int32'.
+Source: Microsoft.Data.SqlClient
+StackTrace:
+   at Microsoft.Data.SqlClient.SqlBuffer.get_Int32()
+   at Microsoft.Data.SqlClient.SqlDataReader.GetInt32(Int32 i)
+   at lambda_method130(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 80
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2026/01/30 10:08:10]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/zh-TW/Login/Login
+ClientIp: 127.0.0.1
+Message: Unable to cast object of type 'System.Int64' to type 'System.Int32'.
+Source: Microsoft.Data.SqlClient
+StackTrace:
+   at Microsoft.Data.SqlClient.SqlBuffer.get_Int32()
+   at Microsoft.Data.SqlClient.SqlDataReader.GetInt32(Int32 i)
+   at lambda_method130(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 80
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2026/01/30 10:08:20]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/zh-TW/Login/Login
+ClientIp: 127.0.0.1
+Message: Unable to cast object of type 'System.Int64' to type 'System.Int32'.
+Source: Microsoft.Data.SqlClient
+StackTrace:
+   at Microsoft.Data.SqlClient.SqlBuffer.get_Int32()
+   at Microsoft.Data.SqlClient.SqlDataReader.GetInt32(Int32 i)
+   at lambda_method130(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 80
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2026/01/30 10:08:26]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/zh-TW/Login/Login
+ClientIp: 127.0.0.1
+Message: Unable to cast object of type 'System.Int64' to type 'System.Int32'.
+Source: Microsoft.Data.SqlClient
+StackTrace:
+   at Microsoft.Data.SqlClient.SqlBuffer.get_Int32()
+   at Microsoft.Data.SqlClient.SqlDataReader.GetInt32(Int32 i)
+   at lambda_method130(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 80
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2026/01/30 10:09:21]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/zh-TW/Login/Login
+ClientIp: 127.0.0.1
+Message: Unable to cast object of type 'System.Int64' to type 'System.Int32'.
+Source: Microsoft.Data.SqlClient
+StackTrace:
+   at Microsoft.Data.SqlClient.SqlBuffer.get_Int32()
+   at Microsoft.Data.SqlClient.SqlDataReader.GetInt32(Int32 i)
+   at lambda_method130(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 80
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2026/01/30 10:09:48]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/zh-TW/Login/Login
+ClientIp: 127.0.0.1
+Message: Unable to cast object of type 'System.Int64' to type 'System.Int32'.
+Source: Microsoft.Data.SqlClient
+StackTrace:
+   at Microsoft.Data.SqlClient.SqlBuffer.get_Int32()
+   at Microsoft.Data.SqlClient.SqlDataReader.GetInt32(Int32 i)
+   at lambda_method130(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in D:\project\文管空白\BioMedDocManager\BioMedDocManager\Controllers\LoginController.cs:line 80
+
+### 紀錄結束 ###
+
+

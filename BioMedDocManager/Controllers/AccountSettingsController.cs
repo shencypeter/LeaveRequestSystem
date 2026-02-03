@@ -181,7 +181,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="UserId">使用者Id</param>
         /// <returns></returns>        
-        public async Task<IActionResult> Edit([FromRoute] int? id)
+        public async Task<IActionResult> Edit([FromRoute] long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -231,7 +231,7 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? id, AccountViewModel posted)
+        public async Task<IActionResult> Edit([FromRoute] long? id, AccountViewModel posted)
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserId)
             {
@@ -361,7 +361,7 @@ namespace BioMedDocManager.Controllers
             }
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var uid = int.Parse(userId!);
+            long uid = long.Parse(userId!);
 
             var user = await _context.Users.FindAsync(uid);
             if (user == null)
@@ -421,7 +421,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="UserId">使用者Id</param>
         /// <returns></returns>        
-        public async Task<IActionResult> ResetPassword([FromRoute] int? id)
+        public async Task<IActionResult> ResetPassword([FromRoute] long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -458,7 +458,7 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword([FromRoute] int? id, ChangePasswordViewModel posted)
+        public async Task<IActionResult> ResetPassword([FromRoute] long? id, ChangePasswordViewModel posted)
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserId)
             {
@@ -523,9 +523,8 @@ namespace BioMedDocManager.Controllers
         /// 顯示編輯使用者群組頁面 GET: /EditGroup/5
         /// </summary>
         /// <param name="UserId">使用者Id</param>
-        /// <param name="groupIds">群組Ids</param>
         /// <returns></returns>
-        public async Task<IActionResult> EditGroup([FromRoute] int? id, [FromQuery] int[]? groupIds)
+        public async Task<IActionResult> EditGroup([FromRoute] long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -584,7 +583,7 @@ namespace BioMedDocManager.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditGroup([FromRoute] int? id, UserGroupsEditPostViewModel posted, string command)
+        public async Task<IActionResult> EditGroup([FromRoute] long? id, UserGroupsEditPostViewModel posted, string command)
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserId)
             {
@@ -604,7 +603,7 @@ namespace BioMedDocManager.Controllers
             var want = posted.SelectedUserGroupIds?
                            .Distinct()
                            .ToList()
-                       ?? new List<int>();
+                       ?? new List<long>();
 
             // 目前 DB 裡的群組
             var existing = await _context.UserGroupMembers
@@ -804,7 +803,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         /// <param name="userId">使用者Id</param>
         /// <returns></returns>
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -871,7 +870,7 @@ namespace BioMedDocManager.Controllers
 
             // 1) 找出目前登入的使用者
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
             {
                 TempData["_JSShowAlert"] = _loc.T("Auth.LoginInfoExpired");
                 return RedirectToAction("Index", "Home");
@@ -945,7 +944,7 @@ namespace BioMedDocManager.Controllers
         public async Task<IActionResult> RegisterTotp(TotpSetupViewModel model)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
             {
                 TempData["_JSShowAlert"] = _loc.T("Auth.LoginInfoExpired");
                 return RedirectToAction("Index", "Home");
@@ -1076,7 +1075,7 @@ namespace BioMedDocManager.Controllers
                 RoleId = r.RoleId,
                 RoleCode = r.RoleCode,
                 RoleGroup = r.RoleGroup,
-                FromUserGroupIds = roleIdToGroupIds.TryGetValue(r.RoleId, out var list) ? list : new List<int>()
+                FromUserGroupIds = roleIdToGroupIds.TryGetValue(r.RoleId, out var list) ? list : new List<long>()
             }).ToList();
 
             // ===== 以下原本權限計算維持不動（你這段是在記憶體再做 GroupBy，不會有翻譯問題） =====
@@ -1118,7 +1117,7 @@ namespace BioMedDocManager.Controllers
 
             vm.EffectivePermissions = permGroups
                 .OrderBy(p => p.ResourceDisplayName)
-                .ThenBy(p => actionOrderMap.TryGetValue(p.AppActionId, out var ord) ? ord : int.MaxValue)
+                .ThenBy(p => actionOrderMap.TryGetValue(p.AppActionId, out int ord) ? ord : int.MaxValue)
                 .ToList();
         }
 

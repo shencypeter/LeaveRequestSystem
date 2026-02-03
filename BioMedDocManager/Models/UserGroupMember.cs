@@ -14,14 +14,14 @@ namespace BioMedDocManager.Models
         /// </summary>
         [Key]
         [Display(Name = "UserGroupMember.UserGroupId")]
-        public int UserGroupId { get; set; }
+        public long UserGroupId { get; set; }
 
         /// <summary>
         /// 使用者編號
         /// </summary>
         [Key]
         [Display(Name = "UserGroupMember.UserId")]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         /// <summary>
         /// 群組

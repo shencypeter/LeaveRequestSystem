@@ -5,7 +5,7 @@ namespace BioMedDocManager.Interface
     public interface IAccount
     {
         AccountType GetAccountType();
-        int GetUId(); 
+        long GetUId(); 
         string GetAccount();        
         string GetEncryptedPassword();
     }

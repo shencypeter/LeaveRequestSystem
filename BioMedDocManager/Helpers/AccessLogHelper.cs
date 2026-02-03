@@ -14,7 +14,7 @@ namespace BioMedDocManager.Helpers
         public async Task NewLoginFailedAsync(
             AccountType accountType,
             string accountNum,
-            int accountId,
+            long accountId,
             string functionName,
             string actionName,
             int severity,
@@ -114,7 +114,7 @@ namespace BioMedDocManager.Helpers
         public List<AccessLog> GetMemberLoginLogs(IAccount account, DateTime fromDateTime)
         {
             int accountType = (int)account.GetAccountType();
-            int accountId = account.GetUId();
+            long accountId = account.GetUId();
 
             return _context.AccessLogs
                 .Where(w => w.LogDateTime >= fromDateTime &&

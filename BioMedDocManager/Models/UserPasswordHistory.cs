@@ -10,9 +10,9 @@ namespace BioMedDocManager.Models
 
     public class UserPasswordHistory
     {
-        public int UserPasswordHistoryId { get; set; }
+        public long UserPasswordHistoryId { get; set; }
 
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         [Required]
         [MaxLength(512)]
@@ -20,7 +20,7 @@ namespace BioMedDocManager.Models
 
         public DateTime CreatedAt { get; set; }
 
-        public int? CreatedBy { get; set; }
+        public long? CreatedBy { get; set; }
 
         // 導覽屬性
         public virtual User User { get; set; } = null!;

@@ -14,7 +14,7 @@ public class AppAction : AuditableEntity
     /// </summary>
     [Key]
     [Display(Name = "AppAction.AppActionId")]
-    public int AppActionId { get; set; }
+    public long AppActionId { get; set; }
 
     /// <summary>
     /// 動作名稱

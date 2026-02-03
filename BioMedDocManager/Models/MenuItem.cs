@@ -11,10 +11,10 @@ public class MenuItem : AuditableEntity
 {
     [Key]
     [Display(Name = "MenuItem.MenuItemId")]
-    public int MenuItemId { get; set; }
+    public long MenuItemId { get; set; }
 
     [Display(Name = "MenuItem.MenuItemParentId")]
-    public int? MenuItemParentId { get; set; }
+    public long? MenuItemParentId { get; set; }
 
     /// <summary>
     /// 選單標題（顯示用）：改用關聯 Resource 的 ResourceDisplayName
@@ -48,7 +48,7 @@ public class MenuItem : AuditableEntity
             : (Loc?.T("Common.Disabled") ?? "Disabled");
 
     [Display(Name = "MenuItem.ResourceId")]
-    public int? ResourceId { get; set; }
+    public long? ResourceId { get; set; }
 
     [ForeignKey(nameof(MenuItemParentId))]
     public MenuItem? Parent { get; set; }

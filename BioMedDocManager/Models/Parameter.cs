@@ -15,7 +15,7 @@ public class Parameter : AuditableEntity
     /// </summary>
     [Key]
     [Display(Name = "Parameter.ParameterId")]
-    public int ParameterId { get; set; }
+    public long ParameterId { get; set; }
 
     /// <summary>
     /// 參數代碼（程式使用）

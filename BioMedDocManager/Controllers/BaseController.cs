@@ -288,7 +288,7 @@ namespace BioMedDocManager.Controllers
         {
             var claimValue = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; ;
 
-            if (int.TryParse(claimValue, out int userId))
+            if (long.TryParse(claimValue, out long userId))
             {
                 return _context.Users.FirstOrDefault(u => u.UserId == userId);
             }
@@ -301,11 +301,11 @@ namespace BioMedDocManager.Controllers
         /// 取得登入者ID
         /// </summary>
         /// <returns>登入者ID</returns>
-        protected int? GetLoginUserId()
+        protected long? GetLoginUserId()
         {
             var claimValue = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; ;
 
-            if (int.TryParse(claimValue, out int userId))
+            if (long.TryParse(claimValue, out long userId))
             {
                 return userId;
             }

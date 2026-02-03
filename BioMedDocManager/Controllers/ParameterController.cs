@@ -140,7 +140,7 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Edit =======================
-        public async Task<IActionResult> Edit([FromRoute] int? id)
+        public async Task<IActionResult> Edit([FromRoute]  long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -161,7 +161,7 @@ namespace BioMedDocManager.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? id, Parameter posted)
+        public async Task<IActionResult> Edit([FromRoute]  long? id, Parameter posted)
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.ParameterId)
             {
@@ -226,7 +226,7 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Details =======================
-        public async Task<IActionResult> Details([FromRoute] int? id)
+        public async Task<IActionResult> Details([FromRoute]  long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -250,7 +250,7 @@ namespace BioMedDocManager.Controllers
         }
 
         // ======================= Delete（不檢查關聯，直接刪） =======================
-        public async Task<IActionResult> Delete([FromRoute] int? id)
+        public async Task<IActionResult> Delete([FromRoute]  long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -275,7 +275,7 @@ namespace BioMedDocManager.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete([FromRoute] int? id, Parameter posted)
+        public async Task<IActionResult> Delete([FromRoute]  long? id, Parameter posted)
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.ParameterId)
             {

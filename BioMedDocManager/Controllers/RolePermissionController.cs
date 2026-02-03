@@ -21,7 +21,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         public const string PageName = "角色權限管理";
 
-        public async Task<IActionResult> Edit([FromRoute] int? id)
+        public async Task<IActionResult> Edit([FromRoute]  long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -84,7 +84,7 @@ namespace BioMedDocManager.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? id, RolePermissionEditViewModel posted)
+        public async Task<IActionResult> Edit([FromRoute] long? id, RolePermissionEditViewModel posted)
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.RoleId)
             {
@@ -101,8 +101,8 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            // 1) 解析 SelectedPermissionKeys -> HashSet<(int ResourceId, int AppActionId)>
-            var newKeys = new HashSet<(int ResourceId, int AppActionId)>();
+            // 1) 解析 SelectedPermissionKeys -> HashSet<(long ResourceId, long AppActionId)>
+            var newKeys = new HashSet<(long ResourceId, long AppActionId)>();
 
             var rawKeys = posted.SelectedPermissionKeys ?? new List<string>();
             foreach (var key in rawKeys.Distinct())
@@ -118,8 +118,8 @@ namespace BioMedDocManager.Controllers
                     continue;
                 }
 
-                if (int.TryParse(parts[0], out var resId) &&
-                    int.TryParse(parts[1], out var actId))
+                if (long.TryParse(parts[0], out var resId) &&
+                    long.TryParse(parts[1], out var actId))
                 {
                     newKeys.Add((resId, actId));
                 }

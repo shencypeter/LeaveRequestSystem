@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Arpdtf5sW1k=",
+  "dgSpecHash": "FShyv27cN78=",
   "success": true,
-  "projectFilePath": "D:\\系統資料\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\BioMedDocManager.csproj",
+  "projectFilePath": "D:\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\BioMedDocManager.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\peter\\.nuget\\packages\\aspose.cells\\25.6.0\\aspose.cells.25.6.0.nupkg.sha512",
     "C:\\Users\\peter\\.nuget\\packages\\aspose.slides.net\\25.8.0\\aspose.slides.net.25.8.0.nupkg.sha512",

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\系統資料\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\BioMedDocManager.csproj": {}
+    "D:\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\BioMedDocManager.csproj": {}
   },
   "projects": {
-    "D:\\系統資料\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\BioMedDocManager.csproj": {
+    "D:\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\BioMedDocManager.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\系統資料\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\BioMedDocManager.csproj",
+        "projectUniqueName": "D:\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\BioMedDocManager.csproj",
         "projectName": "BioMedDocManager",
-        "projectPath": "D:\\系統資料\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\BioMedDocManager.csproj",
+        "projectPath": "D:\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\BioMedDocManager.csproj",
         "packagesPath": "C:\\Users\\peter\\.nuget\\packages\\",
-        "outputPath": "D:\\系統資料\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\obj\\",
+        "outputPath": "D:\\project\\文管空白\\BioMedDocManager\\BioMedDocManager\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

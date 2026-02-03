@@ -14,7 +14,7 @@ public class UserGroup : AuditableEntity
     /// </summary>
     [Key]
     [Display(Name = "UserGroup.UserGroupId")]
-    public int UserGroupId { get; set; }
+    public long UserGroupId { get; set; }
 
     /// <summary>
     /// 群組名稱

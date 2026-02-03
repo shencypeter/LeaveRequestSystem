@@ -14,7 +14,7 @@ public class Department : AuditableEntity
     /// </summary>
     [Key]
     [Display(Name = "Department.DepartmentId")]
-    public int DepartmentId { get; set; }
+    public long DepartmentId { get; set; }
 
     /// <summary>
     /// 部門代碼
@@ -37,7 +37,7 @@ public class Department : AuditableEntity
     /// 上層部門 Id（自我參照）
     /// </summary>
     [Display(Name = "Department.DepartmentParentId")]
-    public int? DepartmentParentId { get; set; }
+    public long? DepartmentParentId { get; set; }
 
     /// <summary>
     /// 是否啟用

@@ -13,7 +13,7 @@ public class Role : AuditableEntity
     /// </summary>
     [Key]
     [Display(Name = "Role.RoleId")]
-    public int RoleId { get; set; }
+    public long RoleId { get; set; }
 
     /// <summary>
     /// 角色名稱

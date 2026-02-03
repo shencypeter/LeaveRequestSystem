@@ -150,7 +150,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示編輯群組頁面
         /// </summary>
-        public async Task<IActionResult> Edit([FromRoute] int? id)
+        public async Task<IActionResult> Edit([FromRoute]  long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -177,7 +177,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? id, UserGroup posted)
+        public async Task<IActionResult> Edit([FromRoute]  long? id, UserGroup posted)
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserGroupId)
             {
@@ -225,7 +225,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示明細頁
         /// </summary>
-        public async Task<IActionResult> Details([FromRoute] int? id)
+        public async Task<IActionResult> Details([FromRoute]  long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -255,7 +255,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示刪除頁
         /// </summary>
-        public async Task<IActionResult> Delete([FromRoute] int? id)
+        public async Task<IActionResult> Delete([FromRoute]  long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -287,7 +287,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed([FromRoute] int? id, UserGroup posted)
+        public async Task<IActionResult> DeleteConfirmed([FromRoute]  long? id, UserGroup posted)
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserGroupId)
             {

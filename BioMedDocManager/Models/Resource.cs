@@ -15,7 +15,7 @@ public class Resource : AuditableEntity
     /// </summary>
     [Key]
     [Display(Name = "Resource.ResourceId")]
-    public int ResourceId { get; set; }
+    public long ResourceId { get; set; }
 
     /// <summary>
     /// 資源類型

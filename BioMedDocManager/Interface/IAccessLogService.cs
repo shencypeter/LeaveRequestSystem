@@ -5,7 +5,7 @@ namespace BioMedDocManager.Interface
 {
     public interface IAccessLogService
     {
-        Task NewLoginFailedAsync(AccountType accountType, string accountNum, int accountId,
+        Task NewLoginFailedAsync(AccountType accountType, string accountNum, long accountId,
                                  string functionName, string actionName, int severity, string description);
 
         Task NewLoginSuccessAsync(User account);

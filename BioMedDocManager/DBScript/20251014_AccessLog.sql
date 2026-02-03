@@ -11,7 +11,7 @@ CREATE TABLE [dbo].[AccessLogs](
 	[AccessLogType] [int] NOT NULL,
 	[AccountType] [int] NULL,
 	[AccountNum] [int] NULL,
-	[AccountId] [int] NULL,
+	[AccountId] [long] NULL,
 	[ClientIp] [nvarchar](255) NULL,
 	[RequestMethod] [nvarchar](50) NULL,
 	[RequestUrl] [nvarchar](max) NULL,

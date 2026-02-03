@@ -24,19 +24,19 @@ public abstract class AuditableEntity : ISoftDelete, IHasDbLocalizer
     public DateTime? CreatedAt { get; set; }
 
     [Display(Name = "Common.CreatedBy")]
-    public int? CreatedBy { get; set; }
+    public long? CreatedBy { get; set; }
 
     [Display(Name = "Common.UpdatedAt")]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm:ss}")]
     public DateTime? UpdatedAt { get; set; }
 
     [Display(Name = "Common.UpdatedBy")]
-    public int? UpdatedBy { get; set; }
+    public long? UpdatedBy { get; set; }
 
     [Display(Name = "Common.DeletedAt")]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm:ss}")]
     public DateTime? DeletedAt { get; set; }
 
     [Display(Name = "Common.DeletedBy")]
-    public int? DeletedBy { get; set; }
+    public long? DeletedBy { get; set; }
 }

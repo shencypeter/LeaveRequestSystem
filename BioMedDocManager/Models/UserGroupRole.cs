@@ -14,14 +14,14 @@ public class UserGroupRole
     /// </summary>
     [Key]
     [Display(Name = "UserGroupRole.UserGroupId")]
-    public int UserGroupId { get; set; }
+    public long UserGroupId { get; set; }
 
     /// <summary>
     /// 角色編號
     /// </summary>
     [Key]
     [Display(Name = "UserGroupRole.RoleId")]
-    public int RoleId { get; set; }
+    public long RoleId { get; set; }
 
     /// <summary>
     /// 使用者群組-關聯

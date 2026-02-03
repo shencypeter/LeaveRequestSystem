@@ -3,7 +3,7 @@
     public interface ISoftDelete
     {
         DateTime? DeletedAt { get; set; }
-        int? DeletedBy { get; set; }
+        long? DeletedBy { get; set; }
 
         // (選) 顯示用
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]

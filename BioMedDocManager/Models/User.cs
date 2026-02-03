@@ -15,7 +15,7 @@ public class User : AuditableEntity, IAccount
     /// </summary>
     [Key]
     [Display(Name = "User.UserId")]
-    public int UserId { get; set; }
+    public long UserId { get; set; }
 
     /// <summary>
     /// 帳號(工號)
@@ -153,7 +153,7 @@ public class User : AuditableEntity, IAccount
     /// 部門
     /// </summary>
     [Display(Name = "User.DepartmentId")]
-    public int? DepartmentId { get; set; }
+    public long? DepartmentId { get; set; }
 
     /// <summary>
     /// 是否啟用 文字
@@ -241,7 +241,7 @@ public class User : AuditableEntity, IAccount
     /// <summary>
     /// 取得使用者ID
     /// </summary>
-    public int GetUId() => UserId;
+    public long GetUId() => UserId;
 
     /// <summary>
     /// 取得加密後的密碼

@@ -11,19 +11,19 @@ public class RolePermission
     /// 角色編號
     /// </summary>
     [Display(Name = "RolePermission.RoleId")]
-    public int RoleId { get; set; }
+    public long RoleId { get; set; }
 
     /// <summary>
     /// 資源編號
     /// </summary>
     [Display(Name = "RolePermission.ResourceId")]
-    public int ResourceId { get; set; }
+    public long ResourceId { get; set; }
 
     /// <summary>
     /// 動作編號
     /// </summary>
     [Display(Name = "RolePermission.AppActionId")]
-    public int AppActionId { get; set; }
+    public long AppActionId { get; set; }
 
     /// <summary>
     /// 角色

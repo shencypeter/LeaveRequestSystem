@@ -23,7 +23,7 @@ namespace BioMedDocManager.Controllers
         /// <summary>
         /// 顯示群組角色設定頁（指定某個 UserGroup）
         /// </summary>
-        public async Task<IActionResult> Edit([FromRoute] int? id)
+        public async Task<IActionResult> Edit([FromRoute]  long? id)
         {
             if (id.GetValueOrDefault() <= 0)
             {
@@ -126,7 +126,7 @@ namespace BioMedDocManager.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromRoute] int? id, UserGroupRoleEditViewModel posted)
+        public async Task<IActionResult> Edit([FromRoute]  long? id, UserGroupRoleEditViewModel posted)
         {
             if (posted == null || id.GetValueOrDefault() <= 0 || id != posted.UserGroupId)
             {
@@ -151,7 +151,7 @@ namespace BioMedDocManager.Controllers
                 .ToHashSet();
 
             // 使用者這次送出的角色 Id（可能為 null）
-            var wantedRoleIds = (posted.SelectedRoleIds ?? new List<int>())
+            var wantedRoleIds = (posted.SelectedRoleIds ?? new List<long>())
                 .Distinct()
                 .ToHashSet();
 

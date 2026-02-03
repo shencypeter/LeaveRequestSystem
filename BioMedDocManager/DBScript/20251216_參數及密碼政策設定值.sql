@@ -1,17 +1,17 @@
 -- 參數
 CREATE TABLE [dbo].[Parameter] (
-    [ParameterId] INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Parameter PRIMARY KEY, -- 主鍵
+    [ParameterId] BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Parameter PRIMARY KEY, -- 主鍵
     [ParameterCode] NVARCHAR(100) NOT NULL,      -- 參數代碼（程式使用）
     [ParameterName] NVARCHAR(200) NOT NULL,      -- 參數名稱（顯示用）
     [ParameterValue] NVARCHAR(MAX) NULL,         -- 參數值（文字 / HTML / JSON）
     [ParameterFormat] NVARCHAR(20) NOT NULL,     -- 參數格式（text / int / html / json）
     [ParameterIsActive] BIT NOT NULL CONSTRAINT DF_ParameterIsActive DEFAULT (1), -- 是否啟用
     [CreatedAt] DATETIME2(0) NOT NULL DEFAULT (SYSDATETIME()),
-    [CreatedBy] INT NULL,
+    [CreatedBy] BIGINT NULL,
     [UpdatedAt] DATETIME2(0) NULL,
-    [UpdatedBy] INT NULL,
+    [UpdatedBy] BIGINT NULL,
     [DeletedAt] DATETIME2(0) NULL,
-    [DeletedBy] INT NULL,
+    [DeletedBy] BIGINT NULL,
     CONSTRAINT UQ_ParameterCode UNIQUE ([ParameterCode])
 );
 

@@ -7,22 +7,21 @@
 
 -- 部門表
 /*
-DepartmentCode，DepartmentName
-admin，行政部
-it，資訊部
+DepartmentCode
+admin
+it
 */
 CREATE TABLE [dbo].[Department] (
-    [DepartmentId]          INT IDENTITY(1,1) NOT NULL,
+    [DepartmentId]          BIGINT IDENTITY(1,1) NOT NULL,
     [DepartmentCode]        NVARCHAR(50)  NOT NULL,
-    --[DepartmentName]        NVARCHAR(100) NOT NULL,
-    [DepartmentParentId]    INT NULL,  -- 自我參照
+    [DepartmentParentId]    BIGINT NULL,  -- 自我參照
     [DepartmentIsActive]    BIT NOT NULL DEFAULT 1,
     [CreatedAt]             DATETIME NOT NULL DEFAULT GETDATE(),
-    [CreatedBy]             INT NULL,
+    [CreatedBy]             BIGINT NULL,
     [UpdatedAt]             DATETIME NULL,
-    [UpdatedBy]             INT NULL,
+    [UpdatedBy]             BIGINT NULL,
     [DeletedAt]             DATETIME NULL,
-    [DeletedBy]             INT NULL,
+    [DeletedBy]             BIGINT NULL,
     CONSTRAINT [PKDepartment] PRIMARY KEY CLUSTERED ([DepartmentId] ASC),
     CONSTRAINT [FKDepartmentParent]
         FOREIGN KEY ([DepartmentParentId])
@@ -44,15 +43,15 @@ RoleCode，RoleGroup
 負責人，文管
 */
 CREATE TABLE [dbo].[Role] (
-    [RoleId]       INT IDENTITY(1,1) NOT NULL,
-    [RoleCode]     NVARCHAR(100) NOT NULL,-- 從角色名稱變成角色代碼
-    [RoleGroup]    NVARCHAR(100) NOT NULL,
-    [CreatedAt]    DATETIME NOT NULL DEFAULT GETDATE(),
-    [CreatedBy]    INT NULL,
-    [UpdatedAt]    DATETIME NULL,
-    [UpdatedBy]    INT NULL,
-    [DeletedAt]    DATETIME NULL,
-    [DeletedBy]    INT NULL,
+    [RoleId]        BIGINT IDENTITY(1,1) NOT NULL,
+    [RoleCode]      NVARCHAR(100) NOT NULL,-- 從角色名稱變成角色代碼
+    [RoleGroup]     NVARCHAR(100) NOT NULL,
+    [CreatedAt]     DATETIME NOT NULL DEFAULT GETDATE(),
+    [CreatedBy]     BIGINT NULL,
+    [UpdatedAt]     DATETIME NULL,
+    [UpdatedBy]     BIGINT NULL,
+    [DeletedAt]     DATETIME NULL,
+    [DeletedBy]     BIGINT NULL,
     CONSTRAINT [PKRole] PRIMARY KEY CLUSTERED ([RoleId] ASC)
 );
 GO
@@ -63,7 +62,7 @@ UserAccount，UserPasswordHash，UserFullName
 534159，Abcd534159，範例使用者1
 */
 CREATE TABLE [dbo].[User] (
-    [UserId]                    INT IDENTITY(1,1) NOT NULL,
+    [UserId]                    BIGINT IDENTITY(1,1) NOT NULL,
     [UserAccount]               NVARCHAR(100) NOT NULL,
     [UserPasswordHash]          NVARCHAR(255) NOT NULL,
     [UserFullName]              NVARCHAR(100) NOT NULL,
@@ -83,11 +82,11 @@ CREATE TABLE [dbo].[User] (
     [UserTotpSecret]                NVARCHAR(128) NULL,
     [DepartmentId]              INT NULL,  -- 被[部門表]參照，與PK名稱一致
     [CreatedAt]                 DATETIME NOT NULL DEFAULT GETDATE(),
-    [CreatedBy]                 INT NULL,
+    [CreatedBy]                 BIGINT NULL,
     [UpdatedAt]                 DATETIME NULL,
-    [UpdatedBy]                 INT NULL,
+    [UpdatedBy]                 BIGINT NULL,
     [DeletedAt]                 DATETIME NULL,
-    [DeletedBy]                 INT NULL,
+    [DeletedBy]                 BIGINT NULL,
     CONSTRAINT [PKUser] PRIMARY KEY CLUSTERED ([UserId] ASC),
     CONSTRAINT [FKUserDepartment]
         FOREIGN KEY ([DepartmentId])
@@ -105,15 +104,15 @@ A專案小組，負責A專案的成員
 行政部B組，行政部B組所有成員
 */
 CREATE TABLE [dbo].[UserGroup] (
-    [UserGroupId]           INT IDENTITY(1,1) NOT NULL,
+    [UserGroupId]           BIGINT IDENTITY(1,1) NOT NULL,
     [UserGroupCode]         NVARCHAR(100) NOT NULL, -- 從群組名稱變成群組代碼
     [UserGroupDescription]  NVARCHAR(255) NULL,
     [CreatedAt]             DATETIME NOT NULL DEFAULT GETDATE(),
-    [CreatedBy]             INT NULL,
+    [CreatedBy]             BIGINT NULL,
     [UpdatedAt]             DATETIME NULL,
-    [UpdatedBy]             INT NULL,
+    [UpdatedBy]             BIGINT NULL,
     [DeletedAt]             DATETIME NULL,
-    [DeletedBy]             INT NULL,
+    [DeletedBy]             BIGINT NULL,
     CONSTRAINT [PKUserGroup] PRIMARY KEY CLUSTERED ([UserGroupId] ASC)
 );
 GO
@@ -127,8 +126,8 @@ UserGroupId，UserId
 3，2   行政部B組有使用者2
 */
 CREATE TABLE [dbo].[UserGroupMember] (
-    [UserGroupId]   INT NOT NULL,  -- 被[使用者群組表]參照，與PK名稱一致
-    [UserId]        INT NOT NULL,  -- 被[使用者表]參照，與PK名稱一致
+    [UserGroupId]   BIGINT NOT NULL,  -- 被[使用者群組表]參照，與PK名稱一致
+    [UserId]        BIGINT NOT NULL,  -- 被[使用者表]參照，與PK名稱一致
     CONSTRAINT [PKUserGroupMember] PRIMARY KEY CLUSTERED ([UserGroupId] ASC, [UserId] ASC),
     CONSTRAINT [FKugmGroup]
         FOREIGN KEY ([UserGroupId])
@@ -152,8 +151,8 @@ UserGroupId，RoleId
 3，5  行政部B組有負責人角色
 */
 CREATE TABLE [dbo].[UserGroupRole] (
-    [UserGroupId]   INT NOT NULL,  -- 被[使用者群組表]參照，與PK名稱一致
-    [RoleId]        INT NOT NULL,  -- 被[角色表]參照，與PK名稱一致
+    [UserGroupId]   BIGINT NOT NULL,  -- 被[使用者群組表]參照，與PK名稱一致
+    [RoleId]        BIGINT NOT NULL,  -- 被[角色表]參照，與PK名稱一致
     CONSTRAINT [PKUserGroupRole] PRIMARY KEY ([UserGroupId], [RoleId]),
     CONSTRAINT [FKugrGroup]
         FOREIGN KEY ([UserGroupId])
@@ -176,17 +175,17 @@ PAGE，CFileQuery，文件查詢
 PAGE，CIssueTables，表單發行
 */
 CREATE TABLE [dbo].[Resource] (
-    [ResourceId]            INT IDENTITY(1,1) NOT NULL,
+    [ResourceId]            BIGINT IDENTITY(1,1) NOT NULL,
     [ResourceType]          NVARCHAR(50)  NOT NULL, -- PAGE/API
     [ResourceKey]           NVARCHAR(200) NOT NULL, -- 唯一識別，例如：Controller、/API/V1/Controller等
     --[ResourceDisplayName]   NVARCHAR(200) NOT NULL, -- 顯示名稱 改由多語系表處理(自動抓ResourceKey.Index.Title)
     [ResourceIsActive]      BIT NOT NULL DEFAULT 1,
     [CreatedAt]             DATETIME NOT NULL DEFAULT GETDATE(),
-    [CreatedBy]             INT NULL,
+    [CreatedBy]             BIGINT NULL,
     [UpdatedAt]             DATETIME NULL,
-    [UpdatedBy]             INT NULL,
+    [UpdatedBy]             BIGINT NULL,
     [DeletedAt]             DATETIME NULL,
-    [DeletedBy]             INT NULL,
+    [DeletedBy]             BIGINT NULL,
     CONSTRAINT [PKResource] PRIMARY KEY CLUSTERED ([ResourceId] ASC)
 );
 GO
@@ -203,16 +202,16 @@ export，匯出
 import，匯入
 */
 CREATE TABLE [dbo].[AppAction] (
-    [AppActionId]           INT IDENTITY(1,1) NOT NULL,
+    [AppActionId]           BIGINT IDENTITY(1,1) NOT NULL,
     [AppActionCode]         NVARCHAR(50)  NOT NULL, --從動作名稱變成動作代碼 'index','create','edit','delete','details','export','import',...    
     --[AppActionDisplayName]  NVARCHAR(100) NOT NULL, -- 從多語系表取得顯示名稱
     [AppActionOrder]        INT NOT NULL DEFAULT 0,
     [CreatedAt]             DATETIME NOT NULL DEFAULT GETDATE(),
-    [CreatedBy]             INT NULL,
+    [CreatedBy]             BIGINT NULL,
     [UpdatedAt]             DATETIME NULL,
-    [UpdatedBy]             INT NULL,
+    [UpdatedBy]             BIGINT NULL,
     [DeletedAt]             DATETIME NULL,
-    [DeletedBy]             INT NULL,
+    [DeletedBy]             BIGINT NULL,
     CONSTRAINT [PKAppAction] PRIMARY KEY CLUSTERED ([AppActionId] ASC)
 );
 GO
@@ -224,9 +223,9 @@ RoleId，ResourceId，AppActionId
 2，3，1  採購人對表單發行有列表權限
 */
 CREATE TABLE [dbo].[RolePermission] (
-    [RoleId]            INT NOT NULL,      -- 被[角色表]參照，與PK名稱一致
-    [ResourceId]        INT NOT NULL,      -- 被[資源表]參照，與PK名稱一致
-    [AppActionId]       INT NOT NULL,      -- 被[動作表]參照，與PK名稱一致
+    [RoleId]            BIGINT NOT NULL,      -- 被[角色表]參照，與PK名稱一致
+    [ResourceId]        BIGINT NOT NULL,      -- 被[資源表]參照，與PK名稱一致
+    [AppActionId]       BIGINT NOT NULL,      -- 被[動作表]參照，與PK名稱一致
     CONSTRAINT [PKRolePermission]
         PRIMARY KEY ([RoleId], [ResourceId], [AppActionId]),
     CONSTRAINT [FKrpRole]
@@ -259,20 +258,20 @@ MenuItemId，ParentId，MenuItemTitle，MenuItemIcon，ResourceId，MenuItemDisp
 3，1，表單發行，fa-file-alt，2，2，1
 */
 CREATE TABLE [dbo].[MenuItem] (
-    [MenuItemId]            INT IDENTITY(1,1) NOT NULL,
-    [MenuItemParentId]      INT NULL,       -- 自我參照
+    [MenuItemId]            BIGINT IDENTITY(1,1) NOT NULL,
+    [MenuItemParentId]      BIGINT NULL,       -- 自我參照
     [MenuItemCode]          NVARCHAR(100) NOT NULL, -- 選單代碼(因為父類別沒有ResourceId可以對照
     --[MenuItemTitle]         NVARCHAR(100) NOT NULL, -- 改由[資源表]參照，[資源表]本來就有多語系處理
     [MenuItemIcon]          NVARCHAR(100) NULL,
     [MenuItemDisplayOrder]  INT NOT NULL DEFAULT 0,
     [MenuItemIsActive]      BIT NOT NULL DEFAULT 1,
-    [ResourceId]            INT NULL,       -- 被[資源表]參照，與PK名稱一致
+    [ResourceId]            BIGINT NULL,       -- 被[資源表]參照，與PK名稱一致
     [CreatedAt]             DATETIME NOT NULL DEFAULT GETDATE(),
-    [CreatedBy]             INT NULL,
+    [CreatedBy]             BIGINT NULL,
     [UpdatedAt]             DATETIME NULL,
-    [UpdatedBy]             INT NULL,
+    [UpdatedBy]             BIGINT NULL,
     [DeletedAt]             DATETIME NULL,
-    [DeletedBy]             INT NULL,
+    [DeletedBy]             BIGINT NULL,
     CONSTRAINT [PKMenuItem] PRIMARY KEY CLUSTERED ([MenuItemId] ASC),
     CONSTRAINT [FKMenuItemParent]
         FOREIGN KEY ([MenuItemParentId])
@@ -290,12 +289,12 @@ GO
 
 -- 使用者密碼歷史表
 CREATE TABLE [dbo].[UserPasswordHistory] (
-    [UserPasswordHistoryId] INT IDENTITY(1,1) NOT NULL,
-    [UserId]                INT NOT NULL,
+    [UserPasswordHistoryId] BIGINT IDENTITY(1,1) NOT NULL,
+    [UserId]                BIGINT NOT NULL,
     [PasswordHash]          NVARCHAR(512) NOT NULL,
     [CreatedAt]             DATETIME2(0) NOT NULL 
         CONSTRAINT [DF_UserPasswordHistory_CreatedAt] DEFAULT (SYSDATETIME()),
-    [CreatedBy]             INT NULL,
+    [CreatedBy]             BIGINT NULL,
     CONSTRAINT [PK_UserPasswordHistory] PRIMARY KEY CLUSTERED ([UserPasswordHistoryId])
 );
 GO
@@ -322,14 +321,14 @@ UserId，RoleId
 */
 /*
 CREATE TABLE [dbo].[UserRole](
-    [UserId]        INT NOT NULL,  -- 被[使用者表]參照，與PK名稱一致
-    [RoleId]        INT NOT NULL,  -- 被[權限表]參照，與PK名稱一致
+    [UserId]        BIGINT NOT NULL,  -- 被[使用者表]參照，與PK名稱一致
+    [RoleId]        BIGINT NOT NULL,  -- 被[權限表]參照，與PK名稱一致
     [CreatedAt]     DATETIME NOT NULL DEFAULT GETDATE(),
-    [CreatedBy]     INT NULL,
+    [CreatedBy]     BIGINT NULL,
     [UpdatedAt]     DATETIME NULL,
-    [UpdatedBy]     INT NULL,
+    [UpdatedBy]     BIGINT NULL,
     [DeletedAt]     DATETIME NULL,
-    [DeletedBy]     INT NULL,
+    [DeletedBy]     BIGINT NULL,
     CONSTRAINT [PKUserRole] PRIMARY KEY CLUSTERED ([UserId] ASC, [RoleId] ASC),
     CONSTRAINT [FKUserRoleUser]
         FOREIGN KEY ([UserId])
