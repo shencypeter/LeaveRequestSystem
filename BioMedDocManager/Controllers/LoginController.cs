@@ -1096,9 +1096,9 @@ namespace BioMedDocManager.Controllers
                 sec.ForceChangeFirstLoginFlag = _param.GetBool("SEC_PASSWORD_FORCE_CHANGE_FIRST_LOGIN");
 
                 // ===== 2FA 設定 =====
-                sec.Sec2faEnabled = _param.GetBool("SEC_2FA_ENABLED");
-                sec.Sec2faEmailEnabled = _param.GetBool("SEC_2FA_EMAIL_ENABLED");
-                sec.Sec2faTotpEnabled = _param.GetBool("SEC_2FA_TOTP_ENABLED");
+                sec.Sec2faEnabled = false;// _param.GetBool("SEC_2FA_ENABLED");
+                sec.Sec2faEmailEnabled = false; //                 _param.GetBool("SEC_2FA_EMAIL_ENABLED");
+                sec.Sec2faTotpEnabled = false;// _param.GetBool("SEC_2FA_TOTP_ENABLED");
             }
 
             return sec;
