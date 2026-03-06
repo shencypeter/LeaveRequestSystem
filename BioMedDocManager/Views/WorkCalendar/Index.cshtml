@@ -1,0 +1,270 @@
+﻿@model WorkCalendarVm
+@using System.Globalization
+
+@{
+    Layout = "_NoNavLayout"; // 套用無Nav的Layout
+    ViewData["Title"] = "Work Calendar";
+    var monthName = CultureInfo
+        .GetCultureInfo("zh-TW")
+        .DateTimeFormat
+        .GetMonthName(Model.Month);
+}
+
+<style>
+    .day-row {
+        border-radius: 10px;
+        padding: 6px 10px;
+    }
+
+    .wknd {
+        background: #e7f7ea;
+    }
+    /* weekend green */
+
+    .holi {
+        background: #ffe7e7;
+    }
+    /* holiday red */
+
+    .meta {
+        font-size: .9rem;
+        opacity: .85;
+    }
+
+    .col-title {
+        font-weight: 600;
+        opacity: .85;
+    }
+</style>
+
+<div class="container py-3">
+
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <h3 class="m-0">@Model.Year 年 @monthName</h3>
+            <div class="meta">工時表匯出</div>
+        </div>
+        @{
+            var prevMonth = Model.Month > 1 ? Model.Month - 1 : 1;
+            var nextMonth = Model.Month < 12 ? Model.Month + 1 : 12;
+
+            var prevDisabled = Model.Month <= 1;
+            var nextDisabled = Model.Month >= 12;
+        }
+
+        <div class="d-flex gap-2 align-items-end flex-wrap">
+
+            <!-- Prev -->
+            <form method="get" class="d-flex align-items-end">
+                <input type="hidden" name="year" value="2026" />
+                <input type="hidden" name="month" value="@prevMonth" />
+                <button class="btn btn-outline-secondary" type="submit" @(prevDisabled ? "disabled" : "")>
+                    ◀ 上個月
+                </button>
+            </form>
+
+            <!-- Selector + Go -->
+            <form method="get" class="d-flex gap-2 align-items-end">
+                <div>
+                    <div class="col-title">年度</div>
+                    <select class="form-select" name="year" disabled>
+                        <option value="2026" selected>2026</option>
+                    </select>
+                    <input type="hidden" name="year" value="2026" />
+                </div>
+
+                <div>
+                    <div class="col-title">月份</div>
+                    <select class="form-select" name="month">
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            <option value="@m" selected="@(m == Model.Month)">
+                                @m
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" type="submit">
+                    Go
+                </button>
+            </form>
+
+            <!-- Next -->
+            <form method="get" class="d-flex align-items-end">
+                <input type="hidden" name="year" value="2026" />
+                <input type="hidden" name="month" value="@nextMonth" />
+                <button class="btn btn-outline-secondary" type="submit" @(nextDisabled ? "disabled" : "")>
+                    下個月 ▶
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <div class="row g-3">
+
+        <!-- 上旬 -->
+        <div class="col-12 col-lg-6">
+            <div class="card">
+                <div class="card-header">上旬</div>
+
+                <div class="card-body d-grid gap-2">
+                    @foreach (var d in Model.Left)
+                    {
+                        var cls = d.IsWeekend ? "wknd" : (d.IsHoliday ? "holi" : "");
+
+                        if (d.IsWeekend || d.IsHoliday)
+                        {
+                            <div class="day-row @cls">
+
+                            </div>
+                            continue; @*不顯示放假 / 留空白列*@
+                        }
+                     
+
+                        <div class="day-row @cls">
+                            <div class="d-flex justify-content-between">
+
+                                <div>
+                                    <strong>@d.Date.ToString("MM/dd")</strong>
+                                    <span class="meta">
+                                        (@d.Date.ToString("ddd", CultureInfo.GetCultureInfo("zh-TW")))
+                                    </span>
+                                </div>
+
+                                <div class="text-end">
+
+                                    @if (d.Date.Date == DateTime.Today.Date)
+                                    {
+                                        <span class="badge bg-primary">
+                                            今日
+                                        </span>
+                                    }
+
+                                    @if (d.IsWeekend)
+                                    {
+                                        <span class="badge bg-danger">
+                                            週末
+                                        </span>
+                                    }
+                                    else if (d.IsHoliday)
+                                    {
+                                        <span class="badge bg-danger">
+                                            @d.HolidayName
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        if(d.Date <= DateTime.Today)
+                                        {
+                                            <span class="badge bg-secondary">
+                                               出勤 08:00-12:00
+                                            </span>
+                                        }
+
+
+                                        <span class="badge bg-info">
+                                            特休 13:00-17:00
+                                        </span>
+                                    }
+
+                                </div>
+
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 下旬 -->
+        <div class="col-12 col-lg-6">
+            <div class="card">
+                <div class="card-header">下旬</div>
+
+                <div class="card-body d-grid gap-2">
+                    @foreach (var d in Model.Right)
+                    {
+                        var cls = d.IsWeekend ? "wknd" : (d.IsHoliday ? "holi" : "");
+
+                        if (d.IsWeekend || d.IsHoliday)
+                        {
+                            <div class="day-row @cls">
+                            </div>
+                            continue;
+                            @*不顯示放假 / 留空白列*@
+                        }
+
+
+                        <div class="day-row @cls">
+                            <div class="d-flex justify-content-between">
+
+                                <div>
+                                    <strong>@d.Date.ToString("MM/dd")</strong>
+                                    <span class="meta">
+                                        (@d.Date.ToString("ddd", CultureInfo.GetCultureInfo("zh-TW")))
+                                    </span>
+                                </div>
+                              
+                                <div class="text-end">
+
+                                    @if (d.Date.Date == DateTime.Today.Date)
+                                    {
+                                        <span class="badge bg-primary">
+                                            今日
+                                        </span>
+                                    }
+
+                                    @if (d.IsWeekend)
+                                    {
+                                        <span class="badge bg-danger">
+                                            週末
+                                        </span>
+                                    }
+                                    else if (d.IsHoliday)
+                                    {
+                                        <span class="badge bg-danger">
+                                            @d.HolidayName
+                                        </span>
+                                    }
+                                    else
+                                    {
+
+                                        if (d.Date <= DateTime.Today)
+                                        {
+                                            <span class="badge bg-secondary">
+                                                出勤 08:00-12:00
+                                            </span>
+                                        }
+
+                                        <span class="badge bg-info">
+                                            特休 13:00-17:00
+                                        </span>
+                                    }
+
+                                </div>
+
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-3 p-3 rounded border bg-light">
+        <div>
+            <strong>本月工作日：</strong>
+            @Model.WorkingDays 天
+        </div>
+        <div>
+            <strong>本月工時：</strong>
+            @Model.WorkingHours 小時（8 小時/日）
+        </div>
+    </div>
+
+</div>
