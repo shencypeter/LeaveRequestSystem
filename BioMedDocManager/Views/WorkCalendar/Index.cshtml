@@ -267,4 +267,25 @@
         </div>
     </div>
 
+
+    <div id="cal"></div>
 </div>
+
+@section PageScripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap/cal-heatmap.css">
+
+
+
+    <script nonce="@ViewBag.Nonce" src="https://cdn.jsdelivr.net/npm/cal-heatmap/dist/cal-heatmap.min.js"></script>
+
+    <script nonce="@ViewBag.Nonce">
+        const cal = new CalHeatmap();
+
+        cal.paint({
+          range: 12,
+          domain: "month",
+          subDomain: "day",
+          date: { start: new Date("2026-01-01") }
+        });
+    </script>
+}

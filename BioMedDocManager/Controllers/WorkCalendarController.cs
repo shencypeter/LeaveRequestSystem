@@ -30,8 +30,9 @@ namespace BioMedDocManager.Controllers
     [AllowAnonymous]
     public class WorkCalendarController : Controller
     {
-        // TODO later: replace with DB table or a repository.
-        // For now: paste your CSV here (or load from a file).
+        // TODO  DB TABLE 建立與匯入 CSV /TSV 功能 (明年度)
+        // 行事曆有萬年曆 除週六補班外不須匯入六日的利假. 只需手動維護颱風調整放假
+        // 員工申請請假期間, 會從總表比對, 只針對正常上班日使用請假時數 (同常會在年底結算)
         private const string HolidaysCsv2026 = @"
 Subject	Start Date	Start Time	End Date	End Time	All Day Event	Description	Location
 中華民國開國紀念日	2026-1-1		2026-1-1		TRUE
