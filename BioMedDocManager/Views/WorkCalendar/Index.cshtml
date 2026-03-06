@@ -10,7 +10,7 @@
         .GetMonthName(Model.Month);
 }
 
-<style>
+<style nonce="@ViewBag.CspNonce">
     .day-row {
         border-radius: 10px;
         padding: 6px 10px;
@@ -34,6 +34,98 @@
     .col-title {
         font-weight: 600;
         opacity: .85;
+    }
+
+
+    /* ===== Year calendar component ===== */
+    .year-cal {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 1.5rem;
+    }
+
+    .year-cal__month {
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        background: #fff;
+        padding: 10px;
+        min-width: 0;
+    }
+
+    .year-cal__title {
+        text-align: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+    }
+
+    .year-cal__weekdays,
+    .year-cal__grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+    }
+
+    .year-cal__weekdays {
+        margin-bottom: 4px;
+    }
+
+    .year-cal__weekday {
+        text-align: center;
+        font-size: 0.72rem;
+        color: #6c757d;
+        padding: 2px 0;
+    }
+
+    .year-cal__day {
+        position: relative;
+        text-align: center;
+        font-size: 0.8rem;
+        line-height: 1;
+        padding: 8px 2px 10px;
+        min-height: 34px;
+        border-radius: 8px;
+    }
+
+        .year-cal__day.is-other-month {
+            color: #c0c4c8;
+        }
+
+        .year-cal__day.is-weekend {
+            background: #f7fbf7;
+        }
+
+        .year-cal__day.is-today {
+            outline: 2px solid #0d6efd;
+            outline-offset: -2px;
+            font-weight: 700;
+        }
+
+        .year-cal__day.is-holiday::after {
+            content: "";
+            position: absolute;
+            left: 18%;
+            right: 18%;
+            bottom: 4px;
+            height: 3px;
+            border-radius: 999px;
+            background: #dc3545;
+        }
+
+    .year-cal__daynum {
+        display: inline-block;
+    }
+
+    @@media (max-width: 992px) {
+        .year-cal {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .year-cal {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
@@ -102,6 +194,7 @@
         </div>
     </div>
 
+
     <div class="row g-3">
 
         <!-- 上旬 -->
@@ -114,13 +207,6 @@
                     {
                         var cls = d.IsWeekend ? "wknd" : (d.IsHoliday ? "holi" : "");
 
-                        if (d.IsWeekend || d.IsHoliday)
-                        {
-                            <div class="day-row @cls">
-
-                            </div>
-                            continue; @*不顯示放假 / 留空白列*@
-                        }
                      
 
                         <div class="day-row @cls">
@@ -189,13 +275,6 @@
                     {
                         var cls = d.IsWeekend ? "wknd" : (d.IsHoliday ? "holi" : "");
 
-                        if (d.IsWeekend || d.IsHoliday)
-                        {
-                            <div class="day-row @cls">
-                            </div>
-                            continue;
-                            @*不顯示放假 / 留空白列*@
-                        }
 
 
                         <div class="day-row @cls">
@@ -255,7 +334,7 @@
         </div>
 
     </div>
-
+    <div id="cal"></div>
     <div class="mt-3 p-3 rounded border bg-light">
         <div>
             <strong>本月工作日：</strong>
@@ -268,24 +347,173 @@
     </div>
 
 
-    <div id="cal"></div>
 </div>
 
-@section PageScripts {
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap/cal-heatmap.css">
 
+<script nonce="@ViewBag.CspNonce">
+    document.addEventListener("DOMContentLoaded", function () {
 
+        const holidayMap = {
+            "2026-01-01": "中華民國開國紀念日",
 
-    <script nonce="@ViewBag.Nonce" src="https://cdn.jsdelivr.net/npm/cal-heatmap/dist/cal-heatmap.min.js"></script>
+            "2026-02-15": "小年夜",
+            "2026-02-16": "農曆除夕",
+            "2026-02-17": "春節",
+            "2026-02-18": "春節",
+            "2026-02-19": "春節",
+            "2026-02-20": "補假",
 
-    <script nonce="@ViewBag.Nonce">
-        const cal = new CalHeatmap();
+            "2026-02-27": "補假",
+            "2026-02-28": "和平紀念日",
 
-        cal.paint({
-          range: 12,
-          domain: "month",
-          subDomain: "day",
-          date: { start: new Date("2026-01-01") }
+            "2026-04-03": "補假",
+            "2026-04-04": "兒童節",
+            "2026-04-05": "清明節",
+            "2026-04-06": "補假",
+
+            "2026-05-01": "勞動節",
+
+            "2026-06-19": "端午節",
+
+            "2026-09-25": "中秋節",
+            "2026-09-28": "教師節",
+
+            "2026-10-09": "補假",
+            "2026-10-10": "國慶日",
+            "2026-10-25": "臺灣光復暨金門古寧頭大捷紀念日",
+            "2026-10-26": "補假",
+
+            "2026-12-25": "行憲紀念日"
+        };
+
+        class YearCalendar {
+            constructor(container, options) {
+                this.container = container;
+                this.year = options.year;
+                this.month = options.month; // 1-12
+                this.holidayMap = options.holidayMap || {};
+                this.weekdayLabels = options.weekdayLabels || ["一", "二", "三", "四", "五", "六", "日"];
+            }
+
+            render() {
+                this.container.innerHTML = "";
+                this.container.className = "year-cal";
+
+                const monthsToShow = [
+                    this.resolveMonth(this.year, this.month - 1),
+                    this.resolveMonth(this.year, this.month),
+                    this.resolveMonth(this.year, this.month + 1)
+                ];
+
+                monthsToShow.forEach(({ year, month }) => {
+                    this.container.appendChild(this.renderMonth(year, month));
+                });
+            }
+
+            resolveMonth(year, month) {
+                const d = new Date(year, month - 1, 1);
+                return {
+                    year: d.getFullYear(),
+                    month: d.getMonth() + 1
+                };
+            }
+
+            renderMonth(year, month) {
+                const card = document.createElement("div");
+                card.className = "year-cal__month";
+
+                const title = document.createElement("div");
+                title.className = "year-cal__title";
+                title.textContent = `${year} 年 ${month} 月`;
+                card.appendChild(title);
+
+                const weekdays = document.createElement("div");
+                weekdays.className = "year-cal__weekdays";
+
+                this.weekdayLabels.forEach(label => {
+                    const el = document.createElement("div");
+                    el.className = "year-cal__weekday";
+                    el.textContent = label;
+                    weekdays.appendChild(el);
+                });
+
+                card.appendChild(weekdays);
+
+                const grid = document.createElement("div");
+                grid.className = "year-cal__grid";
+
+                const firstOfMonth = new Date(year, month - 1, 1);
+                const mondayFirstOffset = (firstOfMonth.getDay() + 6) % 7;
+                const gridStart = new Date(year, month - 1, 1 - mondayFirstOffset);
+
+                for (let i = 0; i < 42; i++) {
+                    const date = new Date(gridStart);
+                    date.setDate(gridStart.getDate() + i);
+
+                    grid.appendChild(this.renderDay(date, year, month));
+                }
+
+                card.appendChild(grid);
+                return card;
+            }
+
+            renderDay(date, currentYear, currentMonth) {
+                const cell = document.createElement("div");
+                cell.className = "year-cal__day";
+
+                const ymd = this.formatDate(date);
+                const isOtherMonth =
+                    date.getFullYear() !== currentYear ||
+                    (date.getMonth() + 1) !== currentMonth;
+
+                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                const isHoliday = !!this.holidayMap[ymd];
+                const isToday = this.isSameDate(date, new Date());
+
+                if (isOtherMonth) {
+                    cell.classList.add("is-empty");
+                    cell.innerHTML = "&nbsp;";
+                    return cell;
+                }
+
+                if (isWeekend) cell.classList.add("is-weekend");
+                if (isHoliday) cell.classList.add("is-holiday");
+                if (isToday) cell.classList.add("is-today");
+
+                if (isHoliday) {
+                    cell.title = this.holidayMap[ymd];
+                }
+
+                const num = document.createElement("span");
+                num.className = "year-cal__daynum";
+                num.textContent = date.getDate();
+
+                cell.appendChild(num);
+                return cell;
+            }
+
+            formatDate(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, "0");
+                const d = String(date.getDate()).padStart(2, "0");
+                return `${y}-${m}-${d}`;
+            }
+
+            isSameDate(a, b) {
+                return a.getFullYear() === b.getFullYear()
+                    && a.getMonth() === b.getMonth()
+                    && a.getDate() === b.getDate();
+            }
+        }
+
+        const cal = new YearCalendar(document.getElementById("cal"), {
+            year: @Model.Year,
+            month: @Model.Month,
+            holidayMap: holidayMap,
+            weekdayLabels: ["一", "二", "三", "四", "五", "六", "日"]
         });
-    </script>
+
+        cal.render();
+    });
+</script>
 }

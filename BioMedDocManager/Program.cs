@@ -206,37 +206,36 @@ namespace BioMedDocManager
             });
 
 
-            // Content Security Policy (CSP) 內容安全策略
+            // Content Security Policy (CSP)
             app.Use(async (context, next) =>
             {
-                // 1、為本次請求產生nonce，並存到Items給View/Controller用
                 var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
                 context.Items["CspNonce"] = nonce;
 
-                // 2、依環境組出CSP字串
                 var csp = new StringBuilder()
-                    .Append("default-src 'self'  ;")
-                    .Append($"script-src 'self' 'nonce-{nonce}' blob:  ;")
-                    .Append("worker-src 'self' blob:  ;")
-                    .Append("child-src 'self' blob:  ;") // child-src 已逐漸被 frame-src 取代，兩者都給
-                    .Append("frame-src 'self'  ;") // child-src 已逐漸被 frame-src 取代，兩者都給
-                    .Append($"style-src 'self'  ;")//'unsafe-inline''nonce-{nonce}';
-                    .Append("img-src 'self' data: blob:  ;")
-                    .Append(isDev ? "font-src 'self'  ;" : "font-src 'self' data:  ;")
-                    .Append(isDev ? "connect-src 'self' ws: wss: http://localhost:* https://localhost:*  ;"
-                                  : "connect-src 'self'  ;")
-                    .Append("object-src 'none'  ;")
-                    .Append("base-uri 'self'  ;")
-                    .Append("frame-ancestors 'self'  ;");
+                    .Append("default-src 'self' data:;")
+                    .Append($"script-src 'self' https://cdn.jsdelivr.net 'nonce-{nonce}' blob:;")
+                    .Append("worker-src 'self' blob:;")
+                    .Append("child-src 'self' blob:;")
+                    .Append("frame-src 'self';")
+                    .Append($"style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'nonce-{nonce}';")
+                    .Append("img-src 'self' data: blob:;")
+                    .Append(isDev
+                        ? "font-src 'self' https://cdn.jsdelivr.net data:;"
+                        : "font-src 'self' https://cdn.jsdelivr.net data:;")
+                    .Append(isDev
+                        ? "connect-src 'self' ws: wss: http://localhost:* https://localhost:* https://cdn.jsdelivr.net;"
+                        : "connect-src 'self' https://cdn.jsdelivr.net;")
+                    .Append("object-src 'none';")
+                    .Append("base-uri 'self';")
+                    .Append("frame-ancestors 'self';");
 
                 if (!isDev)
                 {
-                    // 正式站可加上這兩條更嚴
                     csp.Append("upgrade-insecure-requests;")
                        .Append("block-all-mixed-content;");
                 }
 
-                // 3、在回應要送出前設定Header（確保不被後續覆蓋）
                 context.Response.OnStarting(() =>
                 {
                     context.Response.Headers["Content-Security-Policy"] = csp.ToString();

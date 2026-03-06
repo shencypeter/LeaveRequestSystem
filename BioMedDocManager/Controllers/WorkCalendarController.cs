@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Fable.React.Props.SVGAttr;
 
 namespace BioMedDocManager.Controllers
 {
@@ -78,6 +79,8 @@ Subject	Start Date	Start Time	End Date	End Time	All Day Event	Description	Locati
         // GET /WorkCalendar?year=2026&month=2
         public IActionResult Index(int year = 2026, int? month = null)
         {
+
+            ViewBag.CspNonce = HttpContext.Items["CspNonce"] as string;
             year = 2026; // lock it for now
 
             int monthView = Math.Clamp(month ?? DateTime.Now.Month, 1, 12);
@@ -113,6 +116,9 @@ Subject	Start Date	Start Time	End Date	End Time	All Day Event	Description	Locati
                 Right = all.Skip(15).ToList(),
                 WorkingDays = all.Count(x => !x.IsWeekend && !x.IsHoliday)
             };
+
+
+
 
             return View(vm);
         }
