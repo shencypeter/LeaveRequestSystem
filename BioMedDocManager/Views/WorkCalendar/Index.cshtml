@@ -11,6 +11,38 @@
 }
 
 <style nonce="@ViewBag.CspNonce">
+
+    .badge-outline-primary {
+        color: #0d6efd;
+        background-color: transparent;
+        border: 1px solid #0d6efd;
+    }
+
+    .badge-outline-secondary {
+        color: #6c757d;
+        background-color: transparent;
+        border: 1px solid #6c757d;
+    }
+
+    .badge-outline-danger {
+        color: #dc3545;
+        background-color: transparent;
+        border: 1px solid #dc3545;
+    }
+
+    .left-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+        margin-left: 8px;
+    }
+
+        .left-meta .badge {
+            font-size: 0.72rem;
+            font-weight: 500;
+        }
+
     .day-row {
         border-radius: 10px;
         padding: 6px 10px;
@@ -68,6 +100,10 @@
 
     .year-cal__weekdays {
         margin-bottom: 4px;
+    }
+
+    .day-row .badge + .badge {
+        margin-left: 4px;
     }
 
     .year-cal__weekday {
@@ -207,27 +243,34 @@
                     {
                         var cls = d.IsWeekend ? "wknd" : (d.IsHoliday ? "holi" : "");
 
-                     
-
                         <div class="day-row @cls">
                             <div class="d-flex justify-content-between">
 
-                                <div>
+                                <div class="d-flex align-items-center flex-wrap">
                                     <strong>@d.Date.ToString("MM/dd")</strong>
-                                    <span class="meta">
+
+                                    <span class="meta ms-1">
                                         (@d.Date.ToString("ddd", CultureInfo.GetCultureInfo("zh-TW")))
+                                    </span>
+
+                                    <span class="left-meta">
+                                        @if (!string.IsNullOrWhiteSpace(d.LunarLabel))
+                                        {
+                                            <span class="badge badge-outline-secondary">
+                                                @d.LunarLabel
+                                            </span>
+                                        }
+
+                                        @if (d.Date.Date == DateTime.Today.Date)
+                                        {
+                                            <span class="badge badge-outline-primary">
+                                                今日
+                                            </span>
+                                        }
                                     </span>
                                 </div>
 
                                 <div class="text-end">
-
-                                    @if (d.Date.Date == DateTime.Today.Date)
-                                    {
-                                        <span class="badge bg-primary">
-                                            今日
-                                        </span>
-                                    }
-
                                     @if (d.IsWeekend)
                                     {
                                         <span class="badge bg-danger">
@@ -242,15 +285,14 @@
                                     }
                                     else
                                     {
-                                        if(d.Date <= DateTime.Today)
+                                        if (d.Date <= DateTime.Today)
                                         {
-                                            <span class="badge bg-secondary">
-                                               出勤 08:00-12:00
+                                            <span class="badge badge-outline-secondary">
+                                                出勤 08:00-12:00
                                             </span>
                                         }
 
-
-                                        <span class="badge bg-info">
+                                        <span class="badge badge-outline-danger">
                                             特休 13:00-17:00
                                         </span>
                                     }
@@ -275,27 +317,34 @@
                     {
                         var cls = d.IsWeekend ? "wknd" : (d.IsHoliday ? "holi" : "");
 
-
-
                         <div class="day-row @cls">
                             <div class="d-flex justify-content-between">
 
-                                <div>
+                                <div class="d-flex align-items-center flex-wrap">
                                     <strong>@d.Date.ToString("MM/dd")</strong>
-                                    <span class="meta">
+
+                                    <span class="meta ms-1">
                                         (@d.Date.ToString("ddd", CultureInfo.GetCultureInfo("zh-TW")))
                                     </span>
+
+                                    <span class="left-meta">
+                                        @if (!string.IsNullOrWhiteSpace(d.LunarLabel))
+                                        {
+                                            <span class="badge badge-outline-secondary">
+                                                @d.LunarLabel
+                                            </span>
+                                        }
+
+                                        @if (d.Date.Date == DateTime.Today.Date)
+                                        {
+                                            <span class="badge badge-outline-primary">
+                                                今日
+                                            </span>
+                                        }
+                                    </span>
                                 </div>
-                              
+
                                 <div class="text-end">
-
-                                    @if (d.Date.Date == DateTime.Today.Date)
-                                    {
-                                        <span class="badge bg-primary">
-                                            今日
-                                        </span>
-                                    }
-
                                     @if (d.IsWeekend)
                                     {
                                         <span class="badge bg-danger">
@@ -310,15 +359,14 @@
                                     }
                                     else
                                     {
-
                                         if (d.Date <= DateTime.Today)
                                         {
-                                            <span class="badge bg-secondary">
+                                            <span class="badge badge-outline-secondary">
                                                 出勤 08:00-12:00
                                             </span>
                                         }
 
-                                        <span class="badge bg-info">
+                                        <span class="badge badge-outline-danger">
                                             特休 13:00-17:00
                                         </span>
                                     }

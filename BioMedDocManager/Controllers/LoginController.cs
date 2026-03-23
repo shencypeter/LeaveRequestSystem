@@ -559,6 +559,19 @@ namespace BioMedDocManager.Controllers
             await _accessLog.NewLoginSuccessAsync(user);
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        public string TryGetToken()
+        {
+            var jwtToken = "https://3probetestlocal.ccliang.me:8001/api/auth/test_token?user=demo&mode=token";
+
+            //簽核的路徑幾乎都是 post
+            var token = EflowGet(jwtToken, new Dictionary<string, string>());
+
+            return token;
+        }
+
+
         /// <summary>
         /// 寄送二階段驗證 Email OTP 的實際動作。
         /// </summary>

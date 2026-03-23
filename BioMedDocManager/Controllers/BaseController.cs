@@ -32,7 +32,6 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料物件</param>
     public class BaseController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param, IDbLocalizer _loc) : Controller
     {
-
         #region 靜態屬性
 
         /// <summary>
@@ -58,8 +57,6 @@ namespace BioMedDocManager.Controllers
 
 
         #endregion
-
-
 
         #region 方法
 
@@ -729,62 +726,6 @@ namespace BioMedDocManager.Controllers
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         /// <summary>
         /// 取得表單儲存路徑
         /// </summary>
@@ -1180,8 +1121,6 @@ namespace BioMedDocManager.Controllers
             return RedirectToAction(actionPath, routeValues);
         }
 
-
-
         /// <summary>
         /// 文件編號(年月)：如果DocNoA比DocNoB大，則交換兩者順序（字典順序），確保A<=B。
         /// </summary>
@@ -1199,7 +1138,6 @@ namespace BioMedDocManager.Controllers
 
             return (docNoA, docNoB); // 不改順序
         }
-
 
         /// <summary>
         /// 將查詢後的 rows（List&lt;Dictionary&lt;string,object&gt;&gt;）依 TableHeaders 的順序輸出成 Excel。
@@ -1621,11 +1559,6 @@ namespace BioMedDocManager.Controllers
 
         #endregion
 
-
-
-
-
-
         #region 變數
 
         /// <summary>
@@ -1807,5 +1740,35 @@ namespace BioMedDocManager.Controllers
         }
 
         #endregion
+
+        #region call out to python API
+
+
+        /// <summary>
+        /// 連結 python fast api 取得資料
+        /// </summary>
+        /// <param name="apiUrl"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public string EflowGet(string apiUrl, Dictionary<string, string> parameters)
+        {
+            using var client = new HttpClient();
+            var content = new FormUrlEncodedContent(parameters);
+
+            var response = client.GetAsync(apiUrl).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                return response.Content.ReadAsStringAsync().Result;
+            }
+            else
+            {
+                throw new Exception($"Python API call failed with status code: {response.StatusCode}");
+            }
+        }
+
+
+        #endregion
+
     }
 }
