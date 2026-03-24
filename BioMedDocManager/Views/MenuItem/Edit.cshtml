@@ -35,25 +35,35 @@
                 </div>
             </div>
 
-            @*
-            <!-- 標題 -->
-            <div class="row align-items-center my-3">
-                <label asp-for="MenuItemTitle" class="col-md-2 col-form-label text-md-end"></label>
-                <div class="col-md-10">
-                    <input asp-for="MenuItemTitle" class="form-control" />
-                    <span asp-validation-for="MenuItemTitle" class="text-danger"></span>
-                </div>
-            </div>
-            *@
-
             <!-- 圖示 -->
             <div class="row align-items-center my-3">
                 <label asp-for="MenuItemIcon" class="col-md-2 col-form-label text-md-end"></label>
                 <div class="col-md-10">
-                    <input asp-for="MenuItemIcon" class="form-control" />
+                    <div class="input-group">
+                        <span class="input-group-text bg-white" id="iconPreviewWrap" title="Icon preview">
+                            <i id="iconPreview"
+                               class="@(string.IsNullOrWhiteSpace(Model.MenuItemIcon) ? "fa-regular fa-square" : Model.MenuItemIcon)"></i>
+                        </span>
+                        <input asp-for="MenuItemIcon"
+                               class="form-control"
+                               id="menuItemIconInput"
+                               placeholder="fa-solid fa-house" />
+                    </div>
+
+                    <div class="form-text d-flex align-items-center gap-2 mt-2 d-none">
+                        <span class="badge text-bg-light border" id="iconClassPreview">
+                            @(string.IsNullOrWhiteSpace(Model.MenuItemIcon) ? "fa-regular fa-square" : Model.MenuItemIcon)
+                        </span>
+                        <span class="text-muted">即時預覽</span>
+                    </div>
+
                     <span asp-validation-for="MenuItemIcon" class="text-danger"></span>
-                    <a href="https://fontawesome.com/v6/search?ic=free-collection" target="_blank" title="@Loc.T("MenuItem.Icon.SearchTitle")">
-                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <a href="https://fontawesome.com/v6/search?ic=free-collection"
+                       target="_blank"
+                       title="@Loc.T("MenuItem.Icon.SearchTitle")"
+                       class="d-inline-block mt-2">
+                        <i class="fa-solid fa-magnifying-glass me-1"></i>
                         @Loc.T("MenuItem.Icon.SearchLink")
                     </a>
                 </div>
@@ -95,7 +105,7 @@
             <div class="row align-items-center my-3">
                 <div class="col-12 d-flex flex-wrap justify-content-center">
                     <button type="submit" class="btn2 btn-success mt-2 col-6 col-md-3 mx-1">
-                        <i class="fas fa-check-circle"></i> @Loc.T("Common.Save")
+                        <i class="fas fa-check-circle me-1"></i> @Loc.T("Common.Save")
                     </button>
                 </div>
             </div>
@@ -105,6 +115,82 @@
 
 @section PageScripts {
     <script nonce="@ViewBag.CspNonce">
+        (() => {
+            const input = document.getElementById('menuItemIconInput');
+            const preview = document.getElementById('iconPreview');
+            const classPreview = document.getElementById('iconClassPreview');
+            const fallbackClass = 'fa-solid fa-ellipsis';
 
+            function getFontCheckString(iconClass) {
+                if (iconClass.includes('fa-brands')) {
+                    return '400 16px "Font Awesome 6 Brands"';
+                }
+
+                if (iconClass.includes('fa-regular')) {
+                    return '400 16px "Font Awesome 6 Free"';
+                }
+
+                return '900 16px "Font Awesome 6 Free"';
+            }
+
+            function hasPseudoContent(iconClass) {
+                const probe = document.createElement('i');
+                probe.className = iconClass;
+                probe.style.position = 'absolute';
+                probe.style.left = '-9999px';
+                probe.style.top = '-9999px';
+                document.body.appendChild(probe);
+
+                const before = window.getComputedStyle(probe, '::before');
+                const content = before.getPropertyValue('content');
+
+                document.body.removeChild(probe);
+
+                return content && content !== 'none' && content !== 'normal' && content !== '""';
+            }
+
+            async function renderIcon() {
+                if (!input || !preview || !classPreview) return;
+
+                const value = (input.value || '').trim();
+                const iconClass = value || fallbackClass;
+
+                preview.className = iconClass;
+                classPreview.textContent = iconClass;
+
+                let isValid = false;
+
+                try {
+                    const hasContent = hasPseudoContent(iconClass);
+                    const fontReady = document.fonts
+                        ? await document.fonts.check(getFontCheckString(iconClass))
+                        : true;
+
+                    isValid = hasContent && fontReady;
+                } catch {
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    preview.className = fallbackClass;
+                    classPreview.textContent = `${iconClass}  (fallback)`;
+                    classPreview.className = 'badge text-bg-warning border';
+                } else {
+                    classPreview.className = 'badge text-bg-light border';
+                }
+            }
+
+            if (input) {
+                input.addEventListener('keyup', renderIcon);
+                input.addEventListener('change', renderIcon);
+                input.addEventListener('paste', () => setTimeout(renderIcon, 0));
+            }
+
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(renderIcon);
+            }
+
+            renderIcon();
+        })();
     </script>
 }
