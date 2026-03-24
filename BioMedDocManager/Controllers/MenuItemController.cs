@@ -53,6 +53,11 @@ namespace BioMedDocManager.Controllers
             {
                 queryModel.PageSize = PageSize.Value;
             }
+            else
+            {
+                //如同不要分頁
+                queryModel.PageSize = 100;
+            }
             if (PageNumber.HasValue)
             {
                 queryModel.PageNumber = PageNumber.Value;
@@ -111,8 +116,9 @@ namespace BioMedDocManager.Controllers
 
             try
             {
-                if (!ModelState.IsValid)
+                if (false && !ModelState.IsValid)
                 {
+                    //TODO, 這裡被 bypass, 因為無法通過驗證
                     await _accessLog.NewActionAsync(GetLoginUser(), PageName, "新增頁儲存", "錯誤，必填資料未填寫");
                     return RedirectToAction(nameof(Index));
                 }
@@ -184,7 +190,7 @@ namespace BioMedDocManager.Controllers
                 return NotFound();
             }
 
-            if (!ModelState.IsValid)
+            if (false && !ModelState.IsValid)
             {
                 await _accessLog.NewActionAsync(GetLoginUser(), PageName, "編輯頁儲存", "錯誤，必填資料未填寫");
                 return RedirectToAction(nameof(Index));

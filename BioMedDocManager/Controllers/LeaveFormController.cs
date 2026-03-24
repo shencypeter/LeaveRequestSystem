@@ -36,7 +36,7 @@ namespace BioMedDocManager.Controllers
     }
 
     [AllowAnonymous]
-    public class WorkCalendarController : Controller
+    public class LeaveFormController : Controller
     {
         /// <summary>
         /// 僅代表每年度政府公布的行事曆. 

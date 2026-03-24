@@ -10,8 +10,15 @@
         ? ""
         : (frameSrc.StartsWith("http") ? frameSrc : $"{hostPrefix}{frameSrc}");
 }
-<iframe id="iframeLoader" src="@absoluteFrameSrc" nonce="@ViewBag.CspNonce"
-        style="width: 100%; height: 100%; border: none;"
-        allowfullscreen
-        loading="lazy">
-</iframe>
+
+<div class="container-fluid vh-100 p-0">
+    <iframe id="iframeLoader"
+            src="@absoluteFrameSrc"
+            class="w-100 h-100 border-0 d-block bg-white"
+            style="opacity:0; transition:opacity .2s ease;"
+            nonce="@ViewBag.CspNonce"
+            onload="this.style.opacity=1"
+            allowfullscreen
+            loading="lazy">
+    </iframe>
+</div>

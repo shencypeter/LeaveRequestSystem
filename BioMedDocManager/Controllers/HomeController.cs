@@ -15,7 +15,6 @@ namespace BioMedDocManager.Controllers
     /// <param name="accessLog">紀錄連線Log</param>    
     public class HomeController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
-
         /// <summary>
         /// 登入後與左上角的入口畫面（首頁）
         /// </summary>
@@ -27,3 +26,6 @@ namespace BioMedDocManager.Controllers
 
     }
 }
+
+
+

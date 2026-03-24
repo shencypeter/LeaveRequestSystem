@@ -196,7 +196,19 @@
                             }
 
                             <td class="@string.Join(" ", classes)">
-                                @Html.Raw(value)
+
+                                @if (key == "MenuItemIcon")
+                                {
+                                    <i class="@value"
+                                       title="@value"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="top"></i>
+                                }
+                                else
+                                {
+                                    @Html.Raw(value)
+                                }
+
                             </td>
                         }
 

@@ -53,6 +53,10 @@ namespace BioMedDocManager.Controllers
             {
                 queryModel.PageSize = PageSize.Value;
             }
+            else
+            {
+                queryModel.PageSize = 100;
+            }
             if (PageNumber.HasValue)
             {
                 queryModel.PageNumber = PageNumber.Value;
