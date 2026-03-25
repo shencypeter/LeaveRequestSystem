@@ -33,11 +33,14 @@ namespace BioMedDocManager.Controllers
         public Dictionary<string, string> TableHeaders = TableHeaderFactory.Build<MenuItem>(
             includeRowNum: false,
             onlyProps: new[]
-            {
-                "MenuItemTitle",
-                "MenuItemIcon",
-                "ResourceKey",
+            {              
+       
                 "MenuItemDisplayOrder",
+
+                "MenuItemTitle",
+                       "MenuItemIcon",
+                "ResourceKey",
+
                 "MenuItemIsActiveText",
                 "CreatedAt",
                 "UpdatedAt"

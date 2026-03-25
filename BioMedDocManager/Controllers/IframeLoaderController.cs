@@ -6,13 +6,19 @@ using Microsoft.AspNetCore.Mvc;
 namespace BioMedDocManager.Controllers
 {
     /// <summary>
-    /// 首頁
+    /// 把 nonavlayout 的畫面嵌入iframe 呈現
     /// </summary>
     /// <param name="logger">log紀錄器</param>
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>    
-    public class IframeLoaderController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
+    public class IframeLoaderController(DocControlContext _context, 
+        IWebHostEnvironment _hostingEnvironment, 
+        IParameterService _param, 
+        IDbLocalizer _loc) : BaseController(_context, 
+            _hostingEnvironment, 
+            _param, 
+            _loc)
     {
 
         [AllowAnonymous]

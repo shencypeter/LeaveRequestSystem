@@ -190,7 +190,10 @@ namespace BioMedDocManager.Controllers
         }
 
 
-
+        public IActionResult Index()
+        {
+            return View();
+        }
 
     }
 }
