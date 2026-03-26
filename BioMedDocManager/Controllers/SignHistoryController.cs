@@ -3,6 +3,7 @@ using BioMedDocManager.Factory;
 using BioMedDocManager.Interface;
 using BioMedDocManager.Models;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +15,7 @@ namespace BioMedDocManager.Controllers
     /// <param name="context">資料庫查詢物件</param>
     /// <param name="hostingEnvironment">網站環境變數</param>
     /// <param name="accessLog">紀錄連線Log</param>
-    
+    [AllowAnonymous]
     public class SignHistoryController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IAccessLogService _accessLog, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         /// <summary>
@@ -35,6 +36,21 @@ namespace BioMedDocManager.Controllers
             includeRowNum: true,
             onlyProps: new[] { "PersonName", "DateTime", "IdNo", "Name", "Purpose", "OriginalDocNo", "DocVer", "ProjectName", "InTime", "UnuseTime", "RejectReason", "IsConfidentialText", "IsSensitiveText" }
         );
+
+
+        public async Task<string> GetSignHistory()
+        {
+            //包裝 session cookie 裡面的 JWT, 送出 API 請求，然後回傳結果
+
+            var url = "approvalInstance/?page=1&sort=approval_instance_submitted_at&order=desc";
+
+            var userKey = await GetUserJwtKey("E2023007");
+
+            var apiResult = await EflowGet(url, userKey);
+
+            return apiResult;
+
+        }
 
         /// <summary>
         /// 顯示文件查詢頁面

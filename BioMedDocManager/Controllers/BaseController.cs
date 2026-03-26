@@ -1,4 +1,10 @@
-﻿using Aspose.Words;
+﻿using System.Globalization;
+using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using Aspose.Words;
 using BioMedDocManager.Extensions;
 using BioMedDocManager.Helpers;
 using BioMedDocManager.Interface;
@@ -15,9 +21,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;// HeaderUtilities
 using OtpNet;
-using System.Globalization;
-using System.Security.Claims;
-using System.Text.RegularExpressions;
 using A = DocumentFormat.OpenXml.Drawing;
 
 namespace BioMedDocManager.Controllers
@@ -1745,26 +1748,114 @@ namespace BioMedDocManager.Controllers
 
 
         /// <summary>
-        /// 連結 python fast api 取得資料
+        /// 按照 365 使用者身分去 python 取得簽章 token
         /// </summary>
-        /// <param name="apiUrl"></param>
-        /// <param name="parameters"></param>
+        /// <param name="username"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public string EflowGet(string apiUrl, Dictionary<string, string> parameters)
+        public async Task<string> GetUserJwtKey(string username = "E2023007")
         {
-            using var client = new HttpClient();
-            var content = new FormUrlEncodedContent(parameters);
+            var systemID = "leaveSystem001"; // 固定的系統 ID，用於向 Python API 取得系統級 token
+            var helloTokenUrl = $"auth/test_token?user={Uri.EscapeDataString(systemID)}&mode=token";
+            var accessToken = (await EflowGet(helloTokenUrl)).Trim().Trim('"');
 
-            var response = client.GetAsync(apiUrl).Result;
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new Exception("Failed to retrieve bootstrap token from Python API.");
+            }
+
+            var userTokenUrl = $"auth/employeeLogin?username={Uri.EscapeDataString(username)}&mode=token";
+            var signingToken = (await EflowGet(userTokenUrl, jwtDependency: accessToken)).Trim().Trim('"');
+
+            if (string.IsNullOrWhiteSpace(signingToken))
+            {
+                throw new Exception($"Failed to retrieve signing token for user: {username}");
+            }
+
+            return signingToken;
+        }
+
+
+
+        /// <summary>
+        /// 連結 python fast api 取得資料
+        /// </summary>
+        /// <param name="apiUrl">相對路徑或完整 API URL</param>
+        /// <param name="jwtDependency">JWT Token</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<string> EflowGet(string apiUrl, string jwtDependency = "")
+        {
+            var baseUrl = "https://3probetestlocal.ccliang.me:8001/api/";
+
+            using var client = new HttpClient();
+
+            // 如果 apiUrl 是相對路徑，就接上 baseUrl
+            var finalUrl = apiUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                ? apiUrl
+                : $"{baseUrl.TrimEnd('/')}/{apiUrl.TrimStart('/')}";
+
+            // 注入 JWT 到 Authorization header
+            if (!string.IsNullOrWhiteSpace(jwtDependency))
+            {
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", jwtDependency);
+            }
+
+            var response = await client.GetAsync(finalUrl);
+
             if (response.IsSuccessStatusCode)
             {
-                return response.Content.ReadAsStringAsync().Result;
+                return await response.Content.ReadAsStringAsync();
             }
-            else
+
+            var errorBody = await response.Content.ReadAsStringAsync();
+            throw new Exception(
+                $"Python API call failed. StatusCode: {(int)response.StatusCode} ({response.StatusCode}), Response: {errorBody}");
+        }
+
+
+
+        protected async Task<string> EflowPost<TRequest>(
+            string apiUrl,
+            TRequest payload,
+            string jwtDependency = "")
+            where TRequest : class
+        {
+            return await EflowPostCore(apiUrl, payload, jwtDependency);
+        }
+
+        private async Task<string> EflowPostCore(string apiUrl,
+                                                 object payload,
+                                                 string jwtDependency = "")
+        {
+            var baseUrl = "https://3probetestlocal.ccliang.me:8001/api/";
+
+            using var client = new HttpClient();
+
+            var finalUrl = apiUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                ? apiUrl
+                : $"{baseUrl.TrimEnd('/')}/{apiUrl.TrimStart('/')}";
+
+            if (!string.IsNullOrWhiteSpace(jwtDependency))
             {
-                throw new Exception($"Python API call failed with status code: {response.StatusCode}");
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", jwtDependency);
             }
+
+            var json = JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync(finalUrl, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsStringAsync();
+            }
+
+            var errorBody = await response.Content.ReadAsStringAsync();
+            throw new Exception(
+                $"Python API call failed. StatusCode: {(int)response.StatusCode} ({response.StatusCode}), Response: {errorBody}");
         }
 
 

@@ -1,0 +1,57 @@
+﻿### 紀錄開始 ###
+[2026-03-26 11:45:01]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/zh-TW/Login/Login
+ClientIp: 127.0.0.1
+Message: An invalid request URI was provided. Either the request URI must be an absolute URI or BaseAddress must be set.
+Source: System.Net.Http
+StackTrace:
+   at System.Net.Http.HttpClient.PrepareRequestMessage(HttpRequestMessage request)
+   at System.Net.Http.HttpClient.SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
+   at BioMedDocManager.Controllers.BaseController.EflowGet(String apiUrl, Dictionary`2 parameters) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\BaseController.cs:line 1792
+   at BioMedDocManager.Controllers.BaseController.GetUserJwtKey(String username) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\BaseController.cs:line 1771
+   at BioMedDocManager.Controllers.LoginController.GetEflowSigningKey(String userName) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 589
+   at BioMedDocManager.Controllers.LoginController.SignInAndBuildSessionAsync(User user, Boolean mustChangePassword) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 559
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 165
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2026-03-26 11:45:44]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/zh-TW/Login/Login
+ClientIp: 127.0.0.1
+Message: An invalid request URI was provided. Either the request URI must be an absolute URI or BaseAddress must be set.
+Source: System.Net.Http
+StackTrace:
+   at System.Net.Http.HttpClient.PrepareRequestMessage(HttpRequestMessage request)
+   at System.Net.Http.HttpClient.SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
+   at BioMedDocManager.Controllers.BaseController.EflowGet(String apiUrl, Dictionary`2 parameters) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\BaseController.cs:line 1792
+   at BioMedDocManager.Controllers.BaseController.GetUserJwtKey(String username) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\BaseController.cs:line 1771
+   at BioMedDocManager.Controllers.LoginController.GetEflowSigningKey(String userName) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 589
+   at BioMedDocManager.Controllers.LoginController.SignInAndBuildSessionAsync(User user, Boolean mustChangePassword) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 559
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 165
+
+### 紀錄結束 ###
+
+
+### 紀錄開始 ###
+[2026-03-26 11:46:04]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/zh-TW/Login/Login
+ClientIp: 127.0.0.1
+Message: An invalid request URI was provided. Either the request URI must be an absolute URI or BaseAddress must be set.
+Source: System.Net.Http
+StackTrace:
+   at System.Net.Http.HttpClient.PrepareRequestMessage(HttpRequestMessage request)
+   at System.Net.Http.HttpClient.SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
+   at BioMedDocManager.Controllers.BaseController.EflowGet(String apiUrl, Dictionary`2 parameters) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\BaseController.cs:line 1792
+   at BioMedDocManager.Controllers.BaseController.GetUserJwtKey(String username) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\BaseController.cs:line 1771
+   at BioMedDocManager.Controllers.LoginController.GetEflowSigningKey(String userName) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 589
+   at BioMedDocManager.Controllers.LoginController.SignInAndBuildSessionAsync(User user, Boolean mustChangePassword) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 559
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 165
+
+### 紀錄結束 ###
+
+

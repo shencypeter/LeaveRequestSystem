@@ -551,24 +551,81 @@ namespace BioMedDocManager.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
             // ===== 3. 建立選單樹(依照目前語言，只做一次，切換語言寫在切換那邊) =====
-            var menuTree = BuildMenuTreeForUser(principal);
-            var culture = System.Globalization.CultureInfo.CurrentUICulture.Name; // "zh-TW" / "en-US"
-            var cultureSessionKey = $"MenuTree::{culture}";
-            HttpContext.Session.SetObject(cultureSessionKey, menuTree);
+            BuildNavMenuByLogin(principal);
+
+
+            // ====== 4. 取得 python eflow 的 signing key ===============
+
+            await GetEflowSigningKey();
 
             await _accessLog.NewLoginSuccessAsync(user);
         }
 
-        [AllowAnonymous]
-        [HttpGet]
-        public string TryGetToken()
+        /// <summary>
+        /// 取得使用者授權清單
+        /// </summary>
+        /// <param name="principal"></param>
+        private void BuildNavMenuByLogin(ClaimsPrincipal principal)
         {
-            var jwtToken = "https://3probetestlocal.ccliang.me:8001/api/auth/test_token?user=demo&mode=token";
 
-            //簽核的路徑幾乎都是 post
-            var token = EflowGet(jwtToken, new Dictionary<string, string>());
+            //從 DB 取得 (應該在 middleware per request 取得)
+            var menuTree = BuildMenuTreeForUser(principal);
 
-            return token;
+
+            var culture = System.Globalization.CultureInfo.CurrentUICulture.Name; // "zh-TW" / "en-US"
+            var cultureSessionKey = $"MenuTree::{culture}";
+
+            //存session (看哪邊取用此 session key, 如果沒存 就會自動重新種樹)
+            HttpContext.Session.SetObject(cultureSessionKey, menuTree);
+        }
+
+        /// <summary>
+        /// 取得簽核系統的門禁卡
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        private async Task GetEflowSigningKey(string userName = "E2023011")
+        {
+            var jwtToken = await GetUserJwtKey(userName);
+
+            if (!string.IsNullOrWhiteSpace(jwtToken))
+            {
+                try
+                {
+                    var parts = jwtToken.Split('.');
+                    if (parts.Length == 3)
+                    {
+                        var payload = parts[1];
+
+                        // Fix base64 padding
+                        payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=')
+                                         .Replace('-', '+')
+                                         .Replace('_', '/');
+
+                        var bytes = Convert.FromBase64String(payload);
+                        var json = System.Text.Encoding.UTF8.GetString(bytes);
+
+                        var jwtPayload = System.Text.Json.JsonDocument.Parse(json);
+
+                        if (jwtPayload.RootElement.TryGetProperty("exp", out var expElement))
+                        {
+                            var expUnix = expElement.GetInt64();
+                            var expTime = DateTimeOffset.FromUnixTimeSeconds(expUnix);
+
+                            // Only accept token if not expired (add small buffer if you want)
+                            if (expTime > DateTimeOffset.UtcNow)
+                            {
+                                HttpContext.Session.SetString("EflowToken", jwtToken);
+                                HttpContext.Session.SetString("EflowTokenExp", expTime.ToString("o"));
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // swallow or log — invalid token, do nothing
+                }
+            }
         }
 
 
