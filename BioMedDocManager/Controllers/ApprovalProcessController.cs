@@ -6,15 +6,8 @@ using Newtonsoft.Json.Linq;
 
 namespace BioMedDocManager.Controllers
 {
-
-    /// <summary>
-    /// 首頁
-    /// </summary>
-    /// <param name="logger">log紀錄器</param>
-    /// <param name="context">資料庫查詢物件</param>
-    /// <param name="hostingEnvironment">網站環境變數</param>
-    /// <param name="accessLog">紀錄連線Log</param>    
-    public class HomeController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
+    [AllowAnonymous]
+    public class ApprovalProcessController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         [AllowAnonymous]
         public async Task<IActionResult> Index()
@@ -43,14 +36,52 @@ namespace BioMedDocManager.Controllers
             var historyList = historyObj["dataList"]
                 ?.ToObject<List<Dictionary<string, object>>>();
 
-            ViewData["MyTodo"] = approvalsList;
+            ViewData["ApprovalProcessList"] = approvalsList;
             ViewData["HistoryList"] = historyList;
 
             return View();
         }
 
+        public IActionResult Details()
+        {
+            return View();
+        }
+
+        public IActionResult Sign()
+        {
+            return View();
+        }
+
+        public async Task<string> GetMyApprovals()
+        {
+            //包裝 session cookie 裡面的 JWT, 送出 API 請求，然後回傳結果
+
+            var myapprovals = "approvalInstance/myApprovals?status=待簽核&page=1&sort=approval_instance_submitted_at&order=desc";
 
 
+            var userKey = await GetUserJwtKey("E2023007");
+
+            var apiResult = await EflowGet(myapprovals, userKey);
+
+            return apiResult;
+
+        }
+
+
+        public async Task<string> GetSignHistory()
+        {
+            //包裝 session cookie 裡面的 JWT, 送出 API 請求，然後回傳結果
+
+            var myapprovals = "approvalInstance/myApprovals?status=待簽核&page=1&sort=approval_instance_submitted_at&order=desc";
+            var url = "approvalInstance/?page=1&sort=approval_instance_submitted_at&order=desc";
+
+            var userKey = await GetUserJwtKey("E2023007");
+
+            var apiResult = await EflowGet(url, userKey);
+
+            return apiResult;
+
+        }
 
     }
 }

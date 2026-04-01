@@ -1,19 +1,345 @@
-﻿@{
+﻿@using System
+@using System.Collections.Generic
+@using System.Globalization
+@using System.Linq
+
+@{
     Layout = "_AssetLayout";
+
+    var approvalsList = ViewData["MyTodo"] as List<Dictionary<string, object>> ?? new();
+    var historyList = ViewData["HistoryList"] as List<Dictionary<string, object>> ?? new();
+
+    string GetString(Dictionary<string, object> row, string key)
+    {
+        return row.TryGetValue(key, out var value) && value != null
+            ? value.ToString() ?? string.Empty
+            : string.Empty;
+    }
+
+    int GetInt(Dictionary<string, object> row, string key)
+    {
+        var text = GetString(row, key);
+        return int.TryParse(text, out var value) ? value : 0;
+    }
+
+    string FormatDateTime(object? value)
+    {
+        if (value == null)
+            return string.Empty;
+
+        var text = value.ToString();
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        if (DateTime.TryParse(text, out var dt))
+        {
+            return dt.ToString("yyyy/MM/dd");
+        }
+
+        return text.Replace("T", " ");
+    }
+
+    var pendingCount = historyList.Count(x => GetString(x, "approval_instance_status") == "簽核中");
+    var returnedCount = historyList.Count(x => GetInt(x, "approval_instance_current_revision") > 0);
+    var completedCount = historyList.Count(x => GetString(x, "approval_instance_status") == "已完成");
 }
 
-<div class="main-font">
-    @Loc.T("Home.Welcome.Title")
+<meta name="ewf-page" content="home">
+
+<!-- ===== Dashboard：個人儀表板 ===== -->
+<div class="container-fluid mt-4">
+    <div class="row g-3 mb-3">
+        <!-- 我的申請進度(卡片 + 進度條) -->
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+                    <span>我的申請進度(近5筆)</span>
+                    <a href="/ApprovalInstance/Index" class="btn btn-sm btn-outline-primary">查看全部</a>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-2">
+                        <div class="col-6 col-md-3">
+                            <div class="border rounded p-3 h-100 text-center">
+                                <div class="text-muted small">簽核中</div>
+                                <div class="fs-4 fw-bold text-primary" id="stat-pending">@pendingCount</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="border rounded p-3 h-100 text-center">
+                                <div class="text-muted small">流程退改 (Revision)</div>
+                                <div class="fs-4 fw-bold text-danger" id="stat-returned">@returnedCount</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="border rounded p-3 h-100 text-center">
+                                <div class="text-muted small">已完成</div>
+                                <div class="fs-4 fw-bold text-success" id="stat-completed">@completedCount</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 最近5筆申請(簡表) -->
+                    <div class="table-responsive mt-3">
+                        <div class="bootstrap-table bootstrap5">
+                            <div class="fixed-table-toolbar">
+                                <div class="columns columns-right btn-group float-right">
+                                    <button class="btn btn-secondary" type="button" name="refresh" aria-label="重新整理" title="重新整理">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                    <div class="keep-open btn-group">
+                                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="列" title="列">
+                                            <i class="bi bi-list-ul"></i>
+                                            <span class="caret"></span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="form_type" value="0" checked="checked"> <span>表單類型</span></label>
+                                            <label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="form_id" value="1" checked="checked"> <span>單號</span></label>
+                                            <label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="approval_instance_status" value="2" checked="checked"> <span>狀態</span></label>
+                                            <label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="approval_instance_submitted_at" value="3" checked="checked"> <span>申請送出時間</span></label>
+                                            <label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="_ops" value="4" checked="checked"> <span>操作</span></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fixed-table-container" style="padding-bottom: 0px;">
+                                <div class="fixed-table-header" style="display: none;"><table></table></div>
+                                <div class="fixed-table-body">
+                                    <div class="fixed-table-loading table table-bordered table-hover" style="top: 34px;">
+                                        <span class="loading-wrap">
+                                            <span class="loading-text" style="font-size: 32px;">正在努力地載入資料，請稍候</span>
+                                            <span class="animation-wrap"><span class="animation-dot"></span></span>
+                                        </span>
+                                    </div>
+
+                                    <table class="table table-sm align-middle table-hover mb-0 table-nowrap table-bordered" id="ApprovalInstanceCR">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-nowrap" style="text-align: center; width: 120px;" data-field="form_type">
+                                                    <div class="th-inner sortable sortable-center both">表單類型</div>
+                                                    <div class="fht-cell"></div>
+                                                </th>
+                                                <th class="text-nowrap" style="text-align: center; width: 130px;" data-field="form_id">
+                                                    <div class="th-inner sortable sortable-center both">單號</div>
+                                                    <div class="fht-cell"></div>
+                                                </th>
+                                                <th style="text-align: center; width: 110px;" data-field="approval_instance_status">
+                                                    <div class="th-inner sortable sortable-center both">狀態</div>
+                                                    <div class="fht-cell"></div>
+                                                </th>
+                                                <th style="text-align: center; width: 170px;" data-field="approval_instance_submitted_at">
+                                                    <div class="th-inner sortable sortable-center both desc">申請送出時間</div>
+                                                    <div class="fht-cell"></div>
+                                                </th>
+                                                <th style="text-align: center; width: 220px;" data-field="_ops">
+                                                    <div class="th-inner">操作</div>
+                                                    <div class="fht-cell"></div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in historyList)
+                                            {
+                                                var approvalInstanceId = GetString(item, "approval_instance_id");
+                                                var status = GetString(item, "approval_instance_status");
+
+                                                <tr data-uniqueid="@approvalInstanceId">
+                                                    <td class="text-nowrap text-center" style="width: 120px;">@GetString(item, "form_type")</td>
+                                                    <td class="text-nowrap text-center" style="width: 130px;">@GetString(item, "form_id")</td>
+                                                    <td class="text-center" style="width: 110px;">
+                                                        @if (status == "已完成")
+                                                        {
+                                                            <span class="badge bg-secondary">已完成</span>
+                                                        }
+                                                        else if (status == "簽核中")
+                                                        {
+                                                            <span class="badge bg-info">簽核中</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-light text-dark">@status</span>
+                                                        }
+                                                    </td>
+                                                    <td class="text-center" style="width: 170px;">@FormatDateTime(item.TryGetValue("approval_instance_submitted_at", out var submittedAt) ? submittedAt : null)</td>
+                                                    <td class="text-center" style="width: 220px;">
+                                                        <a class="btn btn-sm btn-primary" href="/ApprovalInstance/Details/@approvalInstanceId">查看詳情</a>
+                                                    </td>
+                                                </tr>
+                                            }
+
+                                            @if (!historyList.Any())
+                                            {
+                                                <tr>
+                                                    <td colspan="5" class="text-center text-muted py-4">目前沒有資料</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="fixed-table-footer"></div>
+                            </div>
+
+                            <div class="fixed-table-pagination" style="display: block;">
+                                <div class="float-left pagination-detail">
+                                    <span class="pagination-info">
+                                        顯示第 1 到第 @(historyList.Count > 5 ? 5 : historyList.Count) 項記錄，總共 @historyList.Count 項記錄
+                                    </span>
+                                    <div class="page-list">
+                                        每頁顯示
+                                        <div class="btn-group dropdown dropup">
+                                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <span class="page-size">5</span>
+                                                <span class="caret"></span>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item active" href="#">5</a>
+                                                <a class="dropdown-item" href="#">10</a>
+                                            </div>
+                                        </div>
+                                        項記錄
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 我的待辦事項(清單) -->
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+                    <span>我的待辦事項(近5筆)</span>
+                    <a href="/ApprovalProcess/Index" class="btn btn-sm btn-outline-primary">查看全部</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <div class="bootstrap-table bootstrap5">
+                            <div class="fixed-table-toolbar">
+                                <div class="columns columns-right btn-group float-right">
+                                    <button class="btn btn-secondary" type="button" name="refresh" aria-label="重新整理" title="重新整理">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                    <div class="keep-open btn-group">
+                                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="列" title="列">
+                                            <i class="bi bi-list-ul"></i>
+                                            <span class="caret"></span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="form_type" value="0" checked="checked"> <span>表單類型</span></label>
+                                            <label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="form_id" value="1" checked="checked"> <span>單號 / 申請人</span></label>
+                                            <label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="approval_instance_submitted_at" value="2" checked="checked"> <span>申請送出時間</span></label>
+                                            <label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="_ops" value="3" checked="checked"> <span>操作</span></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fixed-table-container" style="padding-bottom: 0px;">
+                                <div class="fixed-table-header" style="display: none;"><table></table></div>
+                                <div class="fixed-table-body">
+                                    <div class="fixed-table-loading table table-bordered table-hover" style="top: 34px;">
+                                        <span class="loading-wrap">
+                                            <span class="loading-text" style="font-size: 32px;">正在努力地載入資料，請稍候</span>
+                                            <span class="animation-wrap"><span class="animation-dot"></span></span>
+                                        </span>
+                                    </div>
+
+                                    <table class="table table-sm table-hover align-middle mb-0 table-nowrap table-bordered" id="ApprovalProcessTableCR">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-nowrap" style="text-align: center; width: 120px;" data-field="form_type">
+                                                    <div class="th-inner sortable sortable-center both">表單類型</div>
+                                                    <div class="fht-cell"></div>
+                                                </th>
+                                                <th style="text-align: left; width: 240px;" data-field="form_id">
+                                                    <div class="th-inner sortable both">單號 / 申請人</div>
+                                                    <div class="fht-cell"></div>
+                                                </th>
+                                                <th class="text-center" style="text-align: center; width: 170px;" data-field="approval_instance_submitted_at">
+                                                    <div class="th-inner sortable sortable-center both desc">申請送出時間</div>
+                                                    <div class="fht-cell"></div>
+                                                </th>
+                                                <th class="text-center" style="text-align: center; width: 220px;" data-field="_ops">
+                                                    <div class="th-inner">操作</div>
+                                                    <div class="fht-cell"></div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in approvalsList)
+                                            {
+                                                var approvalInstanceId = GetString(item, "approval_instance_id");
+                                                var employeeName = GetString(item, "employee_name");
+                                                var employeeId = GetString(item, "employee_id");
+
+                                                <tr data-uniqueid="@approvalInstanceId">
+                                                    <td class="text-nowrap text-center" style="width: 120px;">@GetString(item, "form_type")</td>
+                                                    <td style="text-align: left; width: 240px;">
+                                                        <div class="text-nowrap">@GetString(item, "form_id")</div>
+                                                        <div class="text-muted small">@employeeName (@employeeId)</div>
+                                                    </td>
+                                                    <td class="text-center" style="width: 170px;">@FormatDateTime(item.TryGetValue("approval_instance_submitted_at", out var submittedAt) ? submittedAt : null)</td>
+                                                    <td class="text-center" style="width: 220px;">
+                                                        <a class="btn btn-sm btn-primary" href="/ApprovalProcess/Sign/@approvalInstanceId">簽核</a>
+                                                    </td>
+                                                </tr>
+                                            }
+
+                                            @if (!approvalsList.Any())
+                                            {
+                                                <tr>
+                                                    <td colspan="4" class="text-center text-muted py-4">目前沒有待辦事項</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="fixed-table-footer"></div>
+                            </div>
+
+                            <div class="fixed-table-pagination" style="display: block;">
+                                <div class="float-left pagination-detail">
+                                    <span class="pagination-info">
+                                        顯示第 1 到第 @approvalsList.Count 項記錄，總共 @approvalsList.Count 項記錄
+                                    </span>
+                                    <div class="page-list" style="display: none;">
+                                        每頁顯示
+                                        <div class="btn-group dropdown dropup">
+                                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <span class="page-size">5</span>
+                                                <span class="caret"></span>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item active" href="#">5</a>
+                                            </div>
+                                        </div>
+                                        項記錄
+                                    </div>
+                                </div>
+                                <div class="float-right pagination" style="display: none;">
+                                    <ul class="pagination">
+                                        <li class="page-item page-pre"><a class="page-link" aria-label="上一頁" href="javascript:void(0)">‹</a></li>
+                                        <li class="page-item active"><a class="page-link" aria-label="第1頁" href="javascript:void(0)">1</a></li>
+                                        <li class="page-item page-next"><a class="page-link" aria-label="下一頁" href="javascript:void(0)">›</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="sub-font">
-    @Loc.T("Home.Welcome.SubTitle")
-</div>
-
-<svg class="main-bk"></svg>
-
-@using System.Globalization
-<div class="alert alert-info">
-    CurrentCulture: @CultureInfo.CurrentCulture.Name<br />
-    CurrentUICulture: @CultureInfo.CurrentUICulture.Name
-</div>
+@if (false)
+{
+    <div class="alert alert-info">
+        CurrentCulture: @CultureInfo.CurrentCulture.Name<br />
+        CurrentUICulture: @CultureInfo.CurrentUICulture.Name
+    </div>
+}

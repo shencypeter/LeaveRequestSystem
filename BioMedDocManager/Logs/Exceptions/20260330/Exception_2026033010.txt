@@ -1,0 +1,42 @@
+﻿### 紀錄開始 ###
+[2026-03-30 10:29:32]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/zh-TW/Login/Login
+ClientIp: 127.0.0.1
+Message: The SSL connection could not be established, see inner exception.
+Source: System.Net.Http
+StackTrace:
+   at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionWithTelemetryAsync(HttpRequestMessage request, HttpConnectionPool pool, Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at BioMedDocManager.Controllers.BaseController.EflowGet(String apiUrl, String jwtDependency) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\BaseController.cs:line 1805
+   at BioMedDocManager.Controllers.BaseController.GetUserJwtKey(String username) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\BaseController.cs:line 1760
+   at BioMedDocManager.Controllers.LoginController.GetEflowSigningKey(String userName) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 589
+   at BioMedDocManager.Controllers.LoginController.SignInAndBuildSessionAsync(User user, Boolean mustChangePassword) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 559
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl) in C:\Users\user\source\repos\DocManagerSample\BioMedDocManager\Controllers\LoginController.cs:line 165
+Message: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host..
+Source: System.Net.Sockets
+StackTrace:
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.ReceiveHandshakeFrameAsync[TIOAdapter](CancellationToken cancellationToken)
+   at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](Boolean receiveFirst, Byte[] reAuthenticationData, CancellationToken cancellationToken)
+   at System.Net.Security.SslStream.ProcessAuthenticationWithTelemetryAsync(Boolean isAsync, CancellationToken cancellationToken)
+   at System.Net.Http.ConnectHelper.EstablishSslConnectionAsync(SslClientAuthenticationOptions sslOptions, HttpRequestMessage request, Boolean async, Stream stream, CancellationToken cancellationToken)
+Message: An existing connection was forcibly closed by the remote host.
+Source: 
+StackTrace:
+
+
+### 紀錄結束 ###
+
+

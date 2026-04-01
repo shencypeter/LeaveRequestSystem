@@ -1786,7 +1786,7 @@ namespace BioMedDocManager.Controllers
         /// <exception cref="Exception"></exception>
         public async Task<string> EflowGet(string apiUrl, string jwtDependency = "")
         {
-            var baseUrl = "https://3probetestlocal.ccliang.me:8001/api/";
+            var baseUrl = "https://signsystem.3probe.com:8001/api/";
 
             using var client = new HttpClient();
 
@@ -1856,6 +1856,36 @@ namespace BioMedDocManager.Controllers
             var errorBody = await response.Content.ReadAsStringAsync();
             throw new Exception(
                 $"Python API call failed. StatusCode: {(int)response.StatusCode} ({response.StatusCode}), Response: {errorBody}");
+        }
+
+
+
+        
+        public async Task<string> GetMyApprovalsAsync(string userKey)
+        {
+            //包裝 session cookie 裡面的 JWT, 送出 API 請求，然後回傳結果
+ 
+
+            var myapprovals = "approvalInstance/myApprovals?status=待簽核&page=1&sort=approval_instance_submitted_at&order=desc&&page_size=5";
+
+            var apiResult = await EflowGet(myapprovals, userKey);
+
+            return apiResult;
+
+        }
+
+
+        public async Task<string> GetSignHistoryAsync(string userKey)
+        {
+            //包裝 session cookie 裡面的 JWT, 送出 API 請求，然後回傳結果
+
+            var url = "approvalInstance/?page=1&sort=approval_instance_submitted_at&order=desc&page_size=5";
+
+
+            var apiResult = await EflowGet(url, userKey);
+
+            return apiResult;
+
         }
 
 

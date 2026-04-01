@@ -1,0 +1,171 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "_AssetLayout";
+}
+<div class="p-3">
+    <h2 class="mb-3">簽核作業</h2>
+
+    <!-- 一、簽核歷程 -->
+    <div class="card mb-3">
+        <div class="card-header fw-bold">一、簽核歷程</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="approverDetailTable" class="table table-sm table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center">序號</th>
+                            <th class="text-center">階段</th>
+                            <th class="text-center">應簽核人</th>
+                            <th class="text-center">實際簽核人</th>
+                            <th class="text-center">簽核時間</th>
+                            <th class="text-center">結果</th>
+                            <th>意見</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-center">1</td>
+                            <td>經辦</td>
+                            <td>吳七妤 (E2023007)<div class="text-muted small">資訊部／前端工程師</div></td>
+                            <td>吳七妤 (E2023007)<div class="text-muted small">資訊部／前端工程師</div></td>
+                            <td><span class="badge bg-secondary">待簽核</span></td>
+                            <td class="text-nowrap">-</td>
+                            <td>申請人送出</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-center">1</td>
+                            <td>經辦</td>
+                            <td>吳七妤 (E2023007)<div class="text-muted small">資訊部／前端工程師</div></td>
+                            <td>吳七妤 (E2023007)<div class="text-muted small">資訊部／前端工程師</div></td>
+                            <td><span class="badge bg-success">同意</span></td>
+                            <td class="text-nowrap">2026-01-20 11:33:42</td>
+                            <td>申請人送出</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-center">2</td>
+                            <td>其他經辦 <span class="text-primary small">(並簽)</span></td>
+                            <td>周六宇 (E2023006)<div class="text-muted small">資訊部／後端工程師</div></td>
+                            <td>-</td>
+                            <td><span class="badge bg-secondary">待簽核</span></td>
+                            <td class="text-nowrap">-</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-center">2</td>
+                            <td>其他經辦 <span class="text-primary small">(並簽)</span></td>
+                            <td>周六宇 (E2023006)<div class="text-muted small">資訊部／後端工程師</div></td>
+                            <td>周六宇 (E2023006)<div class="text-muted small">資訊部／後端工程師</div></td>
+                            <td><span class="badge bg-danger">不同意</span></td>
+                            <td class="text-nowrap">2026-01-20 11:34:25</td>
+                            <td>test reject</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-center">3</td>
+                            <td>其他經辦 <span class="text-primary small">(並簽)</span></td>
+                            <td>張八豪 (E2023008)<div class="text-muted small">資訊部／測試工程師</div></td>
+                            <td>-</td>
+                            <td><span class="badge bg-secondary">待簽核</span></td>
+                            <td class="text-nowrap">-</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-center">4</td>
+                            <td>經辦主管</td>
+                            <td>王三豪 (E2023003)<div class="text-muted small">資訊部／資訊經理</div></td>
+                            <td>-</td>
+                            <td><span class="badge bg-secondary">待簽核</span></td>
+                            <td class="text-nowrap">-</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-center">5</td>
+                            <td>會辦部門</td>
+                            <td><div>人資部</div></td>
+                            <td>-</td>
+                            <td><span class="badge bg-secondary">待簽核</span></td>
+                            <td class="text-nowrap">-</td>
+                            <td>-</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-center">6</td>
+                            <td>陳核</td>
+                            <td>陳一偉 (E2023001)<div class="text-muted small">管理部／總經理</div></td>
+                            <td>-</td>
+                            <td><span class="badge bg-secondary">待簽核</span></td>
+                            <td class="text-nowrap">-</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 二、簽核決議 -->
+    <form id="frmSign" class="card mb-3">
+        <div class="card-header fw-bold">二、簽核決議</div>
+        <div class="card-body">
+            <div class="row g-3">
+
+                <div id="assignContainer"></div>
+
+
+                <!-- 決議 -->
+                <div class="row g-3 align-items-center">
+                    <label class="col-12 col-md-2 col-form-label text-start text-md-end">決議</label>
+                    <div class="col-12 col-md-10">
+                        <div class="decision-group">
+                            <label class="decision-card decision-approve" for="dec-approve">
+                                <input type="radio" class="btn-check" name="agreement" id="dec-approve" value="agree" autocomplete="off" checked="">
+                                <div class="decision-content">
+                                    <div class="decision-title">同意</div>
+                                    <div class="decision-desc">簽核通過，流程繼續</div>
+                                </div>
+                            </label>
+
+                            <label class="decision-card decision-reject" for="dec-disagree">
+                                <input type="radio" class="btn-check" name="agreement" id="dec-disagree" value="disagree" autocomplete="off">
+                                <div class="decision-content">
+                                    <div class="decision-title">退回</div>
+                                    <div class="decision-desc">退回前序關卡補正</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 退回到第N關(僅在「退回」時顯示) -->
+                <div class="row g-3 align-items-center" id="retTargetRow" style="display: none;">
+                    <label for="ret-seq" class="col-12 col-md-2 col-form-label text-start text-md-end">退回到</label>
+                    <div class="col-12 col-md-10">
+                        <select id="ret-seq" name="return_to_sequence" class="form-select"><option value="">(無可退回關卡)</option></select>
+                        <div class="form-text">僅可退回至已簽畢的前序關卡</div>
+                    </div>
+                </div>
+
+                <!-- 簽核意見 -->
+                <div class="row g-3">
+                    <label for="comment" class="col-12 col-md-2 col-form-label text-start text-md-end">簽核意見</label>
+                    <div class="col-12 col-md-10">
+                        <textarea id="comment" name="comment" class="form-control" rows="4" placeholder="請輸入簽核意見(退回時必填)"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer d-flex justify-content-end gap-2">
+            <a id="btnBack" href="/ApprovalProcess/Index" class="btn btn-outline-secondary">返回</a>
+            <button id="btnSubmit" type="submit" class="btn btn-primary">送出簽核</button>
+        </div>
+    </form>
+
+</div>

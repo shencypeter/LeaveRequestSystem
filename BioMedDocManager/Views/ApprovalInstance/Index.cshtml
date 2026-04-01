@@ -1,0 +1,233 @@
+﻿@using System
+@using System.Collections.Generic
+@using System.Globalization
+@using System.Linq
+
+
+@{
+    Layout = "_AssetLayout";
+    var historyList = ViewData["HistoryList"] as List<Dictionary<string, object>> ?? new();
+
+    string S(Dictionary<string, object> d, string k) =>
+        d.TryGetValue(k, out var v) ? v?.ToString() ?? "" : "";
+
+    int I(Dictionary<string, object> d, string k) =>
+        int.TryParse(S(d, k), out var n) ? n : 0;
+
+    DateTime? DT(Dictionary<string, object> d, string k) =>
+        DateTime.TryParse(S(d, k), out var dt) ? dt : null;
+
+    string HumanTime(DateTime? dt)
+    {
+        if (dt == null)
+            return "-";
+
+        var span = DateTime.Now - dt.Value;
+
+        if (span.TotalMinutes < 1)
+            return "剛剛";
+        if (span.TotalHours < 1)
+            return $"{(int)span.TotalMinutes} 分鐘前";
+        if (span.TotalHours < 24)
+            return $"{(int)span.TotalHours} 小時前";
+        if (span.TotalDays < 2)
+            return "昨天";
+        if (span.TotalDays < 7)
+            return $"{(int)span.TotalDays} 天前";
+
+        return dt.Value.ToString("yyyy/MM/dd HH:mm");
+    }
+}
+
+<div class="p-3">
+    <h2 class="mb-3">簽核申請清單</h2>
+
+    <div class="bootstrap-table bootstrap5">
+        <div class="fixed-table-toolbar">
+            <div class="columns columns-right btn-group float-right">
+                <button class="btn btn-secondary" type="button" name="refresh" aria-label="重新整理" title="重新整理"><i class="bi bi-arrow-clockwise"></i> </button><div class="keep-open btn-group">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="列" title="列">
+                        <i class="bi bi-list-ul"></i>
+                        <span class="caret"></span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end"><label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="form_type" value="0" checked="checked"> <span>表單類型</span></label><label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="form_id" value="1" checked="checked"> <span>原始表單單號</span></label><label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="approval_instance_submitted_at" value="2" checked="checked"> <span>送出時間</span></label><label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="approval_instance_status" value="3" checked="checked"> <span>狀態</span></label><label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="approval_instance_current_step_name" value="4" checked="checked"> <span>目前簽核階段</span></label><label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="approval_instance_current_sign_user_name" value="5" checked="checked"> <span>目前應簽核者</span></label><label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="approval_instance_sign_path" value="6" checked="checked"> <span>簽核路徑</span></label><label class="dropdown-item dropdown-item-marker"><input type="checkbox" data-field="_ops" value="7" checked="checked"> <span>操作</span></label></div>
+                </div>
+            </div>
+            <div class="float-right search btn-group">
+                <input class="form-control search-input" type="search" aria-label="搜尋" placeholder="搜尋" autocomplete="off">
+            </div>
+
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#">已完成</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">簽核中</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">流程退改</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="fixed-table-container" style="padding-bottom: 0px;">
+            <div class="fixed-table-header" style="display: none;"><table></table></div>
+            <div class="fixed-table-body">
+                <div class="fixed-table-loading table table-bordered table-hover" style="top: 50px;">
+                    <span class="loading-wrap">
+                        <span class="loading-text" style="font-size: 32px;">正在努力地載入資料，請稍候</span>
+                        <span class="animation-wrap"><span class="animation-dot"></span></span>
+                    </span>
+                </div>
+                <table id="tblCR" class="table table-striped table-hover w-100 table-bordered">
+                    <thead class="">
+                        <tr>
+                            <th style="text-align: center; width: 120px; " data-field="form_type">
+                                <div class="th-inner sortable sortable-center both">表單類型</div>
+                                <div class="fht-cell"></div>
+                            </th>
+                            <th style="text-align: center; width: 100px; " data-field="form_id">
+                                <div class="th-inner sortable sortable-center both">原始表單單號</div>
+                                <div class="fht-cell"></div>
+                            </th>
+                            <th style="text-align: center; width: 160px; " data-field="approval_instance_submitted_at">
+                                <div class="th-inner sortable sortable-center both desc">送出時間</div>
+                                <div class="fht-cell"></div>
+                            </th>
+                            <th style="text-align: center; width: 110px; " data-field="approval_instance_status">
+                                <div class="th-inner sortable sortable-center both">狀態</div>
+                                <div class="fht-cell"></div>
+                            </th>
+                            <th style="text-align: center; width: 110px; " data-field="approval_instance_current_step_name">
+                                <div class="th-inner sortable sortable-center both">目前簽核階段</div>
+                                <div class="fht-cell"></div>
+                            </th>
+                            <th style="text-align: center; width: 110px; " data-field="approval_instance_current_sign_user_name">
+                                <div class="th-inner sortable sortable-center both">目前應簽核者</div>
+                                <div class="fht-cell"></div>
+                            </th>
+                            <th style="text-align: left; width: 200px; " data-field="approval_instance_sign_path">
+                                <div class="th-inner sortable both">簽核路徑</div>
+                                <div class="fht-cell"></div>
+                            </th>
+                            <th style="text-align: center; width: 100px; " data-field="_ops">
+                                <div class="th-inner ">操作</div>
+                                <div class="fht-cell"></div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in historyList)
+                        {
+                            var id = S(item, "approval_instance_id");
+                            var formType = S(item, "form_type");
+                            var formId = S(item, "form_id");
+                            var status = S(item, "approval_instance_status");
+                            var step = S(item, "approval_instance_current_step_name");
+                            var signer = S(item, "approval_instance_current_sign_user_name");
+                            var path = S(item, "approval_instance_sign_path");
+                            var revision = I(item, "approval_instance_current_revision");
+
+                            var submittedAt = DT(item, "approval_instance_submitted_at");
+                            var completedAt = DT(item, "approval_instance_completed_at");
+
+                            var timeLabel = status == "已完成"
+                            ? HumanTime(completedAt ?? submittedAt)
+                            : HumanTime(submittedAt);
+
+                            var elapsed = submittedAt == null ? TimeSpan.Zero : DateTime.Now - submittedAt.Value;
+                            var isDelayed = elapsed.TotalHours > 48 && status != "已完成";
+
+                            var statusBadgeClass = status == "已完成"
+                            ? "bg-secondary"
+                            : (isDelayed ? "bg-warning text-dark" : "bg-info");
+
+                            var stageDisplay = !string.IsNullOrWhiteSpace(step) ? step : "-";
+                            var signerDisplay = !string.IsNullOrWhiteSpace(signer) ? signer : "-";
+
+                            <tr data-uniqueid="@id">
+                                <td style="text-align: center; width: 120px; ">@formType</td>
+                                <td style="text-align: center; width: 100px; ">@formId</td>
+                                <td style="text-align: center; width: 160px; ">
+                                    <div>@timeLabel</div>
+                          
+                                </td>
+                                <td style="text-align: center; width: 110px; ">
+                                    <span class="badge @statusBadgeClass">@status</span>
+                                    @if (status != "已完成" && revision > 0)
+                                    {
+                                        <div class="small text-muted mt-1">第 @(revision + 1) 版</div>
+                                    }
+                                </td>
+                                <td style="text-align: center; width: 110px; ">@stageDisplay</td>
+                                <td style="text-align: center; width: 110px; ">@signerDisplay
+                                    @if (isDelayed)
+                                    {
+                                        <div class="small text-danger">已超過 48 小時</div>
+                                    }
+                                </td>
+                                <td style="text-align: left; width: 200px; ">@path</td>
+                                <td class="col-actions text-center" style="width: 100px;">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle"
+                                                type="button"
+                                                data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                            功能
+                                        </button>
+
+                                        <ul class="dropdown-menu dropdown-menu-end">
+
+                                            <li>
+                                                <a class="dropdown-item"
+                                                   href="javascript:void(0)"
+                                                   data-action="details"
+                                                   data-id="@id">
+                                                    簽核詳細資料
+                                                </a>
+                                            </li>
+
+                                            @if (status != "已完成")
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item"
+                                                       href="javascript:void(0)"
+                                                       data-action="edit"
+                                                       data-id="@id">
+                                                        強制編輯簽核人
+                                                    </a>
+                                                </li>
+                                            }
+
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="fixed-table-footer"></div>
+        </div>
+        <div class="fixed-table-pagination" style="display: block;">
+            <div class="float-left pagination-detail">
+                <span class="pagination-info">
+                    顯示第 1 到第 10 項記錄，總共 43 項記錄
+                </span><div class="page-list">
+                    每頁顯示 <div class="btn-group dropdown dropup">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <span class="page-size">
+                                10
+                            </span>
+                            <span class="caret"></span>
+                        </button>
+                        <div class="dropdown-menu"><a class="dropdown-item active" href="#">10</a><a class="dropdown-item " href="#">20</a><a class="dropdown-item " href="#">50</a></div>
+                    </div> 項記錄
+                </div>
+            </div><div class="float-right pagination"><ul class="pagination"><li class="page-item page-pre"><a class="page-link" aria-label="上一頁" href="javascript:void(0)">‹</a></li><li class="page-item active"><a class="page-link" aria-label="第1頁" href="javascript:void(0)">1</a></li><li class="page-item"><a class="page-link" aria-label="第2頁" href="javascript:void(0)">2</a></li><li class="page-item"><a class="page-link" aria-label="第3頁" href="javascript:void(0)">3</a></li><li class="page-item"><a class="page-link" aria-label="第4頁" href="javascript:void(0)">4</a></li><li class="page-item"><a class="page-link" aria-label="第5頁" href="javascript:void(0)">5</a></li><li class="page-item page-next"><a class="page-link" aria-label="下一頁" href="javascript:void(0)">›</a></li></ul></div>
+        </div>
+    </div><div class="clearfix"></div>
+</div>

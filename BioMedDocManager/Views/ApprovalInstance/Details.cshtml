@@ -1,0 +1,324 @@
+﻿@using System.Linq
+@using System.Collections.Generic
+@using Newtonsoft.Json.Linq
+@using Microsoft.AspNetCore.Html
+@model JObject
+
+
+
+@{
+    Layout = "_AssetLayout";
+
+    var approvalInstance = Model["approval_instance"] as JObject ?? new JObject();
+    var approvalProcess = Model["approval_process"] as JArray ?? new JArray();
+    var rejectHistory = Model["reject_history"] as JObject ?? new JObject();
+
+    var rejectGroups = rejectHistory.Properties()
+        .OrderBy(p => ParseRejectKeyOrder(p.Name))
+        .ToList();
+}
+
+<div class="p-3" id="printArea">
+    <h2 class="mb-3">簽核明細</h2>
+
+    <!-- 一、表單基本資料 -->
+    <div class="card mb-4">
+        <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+            <span>一、表單基本資料</span>
+        </div>
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <label class="col-md-2 col-form-label d-flex align-items-center justify-content-md-end" for="aiFormType">
+                    簽核表單名稱
+                </label>
+                <div class="col-md-10">
+                    <input type="text"
+                           class="form-control"
+                           id="aiFormType"
+                           name="form_type"
+                           value="@SafeText(approvalInstance["form_type"])"
+                           readonly />
+                </div>
+            </div>
+
+            <div class="row mb-0">
+                <label class="col-md-2 col-form-label d-flex align-items-center justify-content-md-end" for="aiFormId">
+                    簽核表單編號
+                </label>
+                <div class="col-md-10">
+                    <input type="text"
+                           class="form-control"
+                           id="aiFormId"
+                           name="form_id"
+                           value="@SafeText(approvalInstance["form_id"])"
+                           readonly />
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 二、簽核進度與意見 -->
+    <div class="card mb-4">
+        <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+            <span>二、簽核進度與意見</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-2" id="approverDetailTable">
+                    <thead class="table-secondary d-md-table-header-group">
+                        <tr>
+                            <th>簽核序號</th>
+                            <th>簽核階段</th>
+                            <th>應簽核人</th>
+                            <th>實際簽核人</th>
+                            <th>簽核結果</th>
+                            <th>簽核時間</th>
+                            <th>簽核意見</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (approvalProcess.Count > 0)
+                        {
+                            foreach (var process in approvalProcess)
+                            {
+                                var comment = SafeText(process["approval_process_comment"]);
+
+                                <tr>
+                                    <td class="text-center">@SafeText(process["approval_process_sequence"], "-")</td>
+                                    <td>@SafeText(process["approval_process_step_name"], "-")</td>
+                                    <td>
+                                        @Html.Raw(PersonBlock(
+                                        process["approval_process_employee_cname"],
+                                                                process["approval_process_employee_id"],
+                                                                process["approval_process_employee_department"],
+                                                                process["approval_process_employee_job_title"]))
+                            </td>
+                            <td>
+                                @Html.Raw(GetActualSignerHtml(process))
+                            </td>
+                            <td>
+                                @RenderResultBadge(process)
+                            </td>
+                            <td class="text-nowrap">@FormatDateTime(process["approval_process_sign_time"])</td>
+                            <td>@(string.IsNullOrWhiteSpace(comment) ? "-" : comment)</td>
+                        </tr>
+                                                }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">查無簽核資料</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 三、簽核退件歷程 -->
+    <div class="card mb-4" id="returnHistoryCard">
+        <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+            <span>三、簽核退件歷程</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-2" id="approverReturnDetailTable">
+                    <thead class="table-secondary d-md-table-header-group">
+                        <tr>
+                            <th>簽核序號</th>
+                            <th>簽核階段</th>
+                            <th>應簽核人</th>
+                            <th>實際簽核人</th>
+                            <th>簽核結果</th>
+                            <th>簽核時間</th>
+                            <th>簽核意見</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (rejectGroups.Any())
+                        {
+                            var sectionIndex = 0;
+
+                            foreach (var rejectGroup in rejectGroups)
+                            {
+                                sectionIndex++;
+
+                                var historyRows = rejectGroup.Value as JArray ?? new JArray();
+
+                                <tr class="table-light">
+                                    <td colspan="7">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-danger">退件</span>
+                                            <span class="fw-semibold text-danger">第 @sectionIndex 次退件</span>
+                                            <span class="text-muted small">(@rejectGroup.Name)</span>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                @foreach (var process in historyRows)
+                                {
+                                    var comment = SafeText(process["approval_process_comment"]);
+
+                                    <tr>
+                                        <td class="text-center">@SafeText(process["approval_process_sequence"], "-")</td>
+                                        <td>@SafeText(process["approval_process_step_name"], "-")</td>
+                                        <td>
+                                            @Html.Raw(PersonBlock(
+                                            process["approval_process_employee_cname"],
+                                                                process["approval_process_employee_id"],
+                                                                process["approval_process_employee_department"],
+                                                                process["approval_process_employee_job_title"]))
+                            </td>
+                            <td>
+                                @Html.Raw(GetActualSignerHtml(process))
+                            </td>
+                            <td>
+                                @RenderResultBadge(process)
+                            </td>
+                            <td class="text-nowrap">@FormatDateTime(process["approval_process_sign_time"])</td>
+                            <td>@(string.IsNullOrWhiteSpace(comment) ? "-" : comment)</td>
+                        </tr>
+                                                }
+
+                                <tr>
+                                    <td colspan="7" class="p-0">
+                                        <div class="my-2"></div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">無退件歷程</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string SafeText(JToken token, string fallback = "")
+    {
+        return token == null ? fallback : token.ToString();
+    }
+
+    public string FormatDateTime(JToken token)
+    {
+        DateTime dt;
+        if (token != null && DateTime.TryParse(token.ToString(), out dt))
+        {
+            return dt.ToString("yyyy-MM-dd HH:mm");
+        }
+
+        return "-";
+    }
+
+    public string PersonBlock(JToken nameToken, JToken idToken, JToken deptToken, JToken titleToken)
+    {
+        var name = SafeText(nameToken, "-");
+        var id = SafeText(idToken);
+        var dept = SafeText(deptToken);
+        var title = SafeText(titleToken);
+
+        var firstLine = string.IsNullOrWhiteSpace(id)
+            ? name
+            : string.Format("{0} ({1})", name, id);
+
+        var secondLineParts = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(dept))
+        {
+            secondLineParts.Add(dept);
+        }
+
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            secondLineParts.Add(title);
+        }
+
+        var secondLine = string.Join("／", secondLineParts);
+
+        if (string.IsNullOrWhiteSpace(secondLine))
+        {
+            return firstLine;
+        }
+
+        return firstLine + "<div class=\"text-muted small\">" + secondLine + "</div>";
+    }
+
+    public string GetActualSignerHtml(JToken process)
+    {
+        var agentId = SafeText(process["approval_process_agent_employee_id"]);
+
+        if (!string.IsNullOrWhiteSpace(agentId))
+        {
+            return PersonBlock(
+                process["approval_process_agent_employee_cname"],
+                process["approval_process_agent_employee_id"],
+                process["approval_process_agent_employee_department"],
+                process["approval_process_agent_employee_job_title"]
+            );
+        }
+
+        return PersonBlock(
+            process["approval_process_employee_cname"],
+            process["approval_process_employee_id"],
+            process["approval_process_employee_department"],
+            process["approval_process_employee_job_title"]
+        );
+    }
+
+    public IHtmlContent RenderResultBadge(JToken process)
+    {
+        var agreementToken = process["approval_process_agreement"];
+        int agreement;
+
+        if (agreementToken != null && int.TryParse(agreementToken.ToString(), out agreement))
+        {
+            if (agreement == 1)
+            {
+                return new HtmlString("<span class=\"badge bg-success\">同意</span>");
+            }
+
+            if (agreement == 0)
+            {
+                var returnToToken = process["approval_process_return_to_sequence"];
+                int returnTo;
+
+                if (returnToToken != null && int.TryParse(returnToToken.ToString(), out returnTo))
+                {
+                    return new HtmlString("<span class=\"badge bg-danger\">退回第 " + returnTo + " 關</span>");
+                }
+
+                return new HtmlString("<span class=\"badge bg-danger\">退回</span>");
+            }
+        }
+
+        return new HtmlString("<span class=\"badge bg-secondary\">未簽核</span>");
+    }
+
+    public int ParseRejectKeyOrder(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return int.MaxValue;
+        }
+
+        key = key.Trim().ToUpperInvariant();
+
+        if (key.StartsWith("R"))
+        {
+            key = key.Substring(1);
+        }
+
+        int n;
+        return int.TryParse(key, out n) ? n : int.MaxValue;
+    }
+}
