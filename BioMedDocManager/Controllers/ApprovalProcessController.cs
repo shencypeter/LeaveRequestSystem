@@ -47,9 +47,26 @@ namespace BioMedDocManager.Controllers
             return View();
         }
 
-        public IActionResult Sign()
+        public async Task<IActionResult> Sign([FromRoute] string id)
         {
-            return View();
+            JObject model;
+            try
+            {
+                var userKey = await GetUserJwtKey("E2023007");
+
+                var instanceDetail = await EflowGet($"approvalInstance/{id}", userKey);
+
+                model = JObject.Parse(instanceDetail);
+            }
+            catch
+            {
+                model = [];
+
+                TempData["_JSShowAlert"] = "流程不存在!";
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(model ?? []);
         }
 
         public async Task<string> GetMyApprovals()

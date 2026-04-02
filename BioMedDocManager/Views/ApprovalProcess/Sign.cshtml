@@ -1,9 +1,68 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using System.Linq
+@using System.Collections.Generic
+@using Newtonsoft.Json.Linq
+@using Microsoft.AspNetCore.Html
+@model JObject
+
 @{
     Layout = "_AssetLayout";
+
+    var approvalInstance = Model["approval_instance"] as JObject ?? new JObject();
+    var approvalProcess = Model["approval_process"] as JArray ?? new JArray();
+    var rejectHistory = Model["reject_history"] as JObject ?? new JObject();
+
+    var rejectGroups = rejectHistory.Properties()
+        .OrderBy(p => ParseRejectKeyOrder(p.Name))
+        .ToList();
+
+    var processRows = approvalProcess
+        .OfType<JToken>()
+        .Select(x => x as JObject)
+        .Where(x => x != null)
+        .OrderBy(x => ParseInt(x["approval_process_sequence"]))
+        .ToList();
+
+    var currentProcess = processRows.FirstOrDefault(x => !IsSigned(x));
+
+    var currentSeq = currentProcess != null
+        ? ParseInt(currentProcess["approval_process_sequence"])
+        : 0;
+
+    var nextProcess = currentProcess == null
+        ? null
+        : processRows.FirstOrDefault(x =>
+            ParseInt(x["approval_process_sequence"]) > currentSeq &&
+            !IsSigned(x));
+
+    var isFlowCompleted = currentProcess == null;
+
+    // 先依你目前的假設: 當前畫面就是輪到這個人簽
+    // 之後若要接登入者 / O365 / employeeId 比對，再改這裡即可
+    var isMyTurn = !isFlowCompleted;
+
+    var currentSigner = currentProcess == null
+        ? ""
+        : GetDisplayName(currentProcess);
+
+    var nextSigner = nextProcess == null
+        ? ""
+        : GetDisplayName(nextProcess);
+
+    var rejectableSteps = processRows
+        .Where(x =>
+            IsSigned(x) &&
+            ParseInt(x["approval_process_sequence"]) < currentSeq)
+        .GroupBy(x => ParseInt(x["approval_process_sequence"]))
+        .Select(g => g.First())
+        .OrderBy(x => ParseInt(x["approval_process_sequence"]))
+        .ToList();
+
+    var starterProcess = processRows.FirstOrDefault();
+    var starterSigner = starterProcess == null
+        ? "承辦人"
+        : GetDisplayName(starterProcess);
 }
+
 <div class="p-3">
     <h2 class="mb-3">簽核作業</h2>
 
@@ -25,85 +84,47 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="text-center">1</td>
-                            <td>經辦</td>
-                            <td>吳七妤 (E2023007)<div class="text-muted small">資訊部／前端工程師</div></td>
-                            <td>吳七妤 (E2023007)<div class="text-muted small">資訊部／前端工程師</div></td>
-                            <td><span class="badge bg-secondary">待簽核</span></td>
-                            <td class="text-nowrap">-</td>
-                            <td>申請人送出</td>
-                        </tr>
+                        @if (processRows.Count > 0)
+                        {
+                            foreach (var process in processRows)
+                            {
+                                var comment = SafeText(process["approval_process_comment"]);
 
-                        <tr>
-                            <td class="text-center">1</td>
-                            <td>經辦</td>
-                            <td>吳七妤 (E2023007)<div class="text-muted small">資訊部／前端工程師</div></td>
-                            <td>吳七妤 (E2023007)<div class="text-muted small">資訊部／前端工程師</div></td>
-                            <td><span class="badge bg-success">同意</span></td>
-                            <td class="text-nowrap">2026-01-20 11:33:42</td>
-                            <td>申請人送出</td>
+                                <tr>
+                                    <td class="text-center">@SafeText(process["approval_process_sequence"], "-")</td>
+                                    <td>
+                                        @SafeText(process["approval_process_step_name"], "-")
+                                        @if (IsParallelStep(process))
+                                        {
+                                            <span class="ms-1 text-primary small">(並簽)</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @Html.Raw(PersonBlock(
+                                        process["approval_process_employee_cname"],
+                                                                process["approval_process_employee_id"],
+                                                                process["approval_process_employee_department"],
+                                                                process["approval_process_employee_job_title"]))
+                            </td>
+                            <td>
+                                @Html.Raw(GetActualSignerHtml(process))
+                            </td>
+                            <td class="text-nowrap text-center">
+                                @FormatDateTime(process["approval_process_sign_time"])
+                            </td>
+                            <td class="text-center">
+                                @RenderResultBadge(process)
+                            </td>
+                            <td>@(string.IsNullOrWhiteSpace(comment) ? "-" : comment)</td>
                         </tr>
-
-                        <tr>
-                            <td class="text-center">2</td>
-                            <td>其他經辦 <span class="text-primary small">(並簽)</span></td>
-                            <td>周六宇 (E2023006)<div class="text-muted small">資訊部／後端工程師</div></td>
-                            <td>-</td>
-                            <td><span class="badge bg-secondary">待簽核</span></td>
-                            <td class="text-nowrap">-</td>
-                            <td>-</td>
-                        </tr>
-
-                        <tr>
-                            <td class="text-center">2</td>
-                            <td>其他經辦 <span class="text-primary small">(並簽)</span></td>
-                            <td>周六宇 (E2023006)<div class="text-muted small">資訊部／後端工程師</div></td>
-                            <td>周六宇 (E2023006)<div class="text-muted small">資訊部／後端工程師</div></td>
-                            <td><span class="badge bg-danger">不同意</span></td>
-                            <td class="text-nowrap">2026-01-20 11:34:25</td>
-                            <td>test reject</td>
-                        </tr>
-
-                        <tr>
-                            <td class="text-center">3</td>
-                            <td>其他經辦 <span class="text-primary small">(並簽)</span></td>
-                            <td>張八豪 (E2023008)<div class="text-muted small">資訊部／測試工程師</div></td>
-                            <td>-</td>
-                            <td><span class="badge bg-secondary">待簽核</span></td>
-                            <td class="text-nowrap">-</td>
-                            <td>-</td>
-                        </tr>
-
-                        <tr>
-                            <td class="text-center">4</td>
-                            <td>經辦主管</td>
-                            <td>王三豪 (E2023003)<div class="text-muted small">資訊部／資訊經理</div></td>
-                            <td>-</td>
-                            <td><span class="badge bg-secondary">待簽核</span></td>
-                            <td class="text-nowrap">-</td>
-                            <td>-</td>
-                        </tr>
-
-                        <tr>
-                            <td class="text-center">5</td>
-                            <td>會辦部門</td>
-                            <td><div>人資部</div></td>
-                            <td>-</td>
-                            <td><span class="badge bg-secondary">待簽核</span></td>
-                            <td class="text-nowrap">-</td>
-                            <td>-</td>
-                        </tr>
-
-                        <tr>
-                            <td class="text-center">6</td>
-                            <td>陳核</td>
-                            <td>陳一偉 (E2023001)<div class="text-muted small">管理部／總經理</div></td>
-                            <td>-</td>
-                            <td><span class="badge bg-secondary">待簽核</span></td>
-                            <td class="text-nowrap">-</td>
-                            <td>-</td>
-                        </tr>
+                                                }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">查無簽核資料</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
@@ -111,52 +132,101 @@
     </div>
 
     <!-- 二、簽核決議 -->
-    <form id="frmSign" class="card mb-3">
+    <form id="frmSign" class="card mb-3" method="post">
         <div class="card-header fw-bold">二、簽核決議</div>
+
         <div class="card-body">
             <div class="row g-3">
-
                 <div id="assignContainer"></div>
 
+                <!-- 處理決策 -->
+                <div class="row g-3 align-items-center" id="retTargetRow">
+                    <label class="col-12 col-md-2 col-form-label text-start text-md-end">
+                        處理決策
+                    </label>
 
-                <!-- 決議 -->
-                <div class="row g-3 align-items-center">
-                    <label class="col-12 col-md-2 col-form-label text-start text-md-end">決議</label>
                     <div class="col-12 col-md-10">
-                        <div class="decision-group">
-                            <label class="decision-card decision-approve" for="dec-approve">
-                                <input type="radio" class="btn-check" name="agreement" id="dec-approve" value="agree" autocomplete="off" checked="">
-                                <div class="decision-content">
-                                    <div class="decision-title">同意</div>
-                                    <div class="decision-desc">簽核通過，流程繼續</div>
-                                </div>
-                            </label>
+                        @if (isMyTurn)
+                        {
+                            <select id="ret-seq" name="decision" class="form-select" required style="height:25px">
+                                <option value="" selected disabled>👤 @currentSigner 您好，請選擇...</option>
 
-                            <label class="decision-card decision-reject" for="dec-disagree">
-                                <input type="radio" class="btn-check" name="agreement" id="dec-disagree" value="disagree" autocomplete="off">
-                                <div class="decision-content">
-                                    <div class="decision-title">退回</div>
-                                    <div class="decision-desc">退回前序關卡補正</div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
+                                <optgroup label="✅ 簽核通過">
+                                    @if (nextProcess != null)
+                                    {
+                                        <option value="approve:@ParseInt(nextProcess["approval_process_sequence"])">
+                                            ✅ 送往下一關 @nextProcess["approval_process_step_name"]（@nextSigner）
+                                        </option>
+                                    }
+                                    else
+                                    {
+                                        <option value="approve:complete">
+                                            🚀 完成簽核（流程結束）
+                                        </option>
+                                    }
+                                </optgroup>
 
-                <!-- 退回到第N關(僅在「退回」時顯示) -->
-                <div class="row g-3 align-items-center" id="retTargetRow" style="display: none;">
-                    <label for="ret-seq" class="col-12 col-md-2 col-form-label text-start text-md-end">退回到</label>
-                    <div class="col-12 col-md-10">
-                        <select id="ret-seq" name="return_to_sequence" class="form-select"><option value="">(無可退回關卡)</option></select>
-                        <div class="form-text">僅可退回至已簽畢的前序關卡</div>
+                                @if (rejectableSteps.Any())
+                                {
+                                    <optgroup label="↩️ 退回前序關卡">
+                                        @foreach (var step in rejectableSteps)
+                                        {
+                                            var seq = ParseInt(step["approval_process_sequence"]);
+                                            var stepName = SafeText(step["approval_process_step_name"], "-");
+                                            var signerName = GetDisplayName(step);
+
+                                            <option value="reject:@seq">
+                                                ↩️ 第 @seq 關 - @stepName - @signerName
+                                            </option>
+                                        }
+
+                                        <option value="reject:terminate">
+                                            🛑 直接終止流程（to @starterSigner）
+                                        </option>
+                                    </optgroup>
+                                }
+                            </select>
+
+                            <div class="form-text">
+                                選擇後送出，流程將依您的決策前進。
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-control d-flex justify-content-between align-items-center bg-light">
+                                @if (isFlowCompleted)
+                                {
+                                    <span>✅ 此流程已完成</span>
+                                }
+                                else
+                                {
+                                    <span>🕒 目前由 <strong>@currentSigner</strong> 簽核中</span>
+                                }
+
+                                <span class="badge bg-secondary">
+                                    @(isFlowCompleted ? "完成" : "等待中")
+                                </span>
+                            </div>
+
+                            <div class="form-text">
+                                @(isFlowCompleted ? "流程已結束。" : "🚧 尚未輪到您操作，請稍候。")
+                            </div>
+                        }
                     </div>
                 </div>
 
                 <!-- 簽核意見 -->
                 <div class="row g-3">
-                    <label for="comment" class="col-12 col-md-2 col-form-label text-start text-md-end">簽核意見</label>
+                    <label for="comment" class="col-12 col-md-2 col-form-label text-start text-md-end">
+                        簽核意見
+                    </label>
                     <div class="col-12 col-md-10">
-                        <textarea id="comment" name="comment" class="form-control" rows="4" placeholder="請輸入簽核意見(退回時必填)"></textarea>
+                        <textarea id="comment"
+                                  name="comment"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="請輸入簽核意見（退回時必填）"
+                                  @(isMyTurn ? null : "disabled")></textarea>
                     </div>
                 </div>
             </div>
@@ -164,8 +234,209 @@
 
         <div class="card-footer d-flex justify-content-end gap-2">
             <a id="btnBack" href="/ApprovalProcess/Index" class="btn btn-outline-secondary">返回</a>
-            <button id="btnSubmit" type="submit" class="btn btn-primary">送出簽核</button>
+
+            @if (isMyTurn)
+            {
+                <button id="btnSubmit" type="submit" class="btn btn-primary">送出簽核</button>
+            }
         </div>
     </form>
-
 </div>
+
+@functions {
+    public string SafeText(JToken token, string fallback = "")
+    {
+        return token == null ? fallback : token.ToString();
+    }
+
+    public int ParseInt(JToken token, int fallback = 0)
+    {
+        if (token == null)
+        {
+            return fallback;
+        }
+
+        int n;
+        return int.TryParse(token.ToString(), out n) ? n : fallback;
+    }
+
+    public string FormatDateTime(JToken token)
+    {
+        DateTime dt;
+        if (token != null && DateTime.TryParse(token.ToString(), out dt))
+        {
+            return dt.ToString("yyyy-MM-dd HH:mm");
+        }
+
+        return "-";
+    }
+
+    public string PersonBlock(JToken nameToken, JToken idToken, JToken deptToken, JToken titleToken)
+    {
+        var name = SafeText(nameToken, "-");
+        var id = SafeText(idToken);
+        var dept = SafeText(deptToken);
+        var title = SafeText(titleToken);
+
+        var firstLine = string.IsNullOrWhiteSpace(id)
+            ? name
+            : string.Format("{0} ({1})", name, id);
+
+        var secondLineParts = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(dept))
+        {
+            secondLineParts.Add(dept);
+        }
+
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            secondLineParts.Add(title);
+        }
+
+        var secondLine = string.Join("／", secondLineParts);
+
+        if (string.IsNullOrWhiteSpace(secondLine))
+        {
+            return firstLine;
+        }
+
+        return firstLine + "<div class=\"text-muted small\">" + secondLine + "</div>";
+    }
+
+    public string GetActualSignerHtml(JToken process)
+    {
+        var agentId = SafeText(process["approval_process_agent_employee_id"]);
+
+        if (!string.IsNullOrWhiteSpace(agentId))
+        {
+            return PersonBlock(
+                process["approval_process_agent_employee_cname"],
+                process["approval_process_agent_employee_id"],
+                process["approval_process_agent_employee_department"],
+                process["approval_process_agent_employee_job_title"]
+            );
+        }
+
+        if (IsSigned(process as JObject))
+        {
+            return PersonBlock(
+                process["approval_process_employee_cname"],
+                process["approval_process_employee_id"],
+                process["approval_process_employee_department"],
+                process["approval_process_employee_job_title"]
+            );
+        }
+
+        return "-";
+    }
+
+    public string GetDisplayName(JObject process)
+    {
+        if (process == null)
+        {
+            return "-";
+        }
+
+        var name = SafeText(process["approval_process_employee_cname"], "-");
+        return name;
+    }
+
+    public bool IsSigned(JObject process)
+    {
+        if (process == null)
+        {
+            return false;
+        }
+
+        var agreementToken = process["approval_process_agreement"];
+        int agreement;
+        if (agreementToken != null && int.TryParse(agreementToken.ToString(), out agreement))
+        {
+            return agreement == 1 || agreement == 0;
+        }
+
+        DateTime dt;
+        return DateTime.TryParse(process["approval_process_sign_time"]?.ToString(), out dt);
+    }
+
+    public bool IsParallelStep(JObject process)
+    {
+        if (process == null)
+        {
+            return false;
+        }
+
+        var stepName = SafeText(process["approval_process_step_name"]).Trim();
+        return stepName.Contains("並簽");
+    }
+
+    public IHtmlContent RenderResultBadge(JToken process)
+    {
+        var agreementToken = process["approval_process_agreement"];
+        int agreement;
+
+        if (agreementToken != null && int.TryParse(agreementToken.ToString(), out agreement))
+        {
+            if (agreement == 1)
+            {
+                return new HtmlString("<span class=\"badge bg-success\">同意</span>");
+            }
+
+            if (agreement == 0)
+            {
+                var returnToToken = process["approval_process_return_to_sequence"];
+                int returnTo;
+
+                if (returnToToken != null && int.TryParse(returnToToken.ToString(), out returnTo))
+                {
+                    return new HtmlString("<span class=\"badge bg-danger\">退回第 " + returnTo + " 關</span>");
+                }
+
+                return new HtmlString("<span class=\"badge bg-danger\">退回</span>");
+            }
+        }
+
+        return new HtmlString("<span class=\"badge bg-secondary\">待簽核</span>");
+    }
+
+
+    string HumanTime(DateTime? dt)
+    {
+        if (dt == null)
+            return "-";
+
+        var span = DateTime.Now - dt.Value;
+
+        if (span.TotalMinutes < 1)
+            return "剛剛";
+        if (span.TotalHours < 1)
+            return $"{(int)span.TotalMinutes} 分鐘前";
+        if (span.TotalHours < 24)
+            return $"{(int)span.TotalHours} 小時前";
+        if (span.TotalDays < 2)
+            return "昨天";
+        if (span.TotalDays < 7)
+            return $"{(int)span.TotalDays} 天前";
+
+        return dt.Value.ToString("yyyy/MM/dd HH:mm");
+    }
+
+    public int ParseRejectKeyOrder(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return int.MaxValue;
+        }
+
+        key = key.Trim().ToUpperInvariant();
+
+        if (key.StartsWith("R"))
+        {
+            key = key.Substring(1);
+        }
+
+        int n;
+        return int.TryParse(key, out n) ? n : int.MaxValue;
+    }
+}

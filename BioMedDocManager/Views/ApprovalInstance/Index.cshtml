@@ -57,15 +57,32 @@
                 <input class="form-control search-input" type="search" aria-label="搜尋" placeholder="搜尋" autocomplete="off">
             </div>
 
+            @{
+                var currentStatus = (ViewContext.RouteData.Values["id"]?.ToString() ?? "").Trim();
+            }
+
             <ul class="nav nav-tabs">
+              
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">已完成</a>
+                    <a class="nav-link @(currentStatus == "簽核中" || string.IsNullOrEmpty(currentStatus) ? "active" : "")"
+                       asp-action="Index"
+                       asp-route-id="簽核中">
+                        簽核中
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">簽核中</a>
+                    <a class="nav-link @(currentStatus == "已完成" ? "active" : "")"
+                       asp-action="Index"
+                       asp-route-id="已完成">
+                        已完成
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">流程退改</a>
+                    <a class="nav-link @(currentStatus == "流程退改" ? "active" : "")"
+                       asp-action="Index"
+                       asp-route-id="流程退改">
+                        流程退改
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
@@ -183,9 +200,8 @@
 
                                             <li>
                                                 <a class="dropdown-item"
-                                                   href="javascript:void(0)"
-                                                   data-action="details"
-                                                   data-id="@id">
+                                                   href="@Url.Action("Details", new { id = @id})"
+                                                  >
                                                     簽核詳細資料
                                                 </a>
                                             </li>

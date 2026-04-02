@@ -153,7 +153,7 @@
                             : "";
 
                             var submittedAtRaw = item.ContainsKey("approval_instance_submitted_at") && item["approval_instance_submitted_at"] != null
-                            ? item["approval_instance_submitted_at"]?.ToString()
+                            ? HumanizeDate(item["approval_instance_submitted_at"]?.ToString())
                             : "";
 
                             var status = item.ContainsKey("approval_instance_status") && item["approval_instance_status"] != null
@@ -196,9 +196,7 @@
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li>
                                                 <a class="dropdown-item"
-                                                   href="javascript:void(0)"
-                                                   data-action="details"
-                                                   data-id="@id">
+                                                   href="@Url.Action("Details", new { id = @id})" >
                                                     簽核詳細資料
                                                 </a>
                                             </li>
@@ -207,9 +205,7 @@
                                             {
                                                 <li>
                                                     <a class="dropdown-item"
-                                                       href="javascript:void(0)"
-                                                       data-action="edit"
-                                                       data-id="@id">
+                                                       href="@Url.Action("Edit", new { id = @id })">
                                                         強制編輯簽核人
                                                     </a>
                                                 </li>
