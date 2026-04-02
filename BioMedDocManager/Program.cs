@@ -212,20 +212,34 @@ namespace BioMedDocManager
                 var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
                 context.Items["CspNonce"] = nonce;
 
+                /*
+                     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+                 */
+
                 var csp = new StringBuilder()
                     .Append("default-src 'self' data:;")
-                    .Append($"script-src 'self' https://cdn.jsdelivr.net 'nonce-{nonce}' blob:;")
+
+                    // Scripts: strict, nonce required, no inline attributes
+                    .Append($"script-src 'self' https://cdn.jsdelivr.net https://ajax.googleapis.com https://maxcdn.bootstrapcdn.com 'nonce-{nonce}' blob:;")
+                    .Append("script-src-attr 'none';")
+
                     .Append("worker-src 'self' blob:;")
                     .Append("child-src 'self' blob:;")
                     .Append("frame-src 'self';")
-                    .Append($"style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'nonce-{nonce}';")
-                    .Append("img-src 'self' data: blob:;")
+
+                    // Styles: nonce for <style>, allow style="" attributes for layout
+                    .Append($"style-src 'self' https://cdn.jsdelivr.net https://maxcdn.bootstrapcdn.com 'nonce-{nonce}';")
+                    .Append($"style-src-elem 'self' https://cdn.jsdelivr.net https://maxcdn.bootstrapcdn.com 'nonce-{nonce}';")
+                    .Append("style-src-attr 'unsafe-inline';")
+
+                    .Append("img-src 'self' data: blob: https://maxcdn.bootstrapcdn.com;")
+                    .Append("font-src 'self' https://cdn.jsdelivr.net https://maxcdn.bootstrapcdn.com data:;")
+
                     .Append(isDev
-                        ? "font-src 'self' https://cdn.jsdelivr.net data:;"
-                        : "font-src 'self' https://cdn.jsdelivr.net data:;")
-                    .Append(isDev
-                        ? "connect-src 'self' ws: wss: http://localhost:* https://localhost:* https://cdn.jsdelivr.net;"
-                        : "connect-src 'self' https://cdn.jsdelivr.net;")
+                        ? "connect-src 'self' ws: wss: http://localhost:* https://localhost:* https://cdn.jsdelivr.net https://ajax.googleapis.com https://maxcdn.bootstrapcdn.com;"
+                        : "connect-src 'self' https://cdn.jsdelivr.net https://ajax.googleapis.com https://maxcdn.bootstrapcdn.com;")
+
                     .Append("object-src 'none';")
                     .Append("base-uri 'self';")
                     .Append("frame-ancestors 'self';");

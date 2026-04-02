@@ -47,6 +47,11 @@ namespace BioMedDocManager.Controllers
             return View();
         }
 
+        public IActionResult ProgressBar()
+        {
+            return View(); 
+        }
+
         public async Task<IActionResult> Details([FromRoute] string id)
         {
             // 👇 bounce immediately

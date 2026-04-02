@@ -1,0 +1,362 @@
+﻿
+@{
+    Layout = null;
+
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Multi-layer Workflow Progress Mockup</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <style nonce="@ViewBag.CspNonce">
+        body {
+            padding-top: 30px;
+            background: #f7f7f9;
+        }
+
+        .workflow-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px 20px 28px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+        }
+
+        .workflow-title {
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .workflow-subtitle {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .progress-shell {
+            position: relative;
+            margin-top: 22px;
+            margin-bottom: 18px;
+            height: 38px;
+            border-radius: 6px;
+            overflow: visible;
+        }
+
+        .progress-track {
+            position: relative;
+            height: 38px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #d7d7d7;
+        }
+
+        /* subtle "history reached this far" layer */
+        .progress-history {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(91, 192, 222, 0.35);
+            z-index: 1;
+        }
+
+        /* current live step block */
+        .progress-current {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            z-index: 3;
+            color: #fff;
+            text-align: center;
+            line-height: 38px;
+            font-weight: bold;
+        }
+
+        /* 10 equal segment separators */
+        .progress-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            background-image: repeating-linear-gradient( to right, transparent, transparent calc(10% - 1px), rgba(255,255,255,0.95) calc(10% - 1px), rgba(255,255,255,0.95) 10% );
+        }
+
+        /* rejection marker */
+        .reject-marker {
+            position: absolute;
+            top: -7px;
+            width: 4px;
+            height: 52px;
+            background: #d9534f;
+            z-index: 4;
+            border-radius: 2px;
+            box-shadow: 0 0 0 2px rgba(255,255,255,.7);
+        }
+
+        .reject-label {
+            position: absolute;
+            top: -34px;
+            transform: translateX(-50%);
+            z-index: 5;
+            background: #d9534f;
+            color: #fff;
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            white-space: nowrap;
+        }
+
+        .step-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 38px;
+            z-index: 6;
+        }
+
+        .step-hitbox {
+            position: absolute;
+            top: 0;
+            height: 38px;
+            cursor: pointer;
+        }
+
+        .step-row {
+            margin-top: 12px;
+            position: relative;
+            height: 58px;
+        }
+
+        .step-label {
+            position: absolute;
+            top: 0;
+            width: 10%;
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            line-height: 1.2;
+            transform: translateX(-50%);
+        }
+
+            .step-label .dot {
+                width: 10px;
+                height: 10px;
+                background: #bbb;
+                border-radius: 50%;
+                margin: 0 auto 6px;
+                border: 2px solid #fff;
+                box-shadow: 0 0 0 1px #ccc;
+            }
+
+            .step-label.reached .dot {
+                background: #5bc0de;
+                box-shadow: 0 0 0 1px #46b8da;
+            }
+
+            .step-label.current .dot {
+                background: #337ab7;
+                box-shadow: 0 0 0 1px #286090;
+            }
+
+            .step-label.rejected .dot {
+                background: #d9534f;
+                box-shadow: 0 0 0 1px #c9302c;
+            }
+
+        .legend {
+            margin-top: 18px;
+            color: #555;
+            font-size: 13px;
+        }
+
+            .legend span {
+                display: inline-block;
+                margin-right: 18px;
+                margin-bottom: 8px;
+            }
+
+            .legend i {
+                display: inline-block;
+                width: 18px;
+                height: 12px;
+                margin-right: 6px;
+                vertical-align: middle;
+                border-radius: 2px;
+            }
+
+            .legend .lg-history {
+                background: rgba(91, 192, 222, 0.35);
+                border: 1px solid #46b8da;
+            }
+
+            .legend .lg-current {
+                background: #337ab7;
+            }
+
+            .legend .lg-reject {
+                background: #d9534f;
+                width: 4px;
+                height: 16px;
+            }
+
+        .status-note {
+            margin-top: 14px;
+            padding: 10px 12px;
+            background: #fcfcfc;
+            border-left: 4px solid #d9534f;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="workflow-card">
+            <h3 class="workflow-title">Eflow Sign Progress Mockup</h3>
+            <p class="workflow-subtitle">
+                Historical max reached <strong>70%</strong>, but after rejection the current live step is back at <strong>20%</strong>.
+            </p>
+
+            <div class="progress-shell">
+                <div class="progress-track">
+                    <!-- historical max reach -->
+                    <div class="progress-history" style="width:70%;"></div>
+
+                    <!-- current active step -->
+                    <div class="progress-bar progress-bar-striped active progress-current"
+                         style="left:20%; width:10%;"
+                         role="progressbar"
+                         aria-valuenow="20"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                        處理中
+                    </div>
+
+                    <!-- segment grid -->
+                    <div class="progress-grid"></div>
+
+                    <!-- rejection marker at 70% -->
+                    <div class="reject-marker" style="left:70%;"></div>
+                    <div class="reject-label" style="left:70%;">退回</div>
+
+                    <!-- tooltip hitboxes -->
+                    <div class="step-overlay">
+                        <div class="step-hitbox" style="left:0%; width:10%;"
+                             data-toggle="tooltip" data-placement="top" data-html="true"
+                             title="<strong>10%</strong><br>建立申請<br>申請人: Peter<br>狀態: 已完成"></div>
+
+                        <div class="step-hitbox" style="left:10%; width:10%;"
+                             data-toggle="tooltip" data-placement="top" data-html="true"
+                             title="<strong>20%</strong><br>部門主管審核<br>主管: 王小明<br>狀態: 處理中"></div>
+
+                        <div class="step-hitbox" style="left:20%; width:10%;"
+                             data-toggle="tooltip" data-placement="top" data-html="true"
+                             title="<strong>30%</strong><br>公司別確認<br>承辦: 李雅雯<br>狀態: 尚未到達"></div>
+
+                        <div class="step-hitbox" style="left:30%; width:10%;"
+                             data-toggle="tooltip" data-placement="top" data-html="true"
+                             title="<strong>40%</strong><br>用戶群組覆核<br>承辦: 陳志宏<br>狀態: 尚未到達"></div>
+
+                        <div class="step-hitbox" style="left:40%; width:10%;"
+                             data-toggle="tooltip" data-placement="top" data-html="true"
+                             title="<strong>50%</strong><br>其他經辦<br>承辦: 周六宇<br>狀態: 曾通過"></div>
+
+                        <div class="step-hitbox" style="left:50%; width:10%;"
+                             data-toggle="tooltip" data-placement="top" data-html="true"
+                             title="<strong>60%</strong><br>會辦審核<br>承辦: 趙怡君<br>狀態: 曾通過"></div>
+
+                        <div class="step-hitbox" style="left:60%; width:10%;"
+                             data-toggle="tooltip" data-placement="top" data-html="true"
+                             title="<strong>70%</strong><br>核決主管<br>主管: 林經理<br><span style='color:#d9534f;'><strong>退回於此節點</strong></span>"></div>
+
+                        <div class="step-hitbox" style="left:70%; width:10%;"
+                             data-toggle="tooltip" data-placement="top" data-html="true"
+                             title="<strong>80%</strong><br>總務確認<br>承辦: 黃怡婷<br>狀態: 未到達"></div>
+
+                        <div class="step-hitbox" style="left:80%; width:10%;"
+                             data-toggle="tooltip" data-placement="top" data-html="true"
+                             title="<strong>90%</strong><br>最終確認<br>承辦: 吳志誠<br>狀態: 未到達"></div>
+
+                        <div class="step-hitbox" style="left:90%; width:10%;"
+                             data-toggle="tooltip" data-placement="top" data-html="true"
+                             title="<strong>100%</strong><br>流程完成<br>狀態: 尚未完成"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- visible step labels under bar -->
+            <div class="step-row">
+                <div class="step-label reached" style="left:5%;">
+                    <div class="dot"></div>
+                    建立
+                </div>
+                <div class="step-label current" style="left:15%;">
+                    <div class="dot"></div>
+                    部門主管
+                </div>
+                <div class="step-label" style="left:25%;">
+                    <div class="dot"></div>
+                    公司別
+                </div>
+                <div class="step-label" style="left:35%;">
+                    <div class="dot"></div>
+                    用戶群組
+                </div>
+                <div class="step-label reached" style="left:45%;">
+                    <div class="dot"></div>
+                    周六宇
+                </div>
+                <div class="step-label reached" style="left:55%;">
+                    <div class="dot"></div>
+                    會辦
+                </div>
+                <div class="step-label rejected" style="left:65%;">
+                    <div class="dot"></div>
+                    核決主管
+                </div>
+                <div class="step-label" style="left:75%;">
+                    <div class="dot"></div>
+                    總務
+                </div>
+                <div class="step-label" style="left:85%;">
+                    <div class="dot"></div>
+                    最終確認
+                </div>
+                <div class="step-label" style="left:95%;">
+                    <div class="dot"></div>
+                    完成
+                </div>
+            </div>
+
+            <div class="legend">
+                <span><i class="lg-history"></i> 曾到達位置</span>
+                <span><i class="lg-current"></i> 目前處理中</span>
+                <span><i class="lg-reject"></i> 退回點</span>
+            </div>
+
+        @*     <div class="status-note">
+                <strong>流程說明：</strong>
+                這張單曾經一路跑到 <strong>核決主管（70%）</strong>，但在該節點被退回。現在重新從前段流程跑起，目前停留在 <strong>部門主管審核（20%）</strong>。
+            </div> *@
+        </div>
+    </div>
+
+    <script nonce="@ViewBag.CspNonce">
+        $(function () {
+          $('[data-toggle="tooltip"]').tooltip({
+            container: 'body'
+          });
+        });
+    </script>
+
+</body>
+</html>
