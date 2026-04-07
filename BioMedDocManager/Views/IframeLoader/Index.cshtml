@@ -17,8 +17,22 @@
             class="w-100 h-100 border-0 d-block bg-white"
             style="opacity:0; transition:opacity .2s ease;"
             nonce="@ViewBag.CspNonce"
-            onload="this.style.opacity=1"
+
             allowfullscreen
             loading="lazy">
     </iframe>
 </div>
+
+
+@section PageScripts {
+    <script nonce="@ViewBag.CspNonce">
+        document.addEventListener("DOMContentLoaded", function () {
+            const iframe = document.getElementById("iframeLoader");
+            if (!iframe) return;
+
+            iframe.addEventListener("load", function () {
+                iframe.style.opacity = "1";
+            });
+        });
+    </script>
+}

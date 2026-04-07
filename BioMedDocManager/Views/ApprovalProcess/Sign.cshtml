@@ -7,6 +7,8 @@
 @{
     Layout = "_AssetLayout";
 
+    var viewerEmployeeId = ViewData["ViewerEmployeeId"]?.ToString() ?? "";
+
     var approvalInstance = Model["approval_instance"] as JObject ?? new JObject();
     var approvalProcess = Model["approval_process"] as JArray ?? new JArray();
     var rejectHistory = Model["reject_history"] as JObject ?? new JObject();
@@ -36,9 +38,20 @@
 
     var isFlowCompleted = currentProcess == null;
 
-    // 先依你目前的假設: 當前畫面就是輪到這個人簽
-    // 之後若要接登入者 / O365 / employeeId 比對，再改這裡即可
-    var isMyTurn = !isFlowCompleted;
+    var currentSignerEmployeeId = currentProcess == null
+        ? ""
+        : SafeText(currentProcess["approval_process_employee_id"]);
+
+    var currentSignerAgentEmployeeId = currentProcess == null
+        ? ""
+        : SafeText(currentProcess["approval_process_agent_employee_id"]);
+
+    var isMyTurn = !isFlowCompleted &&
+                   (
+                       string.Equals(currentSignerEmployeeId, viewerEmployeeId, StringComparison.OrdinalIgnoreCase) ||
+                       (!string.IsNullOrWhiteSpace(currentSignerAgentEmployeeId) &&
+                        string.Equals(currentSignerAgentEmployeeId, viewerEmployeeId, StringComparison.OrdinalIgnoreCase))
+                   );
 
     var currentSigner = currentProcess == null
         ? ""
@@ -62,7 +75,6 @@
         ? "承辦人"
         : GetDisplayName(starterProcess);
 }
-
 <div class="p-3">
     <h2 class="mb-3">簽核作業</h2>
 
@@ -132,14 +144,25 @@
     </div>
 
     <!-- 二、簽核決議 -->
-    <form id="frmSign" class="card mb-3" method="post">
+    <form id="frmSign"
+          class="card mb-3"
+          method="post"
+          asp-action="Sign"
+          asp-controller="ApprovalProcess"
+          asp-route-id="@SafeText(approvalInstance["approval_instance_id"])">
+
+        @Html.AntiForgeryToken()
+
+        <input type="hidden"
+               name="ApprovalInstanceId"
+               value="@SafeText(approvalInstance["approval_instance_id"])" />
+
         <div class="card-header fw-bold">二、簽核決議</div>
 
         <div class="card-body">
             <div class="row g-3">
                 <div id="assignContainer"></div>
 
-                <!-- 處理決策 -->
                 <div class="row g-3 align-items-center" id="retTargetRow">
                     <label class="col-12 col-md-2 col-form-label text-start text-md-end">
                         處理決策
@@ -148,20 +171,20 @@
                     <div class="col-12 col-md-10">
                         @if (isMyTurn)
                         {
-                            <select id="ret-seq" name="decision" class="form-select" required style="height:25px">
+                            <select id="ret-seq" name="Decision" class="form-select" required style="height:50px">
                                 <option value="" selected disabled>👤 @currentSigner 您好，請選擇...</option>
 
-                                <optgroup label="✅ 簽核通過">
+                                <optgroup label="✔️ 簽核通過">
                                     @if (nextProcess != null)
                                     {
                                         <option value="approve:@ParseInt(nextProcess["approval_process_sequence"])">
-                                            ✅ 送往下一關 @nextProcess["approval_process_step_name"]（@nextSigner）
+                                            ➜ 送往下一關 @nextProcess["approval_process_step_name"]（@nextSigner）
                                         </option>
                                     }
                                     else
                                     {
                                         <option value="approve:complete">
-                                            🚀 完成簽核（流程結束）
+                                            🎯 完成簽核（流程結束）
                                         </option>
                                     }
                                 </optgroup>
@@ -176,7 +199,7 @@
                                             var signerName = GetDisplayName(step);
 
                                             <option value="reject:@seq">
-                                                ↩️ 第 @seq 關 - @stepName - @signerName
+                                                ↺ 第 @seq 關 - @stepName - @signerName
                                             </option>
                                         }
 
@@ -196,10 +219,11 @@
                             <div class="form-control d-flex justify-content-between align-items-center bg-light">
                                 @if (isFlowCompleted)
                                 {
-                                    <span>✅ 此流程已完成</span>
+                                    <span>🎯 此流程已完成</span>
                                 }
                                 else
                                 {
+                                    @*目前等待  "其他人" 簽核中 *@
                                     <span>🕒 目前由 <strong>@currentSigner</strong> 簽核中</span>
                                 }
 
@@ -215,14 +239,13 @@
                     </div>
                 </div>
 
-                <!-- 簽核意見 -->
                 <div class="row g-3">
                     <label for="comment" class="col-12 col-md-2 col-form-label text-start text-md-end">
                         簽核意見
                     </label>
                     <div class="col-12 col-md-10">
                         <textarea id="comment"
-                                  name="comment"
+                                  name="Comment"
                                   class="form-control"
                                   rows="4"
                                   placeholder="請輸入簽核意見（退回時必填）"

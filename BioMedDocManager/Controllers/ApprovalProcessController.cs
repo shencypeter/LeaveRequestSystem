@@ -7,25 +7,27 @@ using Newtonsoft.Json.Linq;
 namespace BioMedDocManager.Controllers
 {
     [AllowAnonymous]
-    public class ApprovalProcessController(DocControlContext _context, IWebHostEnvironment _hostingEnvironment, IParameterService _param, IDbLocalizer _loc) : BaseController(_context, _hostingEnvironment, _param, _loc)
+    public class ApprovalProcessController(
+        DocControlContext _context,
+        IWebHostEnvironment _hostingEnvironment,
+        IParameterService _param,
+        IDbLocalizer _loc
+    ) : BaseController(_context, _hostingEnvironment, _param, _loc)
     {
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             var userKey = await GetUserJwtKey("E2023007");
-            //多個 task 可堆疊在此並行
+
+            // 多個 task 可堆疊在此並行
             var approvalsTask = GetMyApprovalsAsync(userKey);
             var historyTask = GetSignHistoryAsync(userKey);
 
-            //sync semaphor
+            // sync semaphore
             await Task.WhenAll(approvalsTask, historyTask);
 
             var approvalsJson = await approvalsTask;
-            /*{"page":1,"page_size":10,"pageSize":10,"total":1,"dataList":[{"employee_name":"吳七妤","employee_id":"E2023007","approval_instance_id":22,"form_type":"請假單","form_id":"100","approval_instance_status":"簽核中","approval_instance_submitted_at":"2026-01-20T11:33:42","approval_process_sign_time":null,"approval_instance_sign_path":"● 👤吳七妤(您) ➜ ✓ 👤吳七妤(您) ➜ 【○ 周六宇 · ↺ 周六宇 · ○ 張八豪】 ➜ ○ 王三豪 ➜ ○ 人資部 ➜ ○ 陳一偉"}]}*/
-
             var historyJson = await historyTask;
-            /*{"page":1,"page_size":10,"pageSize":10,"total":43,"pending":6,"returned":0,"dataList":[{"form_type":"請假單","form_id":"64","approval_instance_status":"已完成","approval_instance_current_revision":3,"approval_instance_completed_at":"2026-02-12T11:08:57","created_at":"2026-02-12T11:00:50","created_by":"E2023007","deleted_at":null,"approval_instance_id":65,"employee_id":"E2023007","approval_instance_current_sequence":9,"approval_instance_submitted_at":"2026-02-12T11:00:50","approval_instance_step_islock":0,"updated_at":"2026-02-12T11:08:57","updated_by":"E2023001","deleted_by":null,"employee_name":"吳七妤","approval_instance_current_step_name":null,"approval_instance_current_sign_user_name":null,"approval_instance_sign_path":"✓ 👤吳七妤(您) ➜ ✓ 周六宇 ➜ ✓ 張八豪 ➜ ✓ 王三豪 ➜ ✓ 林二萱 ➜ ✓ 林二萱 ➜ ✓ 黃十一 ➜ ✓ 陳一偉"},{"form_type":"請假單","form_id":"0212A","approval_instance_status":"簽核中","approval_instance_current_revision":1,"approval_instance_completed_at":null,"created_at":"2026-02-12T10:51:32","created_by":"E2023007","deleted_at":null,"approval_instance_id":64,"employee_id":"E2023007","approval_instance_current_sequence":2,"approval_instance_submitted_at":"2026-02-12T10:51:32","approval_instance_step_islock":0,"updated_at":"2026-02-12T10:53:01","updated_by":"E2023003","deleted_by":null,"employee_name":"吳七妤","approval_instance_current_step_name":"其他經辦","approval_instance_current_sign_user_name":"周六宇","approval_instance_sign_path":"✓ 👤吳七妤(您) ➜ 【● 周六宇 · ○ 張八豪】 ➜ ○ 王三豪 ➜ ○ 人資部 ➜ ○ 陳一偉"},{"form_type":"請假單","form_id":"63","approval_instance_status":"已完成","approval_instance_current_revision":2,"approval_instance_completed_at":"2026-02-12T09:57:36","created_at":"2026-02-12T09:52:41","created_by":"E2023007","deleted_at":null,"approval_instance_id":63,"employee_id":"E2023007","approval_instance_current_sequence":9,"approval_instance_submitted_at":"2026-02-12T09:52:41","approval_instance_step_islock":0,"updated_at":"2026-02-12T09:57:36","updated_by":"E2023001","deleted_by":null,"employee_name":"吳七妤","approval_instance_current_step_name":null,"approval_instance_current_sign_user_name":null,"approval_instance_sign_path":"✓ 👤吳七妤(您) ➜ ✓ 周六宇 ➜ ✓ 張八豪 ➜ ✓ 王三豪 ➜ ✓ 黃十一 ➜ ✓ 林二萱 ➜ ✓ 黃十一 ➜ ✓ 陳一偉"},{"form_type":"請假單","form_id":"62","approval_instance_status":"簽核中","approval_instance_current_revision":1,"approval_instance_completed_at":null,"created_at":"2026-02-11T14:54:22","created_by":"E2023007","deleted_at":null,"approval_instance_id":62,"employee_id":"E2023007","approval_instance_current_sequence":5,"approval_instance_submitted_at":"2026-02-11T14:54:22","approval_instance_step_islock":0,"updated_at":"2026-02-11T14:56:17","updated_by":"E2023003","deleted_by":null,"employee_name":"吳七妤","approval_instance_current_step_name":"會辦部門","approval_instance_current_sign_user_name":"黃十一","approval_instance_sign_path":"✓ 👤吳七妤(您) ➜ ✓ 周六宇 ➜ ✓ 張八豪 ➜ ✓ 王三豪 ➜ ● 黃十一 ➜ ○ 林二萱 ➜ ○ 黃十一 ➜ ○ 陳一偉"},{"form_type":"請假單","form_id":"60","approval_instance_status":"已完成","approval_instance_current_revision":2,"approval_instance_completed_at":"2026-02-11T14:39:34","created_at":"2026-02-11T14:32:30","created_by":"E2023007","deleted_at":null,"approval_instance_id":60,"employee_id":"E2023007","approval_instance_current_sequence":9,"approval_instance_submitted_at":"2026-02-11T14:32:30","approval_instance_step_islock":0,"updated_at":"2026-02-11T14:39:34","updated_by":"E2023001","deleted_by":null,"employee_name":"吳七妤","approval_instance_current_step_name":null,"approval_instance_current_sign_user_name":null,"approval_instance_sign_path":"✓ 👤吳七妤(您) ➜ ✓ 周六宇 ➜ ✓ 張八豪 ➜ ✓ 王三豪 ➜ ✓ 黃十一 ➜ ✓ 林二萱 ➜ ✓ 黃十一 ➜ ✓ 陳一偉"},{"form_type":"請假單","form_id":"0211-DelegateTest-2","approval_instance_status":"簽核中","approval_instance_current_revision":0,"approval_instance_completed_at":null,"created_at":"2026-02-11T13:52:57","created_by":"E2023007","deleted_at":null,"approval_instance_id":59,"employee_id":"E2023007","approval_instance_current_sequence":6,"approval_instance_submitted_at":"2026-02-11T13:52:57","approval_instance_step_islock":0,"updated_at":"2026-02-11T13:54:19","updated_by":"E2023011","deleted_by":null,"employee_name":"吳七妤","approval_instance_current_step_name":"會辦部門","approval_instance_current_sign_user_name":"黃十一","approval_instance_sign_path":"✓ 👤吳七妤(您) ➜ 【○ 周六宇 · ✓ 張八豪】 ➜ ✓ 王三豪 ➜ ✓ 黃十一 ➜ ● 黃十一 ➜ ○ 林二萱 ➜ ○ 陳一偉"},{"form_type":"請假單","form_id":"0211-DelegateTest","approval_instance_status":"簽核中","approval_instance_current_revision":0,"approval_instance_completed_at":null,"created_at":"2026-02-11T13:26:03","created_by":"E2023007","deleted_at":null,"approval_instance_id":58,"employee_id":"E2023007","approval_instance_current_sequence":5,"approval_instance_submitted_at":"2026-02-11T13:26:03","approval_instance_step_islock":0,"updated_at":"2026-02-11T13:27:14","updated_by":"E2023011","deleted_by":null,"employee_name":"吳七妤","approval_instance_current_step_name":"會辦部門","approval_instance_current_sign_user_name":"林二萱","approval_instance_sign_path":"✓ 👤吳七妤(您) ➜ 【○ 周六宇 · ✓ 張八豪】 ➜ ✓ 王三豪 ➜ ✓ 黃十一 ➜ ● 林二萱 ➜ ● 黃十一 ➜ ○ 陳一偉"},{"form_type":"請假單","form_id":"57","approval_instance_status":"簽核中","approval_instance_current_revision":4,"approval_instance_completed_at":null,"created_at":"2026-02-09T15:04:48","created_by":"E2023007","deleted_at":null,"approval_instance_id":57,"employee_id":"E2023007","approval_instance_current_sequence":6,"approval_instance_submitted_at":"2026-02-09T15:04:48","approval_instance_step_islock":0,"updated_at":"2026-02-09T15:13:27","updated_by":"E2023002","deleted_by":null,"employee_name":"吳七妤","approval_instance_current_step_name":"陳核","approval_instance_current_sign_user_name":"陳一偉","approval_instance_sign_path":"✓ 👤吳七妤(您) ➜ ✓ 周六宇 ➜ ✓ 張八豪 ➜ ✓ 王三豪 ➜ ✓ 黃十一 ➜ ✓ 林二萱 ➜ ○ 黃十一 ➜ ● 陳一偉"},{"form_type":"請假單","form_id":"56","approval_instance_status":"簽核中","approval_instance_current_revision":2,"approval_instance_completed_at":null,"created_at":"2026-02-03T15:18:09","created_by":"E2023007","deleted_at":null,"approval_instance_id":56,"employee_id":"E2023007","approval_instance_current_sequence":2,"approval_instance_submitted_at":"2026-02-03T15:18:09","approval_instance_step_islock":0,"updated_at":"2026-02-03T15:20:05","updated_by":"E2023008","deleted_by":null,"employee_name":"吳七妤","approval_instance_current_step_name":"其他經辦","approval_instance_current_sign_user_name":"周六宇","approval_instance_sign_path":"✓ 👤吳七妤(您) ➜ ● 周六宇 ➜ ○ 張八豪 ➜ ○ 王三豪 ➜ ○ 人資部 ➜ ○ 陳一偉"},{"form_type":"請假單","form_id":"55","approval_instance_status":"已完成","approval_instance_current_revision":3,"approval_instance_completed_at":"2026-02-03T15:14:14","created_at":"2026-02-03T15:08:54","created_by":"E2023007","deleted_at":null,"approval_instance_id":55,"employee_id":"E2023007","approval_instance_current_sequence":20,"approval_instance_submitted_at":"2026-02-03T15:08:54","approval_instance_step_islock":0,"updated_at":"2026-02-03T15:14:14","updated_by":"E2023001","deleted_by":null,"employee_name":"吳七妤","approval_instance_current_step_name":null,"approval_instance_current_sign_user_name":null,"approval_instance_sign_path":"✓ 👤吳七妤(您) ➜ 【✓ 周六宇 · ○ 張八豪】 ➜ ✓ 王三豪 ➜ ✓ 黃十一 ➜ ✓ 林二萱 ➜ ✓ 黃十一 ➜ ✓ 陳一偉"}]}*/
-
 
             var approvalsObj = JObject.Parse(approvalsJson);
             var historyObj = JObject.Parse(historyJson);
@@ -46,16 +48,17 @@ namespace BioMedDocManager.Controllers
         {
             return View();
         }
-
+        [HttpGet]
         public async Task<IActionResult> Sign([FromRoute] string id)
         {
             JObject model;
             try
             {
-                var userKey = await GetUserJwtKey("E2023007");
+                var viewerEmployeeId = "E2023006"; //尚未升級 O365 實名登入
+                ViewData["ViewerEmployeeId"] = viewerEmployeeId;
 
+                var userKey = await GetUserJwtKey(viewerEmployeeId);
                 var instanceDetail = await EflowGet($"approvalInstance/{id}", userKey);
-
                 model = JObject.Parse(instanceDetail);
             }
             catch
@@ -69,39 +72,285 @@ namespace BioMedDocManager.Controllers
             return View(model ?? []);
         }
 
-        public async Task<string> GetMyApprovals()
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Sign([FromRoute] string id, SignPostModel form)
         {
-            //包裝 session cookie 裡面的 JWT, 送出 API 請求，然後回傳結果
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                TempData["_JSShowAlert"] = "流程不存在!";
+                return RedirectToAction(nameof(Index));
+            }
 
-            var myapprovals = "approvalInstance/myApprovals?status=待簽核&page=1&sort=approval_instance_submitted_at&order=desc";
+            if (form == null)
+            {
+                TempData["_JSShowAlert"] = "送出資料無效。";
+                return RedirectToAction(nameof(Sign), new { id });
+            }
 
+            if (!int.TryParse(id, out var approvalInstanceId))
+            {
+                TempData["_JSShowAlert"] = "流程編號格式錯誤。";
+                return RedirectToAction(nameof(Index));
+            }
 
-            var userKey = await GetUserJwtKey("E2023007");
+            form.ApprovalInstanceId = approvalInstanceId;
 
-            var apiResult = await EflowGet(myapprovals, userKey);
+            if (string.IsNullOrWhiteSpace(form.Decision))
+            {
+                TempData["_JSShowAlert"] = "請選擇處理決策。";
+                return RedirectToAction(nameof(Sign), new { id });
+            }
 
-            return apiResult;
+            var parsedDecision = ParseDecision(form.Decision);
+            if (parsedDecision == null)
+            {
+                TempData["_JSShowAlert"] = "無法辨識處理決策。";
+                return RedirectToAction(nameof(Sign), new { id });
+            }
 
+            var apiDecision = MapDecisionToApiValue(parsedDecision.Action);
+            if (string.IsNullOrWhiteSpace(apiDecision))
+            {
+                TempData["_JSShowAlert"] = "無法辨識簽核決策。";
+                return RedirectToAction(nameof(Sign), new { id });
+            }
+
+            var comment = (form.Comment ?? string.Empty).Trim();
+
+            if (parsedDecision.Action == "reject" && string.IsNullOrWhiteSpace(comment))
+            {
+                TempData["_JSShowAlert"] = "退回時請填寫簽核意見。";
+                return RedirectToAction(nameof(Sign), new { id });
+            }
+
+            int? returnToSequence = null;
+
+            if (!string.Equals(apiDecision, "agree", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.Equals(parsedDecision.Target, "terminate", StringComparison.OrdinalIgnoreCase))
+                {
+                    returnToSequence = 1;
+                }
+                else if (int.TryParse(parsedDecision.Target, out var seq))
+                {
+                    returnToSequence = seq;
+                }
+
+                if (!returnToSequence.HasValue)
+                {
+                    TempData["_JSShowAlert"] = "退回時必須指定退回關卡。";
+                    return RedirectToAction(nameof(Sign), new { id });
+                }
+            }
+
+            try
+            {
+                // 1. 先用一般查詢身分拿 instance 最新狀態
+                var userKey = await GetUserJwtKey("E2023007");
+                var instanceDetail = await EflowGet($"approvalInstance/{id}", userKey);
+                var instanceObj = JObject.Parse(instanceDetail);
+
+                // 2. 從最新流程中找出目前待簽核的人
+                var currentSignerEmployeeId = GetCurrentSignerEmployeeId(instanceObj);
+                if (string.IsNullOrWhiteSpace(currentSignerEmployeeId))
+                {
+                    TempData["_JSShowAlert"] = "查無目前簽核人，流程可能已完成或資料異常。";
+                    return RedirectToAction(nameof(Sign), new { id });
+                }
+
+                // 3. 用目前簽核人的身分取 token
+                var signingKey = await GetUserJwtKey(currentSignerEmployeeId);
+
+                // 4. 同步更新目前關卡，避免相信前端 hidden input
+                form.CurrentSequence = GetCurrentSequence(instanceObj);
+                if (!form.CurrentSequence.HasValue)
+                {
+                    TempData["_JSShowAlert"] = "查無目前簽核關卡。";
+                    return RedirectToAction(nameof(Sign), new { id });
+                }
+
+                var pythonPayload = BuildPythonDecisionPayload(
+                    form: form,
+                    apiDecision: apiDecision,
+                    comment: comment,
+                    returnToSequence: returnToSequence
+                );
+
+                var apiResult = await EflowPost("approvalProcess/sign", pythonPayload, signingKey);
+
+                bool success = true;
+                string message = "簽核已送出。";
+
+                if (!string.IsNullOrWhiteSpace(apiResult))
+                {
+                    try
+                    {
+                        var resultObj = JObject.Parse(apiResult);
+                        success = resultObj["success"]?.Value<bool>() ?? true;
+                        message = resultObj["message"]?.ToString()
+                                  ?? (success ? "簽核已送出。" : "簽核失敗。");
+                    }
+                    catch
+                    {
+                        // Python 若不是回 JSON，就沿用成功預設
+                    }
+                }
+
+                TempData["_JSShowAlert"] = message;
+
+                return success
+                    ? RedirectToAction(nameof(Index))
+                    : RedirectToAction(nameof(Sign), new { id });
+            }
+            catch (Exception ex)
+            {
+                TempData["_JSShowAlert"] = $"簽核失敗：{ex.Message}";
+                return RedirectToAction(nameof(Sign), new { id });
+            }
         }
 
 
-        public async Task<string> GetSignHistory()
+        private static int? GetCurrentSequence(JObject instanceObj)
         {
-            //包裝 session cookie 裡面的 JWT, 送出 API 請求，然後回傳結果
+            var currentProcess = GetCurrentProcess(instanceObj);
+            if (currentProcess == null)
+            {
+                return null;
+            }
 
-            var myapprovals = "approvalInstance/myApprovals?status=待簽核&page=1&sort=approval_instance_submitted_at&order=desc";
-            var url = "approvalInstance/?page=1&sort=approval_instance_submitted_at&order=desc";
-
-            var userKey = await GetUserJwtKey("E2023007");
-
-            var apiResult = await EflowGet(url, userKey);
-
-            return apiResult;
-
+            return ParseNullableInt(currentProcess["approval_process_sequence"]?.ToString());
         }
 
+        private static string? GetCurrentSignerEmployeeId(JObject instanceObj)
+        {
+            var currentProcess = GetCurrentProcess(instanceObj);
+            if (currentProcess == null)
+            {
+                return null;
+            }
+
+            // 若流程資料之後支援代理簽核，可在這裡優先切 agent id 規則
+            return currentProcess["approval_process_employee_id"]?.ToString();
+        }
+
+        private static JObject? GetCurrentProcess(JObject instanceObj)
+        {
+            var approvalProcess = instanceObj["approval_process"] as JArray;
+            if (approvalProcess == null || !approvalProcess.Any())
+            {
+                return null;
+            }
+
+            var processRows = approvalProcess
+                .OfType<JToken>()
+                .Select(x => x as JObject)
+                .Where(x => x != null)
+                .OrderBy(x => ParseNullableInt(x!["approval_process_sequence"]?.ToString()) ?? int.MaxValue)
+                .ToList();
+
+            return processRows.FirstOrDefault(x => !IsSignedProcess(x));
+        }
+
+        private static bool IsSignedProcess(JObject? process)
+        {
+            if (process == null)
+            {
+                return false;
+            }
+
+            var agreementToken = process["approval_process_agreement"];
+            if (agreementToken != null && int.TryParse(agreementToken.ToString(), out var agreement))
+            {
+                return agreement == 1 || agreement == 0;
+            }
+
+            return DateTime.TryParse(process["approval_process_sign_time"]?.ToString(), out _);
+        }
+
+        private static int? ParseNullableInt(string? value)
+        {
+            return int.TryParse(value, out var n) ? n : null;
+        }
+
+        private static ParsedDecisionModel? ParseDecision(string? decision)
+        {
+            if (string.IsNullOrWhiteSpace(decision))
+            {
+                return null;
+            }
+
+            var parts = decision.Split(':', 2, StringSplitOptions.TrimEntries);
+            if (parts.Length != 2)
+            {
+                return null;
+            }
+
+            var action = parts[0].Trim().ToLowerInvariant();
+            var target = parts[1].Trim();
+
+            if (action != "approve" && action != "reject")
+            {
+                return null;
+            }
+
+            return new ParsedDecisionModel
+            {
+                Action = action,
+                Target = target
+            };
+        }
+
+        private static string? MapDecisionToApiValue(string? action)
+        {
+            if (string.IsNullOrWhiteSpace(action))
+            {
+                return null;
+            }
+
+            return action.ToLowerInvariant() switch
+            {
+                "approve" => "agree",
+                "reject" => "disagree",
+                _ => null
+            };
+        }
+
+        private static Dictionary<string, object?> BuildPythonDecisionPayload(
+            SignPostModel form,
+            string apiDecision,
+            string comment,
+            int? returnToSequence)
+        {
+            var payload = new Dictionary<string, object?>
+            {
+                ["approval_instance_id"] = form.ApprovalInstanceId!.Value,
+                ["comment"] = comment,
+                ["current_sequence"] = form.CurrentSequence!.Value,
+                ["decision"] = apiDecision
+            };
+
+            if (!string.Equals(apiDecision, "agree", StringComparison.OrdinalIgnoreCase))
+            {
+                payload["return_to_sequence"] = returnToSequence;
+            }
+
+            return payload;
+        }
+
+        public sealed class SignPostModel
+        {
+            public int? ApprovalInstanceId { get; set; }
+            public int? CurrentSequence { get; set; }
+            public int? ReturnToSequence { get; set; }
+            public string? Decision { get; set; }
+            public string? Comment { get; set; }
+        }
+
+        private sealed class ParsedDecisionModel
+        {
+            public string Action { get; set; } = string.Empty;
+            public string Target { get; set; } = string.Empty;
+        }
     }
 }
-
-
-

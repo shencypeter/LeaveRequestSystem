@@ -1,0 +1,17 @@
+﻿### 紀錄開始 ###
+[2026-04-07 14:40:29]
+customErrorString: 登入異常
+RequestUrl: https://localhost:7010/zh-TW/Login/Login
+ClientIp: 127.0.0.1
+Message: The input is not a valid Base-64 string as it contains a non-base 64 character, more than two padding characters, or an illegal character among the padding characters.
+Source: System.Private.CoreLib
+StackTrace:
+   at System.Convert.FromBase64CharPtr(Char* inputPtr, Int32 inputLength)
+   at System.Convert.FromBase64String(String s)
+   at Microsoft.AspNetCore.Identity.PasswordHasher`1.VerifyHashedPassword(TUser user, String hashedPassword, String providedPassword)
+   at BioMedDocManager.Controllers.LoginController.VerifyPasswordAndHandleFailedAsync(User user, String password, PasswordPolicy sec)
+   at BioMedDocManager.Controllers.LoginController.Login(String userAccount, String password, String captcha, String returnUrl)
+
+### 紀錄結束 ###
+
+
