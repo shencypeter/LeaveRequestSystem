@@ -11,6 +11,10 @@
 
     var approvalInstance = Model["approval_instance"] as JObject ?? new JObject();
     var approvalProcess = Model["approval_process"] as JArray ?? new JArray();
+
+    var firstProcess = approvalProcess.FirstOrDefault() as JObject ?? new JObject();
+    var approvalInstanceId = SafeText(firstProcess["approval_instance_id"]);
+
     var rejectHistory = Model["reject_history"] as JObject ?? new JObject();
 
     var rejectGroups = rejectHistory.Properties()
@@ -75,6 +79,7 @@
         ? "承辦人"
         : GetDisplayName(starterProcess);
 }
+
 <div class="p-3">
     <h2 class="mb-3">簽核作業</h2>
 
@@ -82,63 +87,253 @@
     <div class="card mb-3">
         <div class="card-header fw-bold">一、簽核歷程</div>
         <div class="card-body">
-            <div class="table-responsive">
-                <table id="approverDetailTable" class="table table-sm table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th class="text-center">序號</th>
-                            <th class="text-center">階段</th>
-                            <th class="text-center">應簽核人</th>
-                            <th class="text-center">實際簽核人</th>
-                            <th class="text-center">簽核時間</th>
-                            <th class="text-center">結果</th>
-                            <th>意見</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (processRows.Count > 0)
-                        {
-                            foreach (var process in processRows)
-                            {
-                                var comment = SafeText(process["approval_process_comment"]);
+            <ul class="nav nav-tabs mb-3" id="historyTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active"
+                            id="tab-current-flow"
+                            data-bs-toggle="tab"
+                            data-bs-target="#pane-current-flow"
+                            type="button"
+                            role="tab"
+                            aria-controls="pane-current-flow"
+                            aria-selected="true">
+                        <span class="badge text-primary bg-primary-subtle border border-primary-subtle">R0</span>
+                        <span class="ms-2 fw-semibold">目前流程</span>
+                    </button>
+                </li>
 
+                @foreach (var group in rejectGroups)
+                {
+                    <button type="button" hidden></button>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link"
+                                id="tab-@group.Name"
+                                data-bs-toggle="tab"
+                                data-bs-target="#pane-@group.Name"
+                                type="button"
+                                role="tab"
+                                aria-controls="pane-@group.Name"
+                                aria-selected="false">
+                            <span class="badge text-danger bg-danger-subtle border border-danger-subtle">@group.Name</span>
+                            <span class="ms-2 fw-semibold">第 @ParseRejectKeyOrder(group.Name) 次退件</span>
+                        </button>
+                    </li>
+                }
+            </ul>
+
+            <div class="tab-content" id="historyTabsContent">
+                <!-- R0: 目前流程 -->
+                <div class="tab-pane fade show active"
+                     id="pane-current-flow"
+                     role="tabpanel"
+                     aria-labelledby="tab-current-flow"
+                     tabindex="0">
+
+                    <div class="border rounded p-3 mb-3 border-primary-subtle bg-primary-subtle text-primary">
+                        <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="badge text-primary bg-white border border-primary-subtle">R0</span>
+                                    <span class="fw-semibold">目前簽核流程</span>
+                                </div>
+                                <div class="small opacity-75">
+                                    @if (isFlowCompleted)
+                                    {
+                                        <span>流程已完成</span>
+                                    }
+                                    else if (isMyTurn)
+                                    {
+                                        <span>目前由您處理「@SafeText(currentProcess?["approval_process_step_name"], "-")」</span>
+                                    }
+                                    else
+                                    {
+                                        <span>目前停在「@SafeText(currentProcess?["approval_process_step_name"], "-")」（@currentSigner）</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="text-md-end">
+                                <div class="small opacity-75">流程筆數</div>
+                                <div class="fw-semibold">@processRows.Count 筆</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="approverDetailTable" class="table table-sm table-hover align-middle mb-0">
+                            <thead>
                                 <tr>
-                                    <td class="text-center">@SafeText(process["approval_process_sequence"], "-")</td>
-                                    <td>
-                                        @SafeText(process["approval_process_step_name"], "-")
-                                        @if (IsParallelStep(process))
-                                        {
-                                            <span class="ms-1 text-primary small">(並簽)</span>
-                                        }
+                                    <th class="text-center">序號</th>
+                                    <th class="text-center">階段</th>
+                                    <th class="text-center">應簽核人</th>
+                                    <th class="text-center">實際簽核人</th>
+                                    <th class="text-center">簽核時間</th>
+                                    <th class="text-center">結果</th>
+                                    <th>意見</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (processRows.Count > 0)
+                                {
+                                    foreach (var process in processRows)
+                                    {
+                                        var comment = SafeText(process["approval_process_comment"]);
+
+                                        <tr>
+                                            <td class="text-center">@SafeText(process["approval_process_sequence"], "-")</td>
+                                            <td>
+                                                @SafeText(process["approval_process_step_name"], "-")
+                                                @if (IsParallelStep(process))
+                                                {
+                                                    <span class="ms-1 text-primary small">(並簽)</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @Html.Raw(PersonBlock(
+                                                process["approval_process_employee_cname"],
+                                                                                process["approval_process_employee_id"],
+                                                                                process["approval_process_employee_department"],
+                                                                                process["approval_process_employee_job_title"]))
                                     </td>
                                     <td>
-                                        @Html.Raw(PersonBlock(
-                                        process["approval_process_employee_cname"],
-                                                                process["approval_process_employee_id"],
-                                                                process["approval_process_employee_department"],
-                                                                process["approval_process_employee_job_title"]))
-                            </td>
-                            <td>
-                                @Html.Raw(GetActualSignerHtml(process))
-                            </td>
-                            <td class="text-nowrap text-center">
-                                @FormatDateTime(process["approval_process_sign_time"])
-                            </td>
-                            <td class="text-center">
-                                @RenderResultBadge(process)
-                            </td>
-                            <td>@(string.IsNullOrWhiteSpace(comment) ? "-" : comment)</td>
-                        </tr>
-                                                }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="7" class="text-center text-muted py-4">查無簽核資料</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                                        @Html.Raw(GetActualSignerHtml(process))
+                                    </td>
+                                    <td class="text-nowrap text-center">
+                                        @FormatDateTime(process["approval_process_sign_time"])
+                                    </td>
+                                    <td class="text-center">
+                                        @RenderResultBadge(process)
+                                    </td>
+                                    <td>@(string.IsNullOrWhiteSpace(comment) ? "-" : comment)</td>
+                                </tr>
+                                                                }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">查無簽核資料</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                @foreach (var group in rejectGroups)
+                {
+                    var rejectRows = (group.Value as JArray ?? new JArray())
+                    .OfType<JToken>()
+                    .Select(x => x as JObject)
+                    .Where(x => x != null)
+                    .OrderBy(x => ParseInt(x["approval_process_sequence"]))
+                    .ToList();
+
+                    var rejectingRow = rejectRows
+                    .FirstOrDefault(x => ParseInt(x["approval_process_agreement"], -1) == 0);
+
+                    var returnToSeq = rejectingRow == null
+                    ? 0
+                    : ParseInt(rejectingRow["approval_process_return_to_sequence"]);
+
+                    var rejectSigner = rejectingRow == null
+                    ? "-"
+                    : GetDisplayName(rejectingRow);
+
+                    var rejectAtSeq = rejectingRow == null
+                    ? 0
+                    : ParseInt(rejectingRow["approval_process_sequence"]);
+
+                    var rejectSummary = rejectingRow == null
+                    ? "此版本曾退件"
+                    : $"由 {rejectSigner} 於第 {rejectAtSeq} 關退回第 {returnToSeq} 關";
+
+                    <div class="tab-pane fade"
+                         id="pane-@group.Name"
+                         role="tabpanel"
+                         aria-labelledby="tab-@group.Name"
+                         tabindex="0">
+
+                        <div class="border rounded p-3 mb-3 border-danger-subtle bg-danger-subtle text-danger">
+                            <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="badge text-danger bg-white border border-danger-subtle">@group.Name</span>
+                                        <span class="fw-semibold">第 @ParseRejectKeyOrder(group.Name) 次退件</span>
+                                    </div>
+                                    <div class="small opacity-75">
+                                        @rejectSummary
+                                    </div>
+                                </div>
+
+                                <div class="text-md-end">
+                                    <div class="small opacity-75">退回位置</div>
+                                    <div class="fw-semibold">
+                                        @(returnToSeq > 0 ? $"第 {returnToSeq} 關" : "-")
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" id="approverReturnDetailTable-@group.Name">
+                                <thead class="table-secondary d-md-table-header-group">
+                                    <tr>
+                                        <th>簽核序號</th>
+                                        <th>簽核階段</th>
+                                        <th>應簽核人</th>
+                                        <th>實際簽核人</th>
+                                        <th>簽核結果</th>
+                                        <th>簽核時間</th>
+                                        <th>簽核意見</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (rejectRows.Count > 0)
+                                    {
+                                        foreach (var process in rejectRows)
+                                        {
+                                            var comment = SafeText(process["approval_process_comment"]);
+
+                                            <tr>
+                                                <td class="text-center">@SafeText(process["approval_process_sequence"], "-")</td>
+                                                <td>
+                                                    @SafeText(process["approval_process_step_name"], "-")
+                                                    @if (IsParallelStep(process))
+                                                    {
+                                                        <span class="ms-1 text-primary small">(並簽)</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @Html.Raw(PersonBlock(
+                                                    process["approval_process_employee_cname"],
+                                                                                process["approval_process_employee_id"],
+                                                                                process["approval_process_employee_department"],
+                                                                                process["approval_process_employee_job_title"]))
+                                    </td>
+                                    <td>
+                                        @Html.Raw(GetActualSignerHtml(process))
+                                    </td>
+                                    <td>
+                                        @RenderResultBadge(process)
+                                    </td>
+                                    <td class="text-nowrap">
+                                        @FormatDateTime(process["approval_process_sign_time"])
+                                    </td>
+                                    <td>@(string.IsNullOrWhiteSpace(comment) ? "-" : comment)</td>
+                                </tr>
+                                                                }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted py-4">查無退件資料</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -149,13 +344,13 @@
           method="post"
           asp-action="Sign"
           asp-controller="ApprovalProcess"
-          asp-route-id="@SafeText(approvalInstance["approval_instance_id"])">
+          asp-route-id="@approvalInstanceId">
 
         @Html.AntiForgeryToken()
 
         <input type="hidden"
                name="ApprovalInstanceId"
-               value="@SafeText(approvalInstance["approval_instance_id"])" />
+               value="@approvalInstanceId" />
 
         <div class="card-header fw-bold">二、簽核決議</div>
 
@@ -223,7 +418,6 @@
                                 }
                                 else
                                 {
-                                    @*目前等待  "其他人" 簽核中 *@
                                     <span>🕒 目前由 <strong>@currentSigner</strong> 簽核中</span>
                                 }
 
@@ -361,8 +555,7 @@
             return "-";
         }
 
-        var name = SafeText(process["approval_process_employee_cname"], "-");
-        return name;
+        return SafeText(process["approval_process_employee_cname"], "-");
     }
 
     public bool IsSigned(JObject process)
@@ -422,7 +615,6 @@
 
         return new HtmlString("<span class=\"badge bg-secondary\">待簽核</span>");
     }
-
 
     string HumanTime(DateTime? dt)
     {

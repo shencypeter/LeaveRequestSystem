@@ -1815,7 +1815,14 @@ namespace BioMedDocManager.Controllers
         }
 
 
-
+        /// <summary>
+        /// HTTP method POST 呼叫可帶 payload 的api 端點
+        /// </summary>
+        /// <typeparam name="TRequest"></typeparam>
+        /// <param name="apiUrl"></param>
+        /// <param name="payload"></param>
+        /// <param name="jwtDependency"></param>
+        /// <returns></returns>
         protected async Task<string> EflowPost<TRequest>(
             string apiUrl,
             TRequest payload,
@@ -1826,10 +1833,10 @@ namespace BioMedDocManager.Controllers
         }
 
         private async Task<string> EflowPostCore(string apiUrl,
-                                                 object payload,
+                                                 object requestBody,
                                                  string jwtDependency = "")
         {
-            var baseUrl = "https://3probetestlocal.ccliang.me:8001/api/";
+            var baseUrl = "https://signsystem.3probe.com:8001/api/";
 
             using var client = new HttpClient();
 
@@ -1843,7 +1850,7 @@ namespace BioMedDocManager.Controllers
                     new AuthenticationHeaderValue("Bearer", jwtDependency);
             }
 
-            var json = JsonSerializer.Serialize(payload);
+            var json = JsonSerializer.Serialize(requestBody);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await client.PostAsync(finalUrl, content);

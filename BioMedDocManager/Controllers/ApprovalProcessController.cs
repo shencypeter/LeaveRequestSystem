@@ -54,7 +54,7 @@ namespace BioMedDocManager.Controllers
             JObject model;
             try
             {
-                var viewerEmployeeId = "E2023006"; //尚未升級 O365 實名登入
+                var viewerEmployeeId = "E2023011"; //尚未升級 O365 實名登入
                 ViewData["ViewerEmployeeId"] = viewerEmployeeId;
 
                 var userKey = await GetUserJwtKey(viewerEmployeeId);
